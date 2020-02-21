@@ -4,16 +4,21 @@ var minimise = document.getElementById("minimise");
 var maximise = document.getElementById("maximise");
 var quit = document.getElementById("quit");
 
-minimise.addEventListener("click", minimiseApp);
+minimise.addEventListener("click", minimizeApp);
 maximise.addEventListener("click", maximiseApp);
 quit.addEventListener("click", quitApp);
 
-function minimiseApp() {
+function minimizeApp() {
     remote.BrowserWindow.getFocusedWindow().minimize();
 }
 
 function maximiseApp() {
-    remote.BrowserWindow.getFocusedWindow().maximize();
+    let win = remote.BrowserWindow.getFocusedWindow();
+    if (win.isMaximized()) {
+        win.unmaximize();
+    } else {
+        win.maximize();
+    }
 }
 
 function quitApp() {
