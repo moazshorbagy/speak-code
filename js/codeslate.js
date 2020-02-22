@@ -1,38 +1,36 @@
 let editor = null;
 
-let untitledCount = 1;
+let fileCount = 1;
 
 let sessions = []
 
 function createNewFile() {
+    let fileName = `Untitled-${fileCount}.py`;
 
     //responsible for appending a new list item in filesContainer
-    addNewExplorerTabInFilesConitainer();
+    addNewExplorerTabInFilesConitainer(fileName);
 
     //responsible for opening a coding screen
-    openCodeSlate();
+    openCodeSlate(fileName);
 
+    fileCount++;
 }
 
-function addNewExplorerTabInFilesConitainer() {
+function addNewExplorerTabInFilesConitainer(fileName) {
 
-    let fileName = "Untitled - " + untitledCount++;
-    let sessionId = `session_${sessions.length}`
+    $(".filesContainer").append("<li id='" + fileName + "'> <span class='closeTabIcon'>x</span> <div class='fileNameSpan'>" + fileName + "</div> </li> ");
 
-    $(".filesContainer").append("<li id='" + sessionId + "'> <span class='closeTabIcon'>x</span> <div class='fileNameSpan'>" + fileName + "</div> </li> ");
-
-    let file = document.getElementById(sessionId);
-    addClickHandler(file, sessionId)
+    addClickHandler(fileName)
 }
 
-function addClickHandler(elem, sessionId) {
-    elem.addEventListener('click', function () {
-        console.log(parseInt(sessionId.split('_')[1]))
-        editor.setSession(sessions[parseInt(sessionId.split('_')[1])]);
+function addClickHandler(id) {
+    document.getElementById(id).addEventListener('click', function () {
+        console.log(id)
+        editor.setSession(sessions[id]);
     }, false);
 }
 
-function openCodeSlate() {
+function openCodeSlate(fileName) {
     if (!sessions.length) {
         const editorId = 'editorId';
 
@@ -46,7 +44,7 @@ function openCodeSlate() {
         editor = ace.edit(editorId);
     }
 
-    sessions.push(ace.createEditSession('', 'ace/mode/python'));
+    sessions[fileName] = ace.createEditSession('', 'ace/mode/python');
     editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/python");
 }
