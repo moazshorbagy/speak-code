@@ -6,6 +6,8 @@ let sessions = [];
 
 let currPath = __dirname;
 
+let activeFileName = "";
+
 const fs = require('fs');
 let exploredFilesContainer = $(".exploredFilesContainer");
 let files = fs.readdirSync(currPath, { withFileTypes: true });
@@ -54,8 +56,8 @@ function addNewExplorerTabInFilesConitainer(fileName) {
 
 function addClickHandler(id) {
     document.getElementById(id).addEventListener('click', function () {
-        console.log(id)
         editor.setSession(sessions[id]);
+        activeFileName = id;
     }, false);
 }
 
@@ -77,8 +79,13 @@ function openCodeSlate(fileName, isNew) {
     editor.setTheme("ace/theme/twilight");
     editor.session.setMode("ace/mode/python");
     editor.setSession(sessions[fileName]);
+    activeFileName = fileName;
 
     if (!isNew) {
         sessions[fileName].setValue(fs.readFileSync(`${currPath}/${fileName}`, { encoding: 'utf-8' }));
     }
+}
+
+function saveFile() {
+    fs.writeFileSync(`${currPath}/${activeFileName}`, editor.getValue(), { encoding: 'utf-8' });
 }

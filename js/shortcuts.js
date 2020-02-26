@@ -5,6 +5,10 @@ $(window).bind("keydown", function (event) {
                 event.preventDefault();
                 createNewFile();
                 break;
+            case 's':
+                event.preventDefault();
+                saveFile();
+                break;
         }
     }
 })
