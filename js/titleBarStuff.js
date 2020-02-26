@@ -1,11 +1,11 @@
 const remote = require("electron").remote;
 
-var minimise = document.getElementById("minimise");
-var maximise = document.getElementById("maximise");
-var quit = document.getElementById("quit");
+let minimize = document.getElementById("minimize");
+let maximize = document.getElementById("maximize");
+let quit = document.getElementById("quit");
 
-minimise.addEventListener("click", minimizeApp);
-maximise.addEventListener("click", maximiseApp);
+minimize.addEventListener("click", minimizeApp);
+maximize.addEventListener("click", maximiseApp);
 quit.addEventListener("click", quitApp);
 
 function minimizeApp() {

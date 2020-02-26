@@ -1,14 +1,14 @@
-var MainMenu = function () {
+let MainMenu = function () {
 
-    var activated = false;
+    let activated = false;
 
-    var settings = {
+    let settings = {
         disabledClass: 'disabled',
         submenuClass: 'submenu'
     }
 
-    var mask = '<div id="menu-top-mask" style="height: 2px; background-color: transparent; z-index:1001;"/>';
-    var timeOut;
+    let mask = '<div id="menu-top-mask" style="height: 2px; background-color: transparent; z-index:1001;"/>';
+    let timeOut;
     this.init = function (p) {
 
         $.extend(settings, p);
@@ -16,7 +16,7 @@ var MainMenu = function () {
         $mask = $('#menu-top-mask');
 
         $('ul.main-menu > li').click(function (event) {
-            var target = $(event.target);
+            let target = $(event.target);
             if (target.hasClass(settings.disabledClass) || target.parents().hasClass(settings.disabledClass) || target.hasClass(settings.submenuClass)) {
                 return;
             }
@@ -56,7 +56,7 @@ var MainMenu = function () {
             $el = $(e.target);
             if ($el.hasClass('separator')) return;
             clearTimeout(timeOut);
-            var parent = $el.closest('ul');
+            let parent = $el.closest('ul');
             parent.find('ul.active-sub-menu').each(function () {
                 if ($(this) != $el)
                     $(this).removeClass('active-sub-menu').hide();
@@ -87,14 +87,14 @@ var MainMenu = function () {
 
             $('#menu-top-mask').remove();
 
-            var submenu = el.find("ul:first");
-            var top = parseInt(el.css('padding-bottom').replace("px", ""), 10) + parseInt(el.css('padding-top').replace("px", ""), 10) +
+            let submenu = el.find("ul:first");
+            let top = parseInt(el.css('padding-bottom').replace("px", ""), 10) + parseInt(el.css('padding-top').replace("px", ""), 10) +
                         el.position().top +
                         el.height();
 
             submenu.prepend($(mask));
-            var $mask = $('#menu-top-mask');
-            var maskWidth = el.width() +
+            let $mask = $('#menu-top-mask');
+            let maskWidth = el.width() +
                             parseInt(el.css('padding-left').replace("px", ""), 10) +
                             parseInt(el.css('padding-right').replace("px", ""), 10);
 
@@ -135,11 +135,11 @@ var MainMenu = function () {
                 return;
             }
 
-            var submenu = el.find("ul:first");
-            var paddingLeft = parseInt(el.css('padding-right').replace('px', ''), 10);
-            var borderTop = parseInt(el.css('border-top-width').replace("px", ""), 10);
+            let submenu = el.find("ul:first");
+            let paddingLeft = parseInt(el.css('padding-right').replace('px', ''), 10);
+            let borderTop = parseInt(el.css('border-top-width').replace("px", ""), 10);
             borderTop = !isNaN(borderTop) ? borderTop : 1;
-            var top = el.position().top - borderTop;
+            let top = el.position().top - borderTop;
 
             submenu.css({
                 position: 'absolute',
@@ -173,7 +173,7 @@ var MainMenu = function () {
         });
 
         $(document).bind('click', function (event) {
-            var target = $(event.target);
+            let target = $(event.target);
             if (!target.hasClass('active-menu') && !target.parents().hasClass('active-menu')) {
                 closeMainMenu();
             }

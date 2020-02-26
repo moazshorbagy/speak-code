@@ -6,26 +6,14 @@ let win
 
 function createWindow() {
   // Create the browser window.
-
-  if (process.platform == "darwin") {
-    win = new BrowserWindow({
-      width: 900,
-      height: 800,
-      minHeight: 650,
-      minWidth: 600,
-      frame: true,
-      webPreferences: { nodeIntegration: true }
-    })
-  } else {
-    win = new BrowserWindow({
-      width: 900,
-      height: 800,
-      minHeight: 650,
-      minWidth: 600,
-      frame: false,
-      webPreferences: { nodeIntegration: true }
-    })
-  }
+  win = new BrowserWindow({
+    width: 900,
+    height: 800,
+    minHeight: 500,
+    minWidth: 500,
+    frame: false,
+    webPreferences: { nodeIntegration: true }
+  })
 
   // and load the index.html of the app.
   win.loadFile('codeeditor.html')

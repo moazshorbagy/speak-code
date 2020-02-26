@@ -5,13 +5,14 @@
         Voice Programming
     </title>
 
-
     <link rel="stylesheet" href="css/titleBar.css">
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/snippetStyles.css">
 
+    <script>
+        if (typeof module === 'object') { window.module = module; module = undefined; }
+    </script>
 
-    <script>if (typeof module === 'object') { window.module = module; module = undefined; }</script>
     <script type='text/javascript' src="js/jquery.min.js"></script>
     <script type='text/javascript' src="js/jquery.menu.js"></script>
 
@@ -41,8 +42,8 @@
 
             <div class="windowControls windowControlsStyle preventSelect">
 
-                <button id="minimise">-</button>
-                <button id="maximise">[]</button>
+                <button id="minimize">-</button>
+                <button id="maximize">[]</button>
                 <button id="quit">x</button>
 
             </div>
@@ -66,15 +67,6 @@
 
                             <li class="separator"></li>
 
-                        </ul>
-                    </li>
-
-                    <li>
-                        Help
-                        <ul>
-                            <li onclick='showShortcuts()'>Shortcuts</li>
-                            <li class="separator"></li>
-                            <li>Contact us</li>
                         </ul>
                     </li>
                 </ul>
@@ -114,8 +106,8 @@
 
     </div>
 
-    <script src="js/titleBarStuff.js"></script>
-    <script type='text/javascript' src="js/codeslate.js"></script>
+    <script type="text/javascript" src="js/titleBarStuff.js"></script>
+    <script type="text/javascript" src="js/codeslate.js"></script>
     <script type="text/javascript" src="js/shortcuts.js"></script>
 
 </body>
