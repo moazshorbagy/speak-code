@@ -1,0 +1,66 @@
+const path = require('path');
+
+function uriFromPath(_path) {
+    var pathName = path.resolve(_path).replace(/\\/g, '/');
+    if (pathName.length > 0 && pathName.charAt(0) !== '/') {
+        pathName = '/' + pathName;
+    }
+    return encodeURI('file://' + pathName);
+}
+
+const models = []
+
+const amdLoader = require('monaco-editor/min/vs/loader');
+const amdRequire = amdLoader.require;
+
+//workaround because we changed the editor.js path
+var dirname = __dirname + "/../"
+amdRequire.config({
+    baseUrl: uriFromPath(path.join(dirname, './node_modules/monaco-editor/min'))
+});
+
+let editor;
+
+initEditor = function(doc) {
+
+    // workaround monaco-css not understanding the environment
+    self.module = undefined;
+
+    amdRequire(['vs/editor/editor.main'], function () {
+        const remote = require('electron').remote;
+        editor = monaco.editor.create(document.getElementById('editor'), {
+            value: doc,
+            language: 'javascript',
+            theme: "vs-dark",
+        });
+        const monokai = require('monaco-themes/themes/Monokai.json')
+        monaco.editor.defineTheme('monokai', monokai);
+        monaco.editor.setTheme('monokai')
+        let currentWindow = remote.getCurrentWindow();
+        currentWindow.on('resize', function () {
+            editor.layout();
+        });
+        var r = new ResizeSensor($('#editor'), function () {
+            var width = parseInt($("#editor").css("width"))
+            var height = parseInt($("#editor").css("height"))
+            editor.layout({
+                width: width,
+                height: height
+            })
+        });
+    });
+}
+
+openDoc = function(doc) {
+    if (!editor) {
+        initEditor(doc)
+    } else {
+            var model = monaco.editor.createModel(doc, "javascript")
+            models.push(model)
+            editor.setModel(model)
+    }
+}
+
+module.exports = {
+    openDoc
+}

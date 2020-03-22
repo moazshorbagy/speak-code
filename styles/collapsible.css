@@ -1,0 +1,12 @@
+.collapsible {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-size: 12pt;
+}
+
+.content {
+  padding: 0 10px;
+  display: none;
+  overflow: hidden;
+}

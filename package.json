@@ -1,27 +1,22 @@
 {
-  "name": "voiceprogramming",
-  "version": "1.0.0",
-  "description": "An interface for programming using voice",
-  "main": "main.js",
+  "name": "VoiceProgramming",
+  "dependencies": {
+    "css-element-queries": "^1.2.3",
+    "jquery": "^3.4.1",
+    "monaco-themes": "^0.3.3",
+    "split-grid": "^1.0.9",
+    "xterm": "^4.4.0",
+    "xterm-addon-fit": "^0.3.0",
+    "zeromq": "^6.0.0-beta.6",
+    "zerorpc": "^0.9.8"
+  },
   "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "execute": "electron ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/moazshorbagy/VoiceProgramming.git"
-  },
-  "keywords": [
-    "electronjs",
-    "reactjs"
-  ],
-  "author": "Moaz El-Shorbagy",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/moazshorbagy/VoiceProgramming/issues"
-  },
-  "homepage": "https://github.com/moazshorbagy/VoiceProgramming#readme",
+  "main": "./main",
   "devDependencies": {
-    "electron": "^8.0.1"
+    "electron": "^6.1.9",
+    "electron-rebuild": "^1.10.0",
+    "monaco-editor": "^0.20.0"
   }
 }
