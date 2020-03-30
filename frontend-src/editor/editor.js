@@ -67,7 +67,7 @@ openDoc = function(doc, filePath) {
 
 function getFileType(filePath) {
     var type = filePath.split('.').pop();
-    console.log(type);
+    console.log('filetype: ' + type);
 }
 
 module.exports = {

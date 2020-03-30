@@ -32,7 +32,6 @@ addCollapsible = function (container, divId, path, name, content) {
 
     $(document).ready(function() {
         document.getElementById('b' + divId).addEventListener('click', function() {
-            console.log('nice');
             var content = this.nextElementSibling;
             if (content.style.display === "block") {
                 content.style.display = "none";

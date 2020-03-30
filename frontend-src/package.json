@@ -1,5 +1,5 @@
 {
-  "name": "VoiceProgramming",
+  "name": "voiceprogramming",
   "dependencies": {
     "css-element-queries": "^1.2.3",
     "jquery": "^3.4.1",

@@ -558,7 +558,7 @@
          * @license MIT
          */
         "use strict";
-        var Generic_js_1 = require('./Generic.js');
+        var Generic_js_1 = require('./Generic.js.js');
         var isNode = (typeof navigator == 'undefined') ? true : false;
         var userAgent = (isNode) ? 'node' : navigator.userAgent;
         var platform = (isNode) ? 'node' : navigator.platform;
@@ -605,10 +605,10 @@
          * @license MIT
          */
         "use strict";
-        var CompositionHelper_js_1 = require('./CompositionHelper.js');
-        var EventEmitter_js_1 = require('./EventEmitter.js');
-        var Viewport_js_1 = require('./Viewport.js');
-        var Clipboard_js_1 = require('./handlers/Clipboard.js');
+        var CompositionHelper_js_1 = require('./CompositionHelper.js.js');
+        var EventEmitter_js_1 = require('./EventEmitter.js.js');
+        var Viewport_js_1 = require('./Viewport.js.js');
+        var Clipboard_js_1 = require('./handlers/Clipboard.js.js');
         var Browser = require('./utils/Browser');
         /**
          * Terminal Emulation References:
