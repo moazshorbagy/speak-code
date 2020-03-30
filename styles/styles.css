@@ -30,12 +30,11 @@ body {
   background-color: #1c1b18;
   width: 100%;
   min-width: 200px;
-  height: 600px;
   overflow-y: auto;
 }
 
 .leftpanel-container {
-  height: 600px;
+  background-color: #1c1b18;
 }
 
 #second-enclosing {

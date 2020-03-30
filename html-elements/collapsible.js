@@ -51,7 +51,7 @@ populateFiles = function (files, path, contentContainer) {
         document.getElementById(contentId).addEventListener('click', function () {
             var doc = fs.readFileSync(this.id, "utf8");
             const monacoEditor = require('../editor/editor');
-            monacoEditor.openDoc(doc);
+            monacoEditor.openDoc(doc, this.id);
         }, false);
     }
 }
