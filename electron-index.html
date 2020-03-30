@@ -15,10 +15,10 @@
 
 <body>
 	<div id=cointainer class="root-container">
-		<div id="second-enclosing"></div>
 			<div id="tools-panel"></div>
 			<div id="enclosing-container" class="main-container">
 				<div class="leftpanel-container">
+					<div id="open-editors" class="leftpanel preventSelect"></div>
 					<div id="folders-panel" class="leftpanel preventSelect"></div>
 				</div>
 				<div id="editor-container" class="editor-container">
@@ -53,14 +53,16 @@
 </script>
 <script type="text/javascript" src="app-menu/populate-menu.js"></script>
 <script>
-	const dialogHandler = require('./files-handling/openDialog')
-	var button = document.getElementById('open-folder-button')
+	const dialogHandler = require('./files-handling/openDialog');
+	var button = document.getElementById('open-folder-button');
 	button.addEventListener("click", openDialog);
+	const openEditors = require('./html-elements/open-editors');
+	openEditors.addOpenEditors($("#open-editors"));
 </script>
 <script>
 	const remote = require('electron').remote;
 	var mainWindow = remote.BrowserWindow.getFocusedWindow();
 	$('.leftpanel-container').css("height", mainWindow.getBounds().height.toString());
-	$('.leftpanel').css("height", mainWindow.getBounds().height.toString());
+	// $('.leftpanel').css("height", mainWindow.getBounds().height.toString());
 </script>
 </html>
