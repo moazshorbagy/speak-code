@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Voic Programming</title>
+	<link href="styles/styles.css" rel="stylesheet" type="text/css">
+	<link href="styles/collapsible.css" rel="stylesheet" type="text/css">
+	<link href="styles/files.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
+	<script src="node_modules/xterm/lib/xterm.js"></script>
+	<script>window.$ = window.jQuery = require('jquery');</script>
+	<script src="css-element-queries/src/ResizeSensor.js"></script>
+</head>
+
+<body>
+	<div id=cointainer class="root-container">
+			<div id="tools-panel"></div>
+			<div id="enclosing-container" class="main-container">
+				<div class="leftpanel-container">
+					<div id="open-editors" class="leftpanel preventSelect"></div>
+					<div id="folders-panel" class="leftpanel preventSelect"></div>
+				</div>
+				<div id="editor-container" class="editor-container">
+					<div id="opened-files-tabs"></div>
+					<div id="editor"></div>
+				</div>
+				<div class="horizontal-gutter">
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+<script>
+	const wd = require('./files-handling/working-directory');
+	var workingDirectory = wd.getCurrentWorkingDirectory();
+
+	if (workingDirectory == null) {
+		let folderspanel = $("#folders-panel")
+		folderspanel.append("<p class='leftpanel-text'>Tap to open a folder</p>")
+		folderspanel.append("<button id='open-folder-button'>Open Folder</button>")
+	}
+</script>
+<script>
+	var Split = require('split-grid')
+	Split({
+		columnGutters: [{
+			track: 1,
+			element: document.querySelector('.horizontal-gutter'),
+		}]
+	})
+</script>
+<script type="text/javascript" src="app-menu/populate-menu.js"></script>
+<script>
+	const dialogHandler = require('./files-handling/openDialog');
+	var button = document.getElementById('open-folder-button');
+	button.addEventListener("click", openDialog);
+	const openEditors = require('./html-elements/open-editors');
+	openEditors.addOpenEditors($("#open-editors"));
+</script>
+<script>
+	const remote = require('electron').remote;
+	var mainWindow = remote.BrowserWindow.getFocusedWindow();
+	$('.leftpanel-container').css("height", mainWindow.getBounds().height.toString());
+	// $('.leftpanel').css("height", mainWindow.getBounds().height.toString());
+</script>
+</html>

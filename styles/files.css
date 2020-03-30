@@ -1,0 +1,9 @@
+.fileNameSpan {
+    color: gray;
+    margin-left: 5px;
+}
+
+.fileNameSpan:hover {
+    color: white;
+    cursor: pointer;
+}
