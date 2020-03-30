@@ -8,7 +8,7 @@ function uriFromPath(_path) {
     return encodeURI('file://' + pathName);
 }
 
-const models = []
+const models = {}
 
 const amdLoader = require('monaco-editor/min/vs/loader');
 const amdRequire = amdLoader.require;
@@ -21,7 +21,7 @@ amdRequire.config({
 
 let editor;
 
-initEditor = function(doc) {
+initEditor = function(doc, filePath) {
 
     // workaround monaco-css not understanding the environment
     self.module = undefined;
@@ -29,11 +29,14 @@ initEditor = function(doc) {
     amdRequire(['vs/editor/editor.main'], function () {
         const remote = require('electron').remote;
         editor = monaco.editor.create(document.getElementById('editor'), {
-            value: doc,
+            value: '',
             language: 'javascript',
             theme: "vs-dark",
         });
-        const monokai = require('monaco-themes/themes/Monokai.json')
+        const monokai = require('monaco-themes/themes/Monokai.json');
+        var model = monaco.editor.createModel(doc, "javascript");
+        editor.setModel(model);
+        models[filePath] = model;
         monaco.editor.defineTheme('monokai', monokai);
         monaco.editor.setTheme('monokai')
         let currentWindow = remote.getCurrentWindow();
@@ -51,14 +54,20 @@ initEditor = function(doc) {
     });
 }
 
-openDoc = function(doc) {
+openDoc = function(doc, filePath) {
     if (!editor) {
-        initEditor(doc)
+        initEditor(doc, filePath);
     } else {
-            var model = monaco.editor.createModel(doc, "javascript")
-            models.push(model)
-            editor.setModel(model)
+            var model = monaco.editor.createModel(doc, "python")
+            models[filePath] = model;
+            editor.setModel(model);
+            getFileType(filePath);
     }
+}
+
+function getFileType(filePath) {
+    var type = filePath.split('.').pop();
+    console.log(type);
 }
 
 module.exports = {
