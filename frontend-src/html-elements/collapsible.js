@@ -58,8 +58,8 @@ populateFiles = function (files, path, contentContainer) {
 populateFolders = function (folders, path, explorerContainer) {
     for (let i = 0; i < folders.length; i++) {
         var folderPath = Path.join(path, folders[i].name);
-        folderName = folderPath.split('/').pop();
-        contentId = folderPath.split('/').join('');
+        folderName = folderPath.split(Path.sep).pop();
+        contentId = folderPath.split(Path.sep).join('');
         contentId = contentId.replace(/[^0-9a-zA-Z_-]/g, '');
         module.exports.addCollapsible(explorerContainer, contentId, folderPath, folderName, fs.readdirSync(folderPath, { withFileTypes: true }));
     }

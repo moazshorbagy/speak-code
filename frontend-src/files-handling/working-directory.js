@@ -2,6 +2,7 @@
 
 currentWorkingDirectory = null;
 const fs = require('fs')
+const Path = require('path')
 
 let explorerContainer = $('#folders-panel');
 
@@ -25,8 +26,8 @@ module.exports = {
 
         const collapsible = require('./../html-elements/collapsible')
 
-        folderName = path.split('/').pop();
+        folderName = path.split(Path.sep).pop();
 
-        collapsible.addCollapsible(explorerContainer, path.split('/').join(''), path, folderName, files);
+        collapsible.addCollapsible(explorerContainer, path.split(Path.sep).join(''), path, folderName, files);
     }
 }
