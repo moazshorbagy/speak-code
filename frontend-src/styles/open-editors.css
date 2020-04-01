@@ -1,3 +1,9 @@
+.open-editors-container {
+    border-bottom: 1px solid black;;
+}
+
 .open-editors-content {
-    
+    padding: 0 15px;
+    display: block;
+    overflow: hidden;
 }

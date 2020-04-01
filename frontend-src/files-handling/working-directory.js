@@ -17,8 +17,9 @@ module.exports = {
 
     displayWorkingDirectory: function () {
         explorerContainer.empty();
+        const openEditors = require('./../html-elements/open-editors');
+        openEditors.addOpenEditors();
         this.openSubDir(currentWorkingDirectory, explorerContainer);
-
     },
 
     openSubDir: function (path, explorerContainer) {
@@ -28,6 +29,6 @@ module.exports = {
 
         folderName = path.split(Path.sep).pop();
 
-        collapsible.addCollapsible(explorerContainer, path.split(Path.sep).join(''), path, folderName, files);
+        collapsible.addCollapsible(explorerContainer, path.split(Path.sep).join(''), path, folderName, files, true);
     }
 }

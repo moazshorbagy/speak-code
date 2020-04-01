@@ -21,7 +21,7 @@ amdRequire.config({
 
 let editor;
 
-initEditor = function(doc, filePath) {
+initEditor = function(doc, filePath, type) {
 
     // workaround monaco-css not understanding the environment
     self.module = undefined;
@@ -30,11 +30,11 @@ initEditor = function(doc, filePath) {
         const remote = require('electron').remote;
         editor = monaco.editor.create(document.getElementById('editor'), {
             value: '',
-            language: 'javascript',
+            language: type,
             theme: "vs-dark",
         });
         const monokai = require('monaco-themes/themes/Monokai.json');
-        var model = monaco.editor.createModel(doc, "javascript");
+        var model = monaco.editor.createModel(doc, type);
         editor.setModel(model);
         models[filePath] = model;
         monaco.editor.defineTheme('monokai', monokai);
@@ -55,21 +55,40 @@ initEditor = function(doc, filePath) {
 }
 
 openDoc = function(doc, filePath) {
+    type = getFileType(filePath);
     if (!editor) {
-        initEditor(doc, filePath);
-    } else {
-            var model = monaco.editor.createModel(doc, "python")
-            models[filePath] = model;
-            editor.setModel(model);
-            getFileType(filePath);
+        initEditor(doc, filePath, type);
+    } else {  
+        var model = monaco.editor.createModel(doc, type);
+        models[filePath] = model;
+        editor.setModel(model);
+        getFileType(filePath);
     }
+}
+
+// generally, fileId is the filePath
+setModelWithId = function(fileId) {
+    if(editor.getModel() == models[fileId]) {
+        console.log('gotcha');
+        return;
+    }
+    editor.setModel(models[fileId]);
 }
 
 function getFileType(filePath) {
     var type = filePath.split('.').pop();
-    console.log('filetype: ' + type);
+    switch(type) {
+        case 'js': return 'javascript';
+        case 'py': return 'python';
+        case 'ts': return 'typescript';
+        case 'html': return 'html';
+        case 'css': return 'css';
+        case 'json': return 'json';
+        default: return null;
+    }
 }
 
 module.exports = {
-    openDoc
+    openDoc,
+    setModelWithId
 }

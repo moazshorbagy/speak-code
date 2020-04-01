@@ -2,15 +2,21 @@
 let _class = ' fileNameSpan';
 
 const fs = require('fs');
-const Path = require('path')
+const Path = require('path');
+const openEditors = require('../html-elements/open-editors');
 
-addCollapsible = function (container, divId, path, name, content) {
+addCollapsible = function (container, divId, path, name, content, isRootDir) {
 
     // the container div that encloses a folder and its content.
     container.append("<div id='" + divId + "'> </div>");
 
     // the div to append collapsible div and content div to.
     var div = $("#" + divId);
+
+    // add a border to the root directory
+    if(isRootDir) {
+        div.css("border-bottom", "1px solid black");
+    }
 
     /// The folder div only contains the folder name and an event listener is attached to it.
     div.append("<div class='" + _class + "' id='b" + divId + "'> > " + name + "</div>");
@@ -51,6 +57,7 @@ populateFiles = function (files, path, contentContainer) {
             var doc = fs.readFileSync(this.id, "utf8");
             const monacoEditor = require('../editor/editor');
             monacoEditor.openDoc(doc, this.id);
+            openEditors.addOpenedFile(this.id);
         }, false);
     }
 }
