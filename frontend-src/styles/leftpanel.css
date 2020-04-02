@@ -1,0 +1,16 @@
+.leftpanel {
+  background-color: #1c1b18;
+}
+
+.leftpanel-container {
+  background-color: #1c1b18;
+  min-width: 200px;
+  overflow-y: scroll;
+}
+
+.leftpanel-text {
+  margin-top: 10px;
+  text-align: center;
+  color: white;
+  font-size: 10pt;
+}

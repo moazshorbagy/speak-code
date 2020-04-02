@@ -1,0 +1,8 @@
+.main-container {
+  padding: 0cm;
+  margin: 0cm;
+  display: grid;
+  grid-template-columns: 1fr 2px 3fr;
+  height: 100%;
+  overflow-y: hidden;
+}

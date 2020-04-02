@@ -1,0 +1,10 @@
+.editor-container {
+  margin: 0;
+  padding: 0;
+  background-color: #1c1b18;
+  display: grid;
+}
+
+#editor {
+  min-width: 300px;
+}
