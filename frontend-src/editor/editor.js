@@ -8,7 +8,7 @@ function uriFromPath(_path) {
     return encodeURI('file://' + pathName);
 }
 
-const models = {}
+const models = {};
 
 const amdLoader = require('monaco-editor/min/vs/loader');
 const amdRequire = amdLoader.require;
@@ -20,6 +20,15 @@ amdRequire.config({
 });
 
 let editor;
+
+const fileType = {
+    'js': 'javascript',
+     'py':  'python',
+     'ts':  'typescript',
+     'html': 'html',
+     'css':  'css',
+     'json': 'json'
+};
 
 initEditor = function(doc, filePath, type) {
 
@@ -77,15 +86,7 @@ setModelWithId = function(fileId) {
 
 function getFileType(filePath) {
     var type = filePath.split('.').pop();
-    switch(type) {
-        case 'js': return 'javascript';
-        case 'py': return 'python';
-        case 'ts': return 'typescript';
-        case 'html': return 'html';
-        case 'css': return 'css';
-        case 'json': return 'json';
-        default: return null;
-    }
+    return fileType[type];
 }
 
 module.exports = {
