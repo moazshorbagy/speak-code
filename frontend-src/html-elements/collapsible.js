@@ -14,7 +14,7 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
     var div = $("#" + divId);
 
     // add a border to the root directory
-    if(isRootDir) {
+    if (isRootDir) {
         div.css("border-bottom", "1px solid black");
     }
 
@@ -36,8 +36,8 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
     files = content.filter(entry => entry.isFile());
     populateFiles(files, path, contentContainer);
 
-    $(document).ready(function() {
-        document.getElementById('b' + divId).addEventListener('click', function() {
+    $(document).ready(function () {
+        document.getElementById('b' + divId).addEventListener('click', function () {
             var content = this.nextElementSibling;
             if (content.style.display === "block") {
                 content.style.display = "none";
@@ -56,8 +56,10 @@ populateFiles = function (files, path, contentContainer) {
         document.getElementById(contentId).addEventListener('click', function () {
             var doc = fs.readFileSync(this.id, "utf8");
             const monacoEditor = require('../editor/editor');
-            monacoEditor.openDoc(doc, this.id);
-            openEditors.addOpenedFile(this.id);
+            if (!monacoEditor.modelIsAlreadyOpen(this.id)) {
+                monacoEditor.openDoc(doc, this.id);
+                openEditors.addOpenedFile(this.id);
+            }
         }, false);
     }
 }
@@ -72,8 +74,8 @@ populateFolders = function (folders, path, explorerContainer) {
     }
 }
 
-populateOtherTypes = function(files, path, contentContainer) {
-    for(let i = 0; i < files.length; i++) {
+populateOtherTypes = function (files, path, contentContainer) {
+    for (let i = 0; i < files.length; i++) {
         var contentId = Path.join(path, files[i].name);
         contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
     }

@@ -23,14 +23,14 @@ let editor;
 
 const fileType = {
     'js': 'javascript',
-     'py':  'python',
-     'ts':  'typescript',
-     'html': 'html',
-     'css':  'css',
-     'json': 'json'
+    'py': 'python',
+    'ts': 'typescript',
+    'html': 'html',
+    'css': 'css',
+    'json': 'json'
 };
 
-initEditor = function(doc, filePath, type) {
+initEditor = function (doc, filePath, type) {
 
     // workaround monaco-css not understanding the environment
     self.module = undefined;
@@ -63,11 +63,11 @@ initEditor = function(doc, filePath, type) {
     });
 }
 
-openDoc = function(doc, filePath) {
+openDoc = function (doc, filePath) {
     type = getFileType(filePath);
     if (!editor) {
         initEditor(doc, filePath, type);
-    } else {  
+    } else {
         var model = monaco.editor.createModel(doc, type);
         models[filePath] = model;
         editor.setModel(model);
@@ -76,12 +76,20 @@ openDoc = function(doc, filePath) {
 }
 
 // generally, fileId is the filePath
-setModelWithId = function(fileId) {
-    if(editor.getModel() == models[fileId]) {
-        console.log('gotcha');
+setModelWithId = function (fileId) {
+    if (editor.getModel() == models[fileId]) {
         return;
     }
     editor.setModel(models[fileId]);
+}
+
+modelIsAlreadyOpen = function (filePath) {
+    for (var key in models) {
+        if (key == filePath) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function getFileType(filePath) {
@@ -91,5 +99,6 @@ function getFileType(filePath) {
 
 module.exports = {
     openDoc,
-    setModelWithId
+    setModelWithId,
+    modelIsAlreadyOpen
 }
