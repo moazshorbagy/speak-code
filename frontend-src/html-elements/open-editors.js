@@ -48,6 +48,7 @@ addOpenedFile = function (filePath) {
 
     document.getElementById(filePath).addEventListener('click', function () {
         editor.setModelWithId(filePath);
+        editor.retrieveCursorPosition(filePath);
     });
 }
 

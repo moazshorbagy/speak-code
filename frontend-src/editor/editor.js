@@ -10,6 +10,8 @@ function uriFromPath(_path) {
 
 const models = {};
 
+const cursorPositions = {};
+
 const amdLoader = require('monaco-editor/min/vs/loader');
 const amdRequire = amdLoader.require;
 
@@ -20,6 +22,8 @@ amdRequire.config({
 });
 
 let editor;
+
+let currentFilePath;
 
 const fileType = {
     'js': 'javascript',
@@ -52,6 +56,14 @@ initEditor = function (doc, filePath, type) {
         currentWindow.on('resize', function () {
             editor.layout();
         });
+
+        currentFilePath = filePath;
+
+        //track position of cursor
+        editor.onDidChangeCursorPosition(function(position) {
+            cursorPositions[currentFilePath] = position.position;
+        });
+
         var r = new ResizeSensor($('#editor'), function () {
             var width = parseInt($("#editor").css("width"))
             var height = parseInt($("#editor").css("height"))
@@ -71,6 +83,7 @@ openDoc = function (doc, filePath) {
         var model = monaco.editor.createModel(doc, type);
         models[filePath] = model;
         editor.setModel(model);
+        currentFilePath = filePath;
         getFileType(filePath);
     }
 }
@@ -81,6 +94,7 @@ setModelWithId = function (fileId) {
         return;
     }
     editor.setModel(models[fileId]);
+    currentFilePath = fileId;
 }
 
 modelIsAlreadyOpen = function (filePath) {
@@ -92,6 +106,55 @@ modelIsAlreadyOpen = function (filePath) {
     return false;
 }
 
+retrieveCursorPosition = function(filePath) {
+    if(!(filePath in cursorPositions)) {
+        return;
+    }
+    editor.setPosition(
+        cursorPositions[filePath]
+    );
+    editor.focus();
+    module.exports.insertTextAtPosition('Hamada yel3ab', {
+        column: 1,
+        lineNumber: 25 
+    });
+}
+
+insertTextAtPosition = function(text, position) {
+    if(position) {
+        editor.setPosition(
+            position
+        );
+    }
+
+    var currentPosition = editor.getPosition();
+
+    // op can also take an id
+    op = {
+        identifier: 'id',
+        text: text,
+        range: new monaco.Range(currentPosition.lineNumber,
+            currentPosition.column, 
+            currentPosition.lineNumber, 
+            currentPosition.column)
+    }
+
+    // executeEdits can take an id to track edits
+    editor.executeEdits(
+        "what", [op]
+    );
+
+}
+
+insertText = function(text) {
+    var line = editor.getPosition();
+    var range = new monaco.Range(line.lineNumber, 1, line.lineNumber, 1);
+    var id = { major: 1, minor: 1 };             
+    var text = "FOO";
+    var op = {identifier: id, range: range, text: text, forceMoveMarkers: true};
+    editor.executeEdits("my-source", [op]);
+}
+
 function getFileType(filePath) {
     var type = filePath.split('.').pop();
     return fileType[type];
@@ -100,5 +163,8 @@ function getFileType(filePath) {
 module.exports = {
     openDoc,
     setModelWithId,
-    modelIsAlreadyOpen
+    modelIsAlreadyOpen,
+    retrieveCursorPosition,
+    insertTextAtPosition,
+    insertText
 }
