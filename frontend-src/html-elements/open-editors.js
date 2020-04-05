@@ -47,8 +47,7 @@ addOpenedFile = function (filePath) {
     openEditorsContentContainer.append("<div id='" + filePath + "' class='fileNameSpan'>" + fileName + "</div>");
 
     document.getElementById(filePath).addEventListener('click', function () {
-        editor.setModelWithId(filePath);
-        editor.retrieveCursorPosition(filePath);
+        editor.focusModel(filePath);
     });
 }
 
