@@ -114,13 +114,9 @@ retrieveCursorPosition = function(filePath) {
         cursorPositions[filePath]
     );
     editor.focus();
-    module.exports.insertTextAtPosition('Hamada yel3ab', {
-        column: 1,
-        lineNumber: 25 
-    });
 }
 
-insertTextAtPosition = function(text, position) {
+insertText = function(text, position) {
     if(position) {
         editor.setPosition(
             position
@@ -146,13 +142,9 @@ insertTextAtPosition = function(text, position) {
 
 }
 
-insertText = function(text) {
-    var line = editor.getPosition();
-    var range = new monaco.Range(line.lineNumber, 1, line.lineNumber, 1);
-    var id = { major: 1, minor: 1 };             
-    var text = "FOO";
-    var op = {identifier: id, range: range, text: text, forceMoveMarkers: true};
-    editor.executeEdits("my-source", [op]);
+focusModel = function(filePath) {
+    module.exports.setModelWithId(filePath);
+    module.exports.retrieveCursorPosition(filePath);
 }
 
 function getFileType(filePath) {
@@ -160,11 +152,21 @@ function getFileType(filePath) {
     return fileType[type];
 }
 
+getCursorPosition = function() {
+    return editor.getPosition();
+}
+
+setCursorPosition = function(position) {
+    editor.setPosition(position);
+}
+
 module.exports = {
     openDoc,
     setModelWithId,
     modelIsAlreadyOpen,
     retrieveCursorPosition,
-    insertTextAtPosition,
-    insertText
+    insertText,
+    focusModel,
+    getCursorPosition,
+    setCursorPosition
 }
