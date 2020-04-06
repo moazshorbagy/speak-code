@@ -1,7 +1,9 @@
 const electron = require('electron')
-const zerorpc = require('zerorpc')
 const app = electron.app
 const BrowserWindow = electron.BrowserWindow
+const { spawn } = require('child_process');
+
+const { ipcMain } = require('electron')
 
 
 let mainWindow;
@@ -22,13 +24,32 @@ function createWindow() {
 	})
 }
 
-app.on('ready', createWindow);
+const zeroRPCServer = require('./server/server');
+
+
+app.on('ready', function () {
+	spawnPythonChild();
+	zeroRPCServer.initializeServer();
+	createWindow();
+});
 
 app.on('window-all-closed', function () {
 	if (process.platform !== 'darwin') {
 		app.quit()
 	}
-})
+});
+
+function spawnPythonChild() {
+	spawnedChild = spawn('python3', ['python-client.py']);
+
+	spawnedChild.on('close', (code, signal) => {
+		console.log(`child error: ${code}, ${signal}`);
+	});
+	spawnedChild.on('error', (err) => console.error(err));
+
+}
+
+
 
 app.on('activate', function () {
 	if (mainWindow === null) {

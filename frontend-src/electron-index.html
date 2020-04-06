@@ -56,5 +56,17 @@
 	var button = document.getElementById('open-folder-button');
 	button.addEventListener("click", openDialog);
 </script>
+<script>
+	const { ipcRenderer } = require('electron');
+
+	const editor = require('./editor/editor');
+
+	ipcRenderer.on('insert-text', function (event, arg) {
+		console.log(arg.msg);
+		editor.insertText(arg.msg);
+	});
+
+</script>
+
 
 </html>
