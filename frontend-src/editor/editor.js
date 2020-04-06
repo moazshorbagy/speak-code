@@ -117,6 +117,11 @@ retrieveCursorPosition = function(filePath) {
 }
 
 insertText = function(text, position) {
+
+    if(!editor) {
+        return;
+    }
+
     if(position) {
         editor.setPosition(
             position
