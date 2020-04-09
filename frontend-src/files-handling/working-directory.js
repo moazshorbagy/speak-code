@@ -28,7 +28,8 @@ module.exports = {
         const collapsible = require('./../html-elements/collapsible')
 
         folderName = path.split(Path.sep).pop();
+        contentId = path.replace(/[^0-9a-zA-Z_-]/g, '');
 
-        collapsible.addCollapsible(explorerContainer, path.split(Path.sep).join(''), path, folderName, files, true);
+        collapsible.addCollapsible(explorerContainer, contentId, path, folderName, files, true);
     }
 }
