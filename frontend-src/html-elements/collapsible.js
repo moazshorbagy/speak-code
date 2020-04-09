@@ -51,8 +51,8 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
 populateFiles = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
         contentId = Path.join(path, files[i].name);
+        contentId = contentId.replace(/[^\u0600-\u06FF0-9a-zA-Z\ \\\/\.\:_-]/g, '');
         contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
-
         document.getElementById(contentId).addEventListener('click', function () {
             var doc = fs.readFileSync(this.id, "utf8");
             const monacoEditor = require('../editor/editor');
@@ -69,14 +69,14 @@ populateFolders = function (folders, path, explorerContainer) {
         var folderPath = Path.join(path, folders[i].name);
         folderName = folderPath.split(Path.sep).pop();
         contentId = folderPath.split(Path.sep).join('');
-        contentId = contentId.replace(/[^0-9a-zA-Z_-]/g, '');
+        contentId = contentId.replace(/[^\u0600-\u06FF0-9a-zA-Z_-]/g, '');
         module.exports.addCollapsible(explorerContainer, contentId, folderPath, folderName, fs.readdirSync(folderPath, { withFileTypes: true }));
     }
 }
 
 populateOtherTypes = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
-        var contentId = Path.join(path, files[i].name);
+        var contentId = Path.join(path, files[i].name).replace(/[^\u0600-\u06FF0-9a-zA-Z\ \\\/\.\:_-]/g, '');
         contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
     }
 }
