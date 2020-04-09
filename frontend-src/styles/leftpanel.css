@@ -5,7 +5,7 @@
 .leftpanel-container {
   background-color: #1c1b18;
   min-width: 200px;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .leftpanel-text {
