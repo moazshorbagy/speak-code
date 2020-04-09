@@ -16,7 +16,7 @@ addOpenEditors = function () {
 
     openEditorsContainer.css("margin-top", "30px");
 
-    openEditorsContainer.append("<div id='" + openEditorsId + "' class='" + openEditorsClass + "'> > Open files </div>");
+    openEditorsContainer.append("<div id='" + openEditorsId + "' class='" + openEditorsClass + "'> > Opened files </div>");
 
     openEditorsContainer.append("<div id='" + openEditorsContentContainerId + "' class='" + openEditorsContentContainerClass + "'> </div>");
 
