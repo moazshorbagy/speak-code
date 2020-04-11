@@ -5,8 +5,7 @@ const fs = require('fs');
 const Path = require('path');
 const openEditors = require('../html-elements/open-editors');
 
-const closedFolderIcon = "<img src='icons/folder-24px.svg' style='fill: green;' class='float-left'> </img>";
-const openedFolderIcon = "<img class='openedFolder'> </i>";
+const closedFolderIcon = "<img src='icons/folder-24px.svg' class='float-left'> </img>";
 
 addCollapsible = function (container, divId, path, name, content, isRootDir) {
 
@@ -17,7 +16,7 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
     var div = $("#" + divId);
 
     /// The folder div only contains the folder name and an event listener is attached to it.
-    div.append("<div class='" + _class + "' id='b" + divId + "'>" + closedFolderIcon + "<p class='float-left'>" + name + " </p> </div>");
+    div.append("<div class='" + _class + "' id='b" + divId + "'> <div class='folder-descriptor'>" + closedFolderIcon + "<p class='float-left'>" + name + " </p> </div> </div>");
 
     /// The content container which holds the files and the folders all whith class='content'.
     div.append("<div id='c" + divId + "' class='content " + _class + "'></div>");
