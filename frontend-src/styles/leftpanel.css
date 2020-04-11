@@ -6,6 +6,7 @@
   background-color: #1c1b18;
   min-width: 200px;
   overflow-y: auto;
+  overflow-x: auto;
 }
 
 .leftpanel-text {

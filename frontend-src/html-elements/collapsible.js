@@ -5,6 +5,9 @@ const fs = require('fs');
 const Path = require('path');
 const openEditors = require('../html-elements/open-editors');
 
+const closedFolderIcon = "<img src='icons/folder-24px.svg' style='fill: green;' class='float-left'> </img>";
+const openedFolderIcon = "<img class='openedFolder'> </i>";
+
 addCollapsible = function (container, divId, path, name, content, isRootDir) {
 
     // the container div that encloses a folder and its content.
@@ -13,13 +16,8 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
     // the div to append collapsible div and content div to.
     var div = $("#" + divId);
 
-    // add a border to the root directory
-    if (isRootDir) {
-        div.css("border-bottom", "1px solid black");
-    }
-
     /// The folder div only contains the folder name and an event listener is attached to it.
-    div.append("<div class='" + _class + "' id='b" + divId + "'> > " + name + "</div>");
+    div.append("<div class='" + _class + "' id='b" + divId + "'>" + closedFolderIcon + "<p class='float-left'>" + name + " </p> </div>");
 
     /// The content container which holds the files and the folders all whith class='content'.
     div.append("<div id='c" + divId + "' class='content " + _class + "'></div>");
@@ -35,6 +33,13 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
 
     files = content.filter(entry => entry.isFile());
     populateFiles(files, path, contentContainer);
+
+        // add a border to the root directory
+        // expand by default the root dir only.
+        if (isRootDir) {
+            div.css("border-bottom", "1px solid black");
+            contentContainer.css("display", "block");
+        }
 
     $(document).ready(function () {
         document.getElementById('b' + divId).addEventListener('click', function () {
