@@ -57,5 +57,13 @@
 	var button = document.getElementById('open-folder-button');
 	button.addEventListener("click", openDialog);
 </script>
+<script>
+	const { ipcRenderer } = require('electron');
+	const editor = require('./editor/editor');
+
+	ipcRenderer.on('save-file', function (event, arg) {
+		editor.saveFile();
+	});
+</script>
 
 </html>

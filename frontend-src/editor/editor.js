@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 
 function uriFromPath(_path) {
     var pathName = path.resolve(_path).replace(/\\/g, '/');
@@ -165,6 +166,10 @@ setCursorPosition = function(position) {
     editor.setPosition(position);
 }
 
+saveFile = function() {
+    fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
+}
+
 module.exports = {
     openDoc,
     setModelWithId,
@@ -173,5 +178,6 @@ module.exports = {
     insertText,
     focusModel,
     getCursorPosition,
-    setCursorPosition
+    setCursorPosition,
+    saveFile
 }

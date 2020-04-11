@@ -1,6 +1,7 @@
 const electron = require('electron')
 const zerorpc = require('zerorpc')
 const app = electron.app
+const globalShortcut = electron.globalShortcut
 const BrowserWindow = electron.BrowserWindow
 
 
@@ -29,6 +30,14 @@ app.on('window-all-closed', function () {
 		app.quit()
 	}
 })
+
+app.whenReady().then(() => {
+	globalShortcut.register('CommandOrControl+S', () => {
+	  mainWindow.webContents.send('save-file')
+	})
+  }).catch((e) => {
+	console.log(e);
+  });
 
 app.on('activate', function () {
 	if (mainWindow === null) {
