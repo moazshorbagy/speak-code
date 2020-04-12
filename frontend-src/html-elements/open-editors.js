@@ -62,7 +62,7 @@ addOpenedFile = function (filePath) {
 
     var closeTabIcon = "<img id='" + tabId + "' src='icons/close-24px.svg' class='float-left'> </img>";
 
-    openEditorsContentContainer.append("<div id='" + filePath + "' class='fileNameSpan'> <div class='folder-descriptor'>" + closeTabIcon + "<p class='float-left'>" + fileName + " </p> </div> </div>");
+    openEditorsContentContainer.append("<div id='OFcontainer_" + filePath + "' class='fileNameSpan'> <div class='folder-descriptor'>" + closeTabIcon + "<p id='" + filePath + "' class='float-left'>" + fileName + " </p> </div> </div>");
 
     document.getElementById(filePath).addEventListener('click', function () {
         editor.focusModel(filePath);
@@ -70,7 +70,7 @@ addOpenedFile = function (filePath) {
 
     document.getElementById(tabId).addEventListener('click', function() {
         var tab = this.id.split('_')[0];
-        var element = document.getElementById(tab);
+        var element = document.getElementById('OFcontainer_' + tab);
         element.parentNode.removeChild(element);
         editor.removeModelWithId(tab);
     });

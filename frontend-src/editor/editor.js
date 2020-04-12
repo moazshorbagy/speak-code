@@ -109,6 +109,8 @@ setModelWithId = function (fileId) {
     if (editor.getModel() == models[fileId]) {
         return;
     }
+    console.log(fileId);
+    console.log(models[fileId])
     editor.setModel(models[fileId]);
     currentFilePath = fileId;
 }
@@ -182,6 +184,9 @@ setCursorPosition = function (position) {
 }
 
 saveFile = function () {
+    if(!editor || !currentFilePath) {
+        return;
+    }
     fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
     savedModelsValues[currentFilePath] = editor.getValue();
     modelsEventEmitters.emitModelIsSaved(currentFilePath);
@@ -189,11 +194,16 @@ saveFile = function () {
 
 removeModelWithId = function(filePath) {
     if (models.hasOwnProperty(filePath)) {
-        var openedModelsCount = Object.keys(models).length;
-        if (openedModelsCount == 1) {
+        delete models[filePath];
+        delete savedModelsValues[filePath];
+        delete cursorPositions[filePath];
+        var keys = Object.keys(models);
+        if(keys.length == 0) {
             editor.setModel(null);
+            return;
         }
-        delete this.container[filePath];
+        var nextModel = keys[keys.length - 1];
+        module.exports.focusModel(nextModel);
     }
 }
 

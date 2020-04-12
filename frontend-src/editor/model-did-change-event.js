@@ -6,7 +6,6 @@ let modelsEventEmitters = {};
 
 addModelEventEmitter = function(filePath) {
     modelsEventEmitters[filePath] = new ModelDidChangeEventEmitter(filePath);
-    console.log(modelsEventEmitters);
 }
 
 emitModelNeedsToBeSaved = function(filePath) {
