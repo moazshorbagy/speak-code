@@ -11,6 +11,9 @@ const Path = require('path');
 
 const editor = require('../editor/editor');
 
+const modelsEventEmitters = require('../editor/model-did-change-event');
+
+// for new tabs 
 tabsCount = 0;
 
 addOpenEditors = function () {
@@ -34,9 +37,9 @@ addOpenEditors = function () {
     });
 }
 
+
 addOpenedFile = function (filePath) {
     var openEditorsContentContainer = $("#" + openEditorsContentContainerId);
-
     var fileName = filePath.split(Path.sep).pop();
 
     var children = openEditorsContentContainer.children();
@@ -46,32 +49,47 @@ addOpenedFile = function (filePath) {
         }
     }
 
-    var contentId = filePath.replace(/[^\u0600-\u06FF0-9a-zA-Z_-]/g, '-');
+    modelsDidChangedEvents = modelsEventEmitters.modelsEventEmitters;
+    modelsDidChangedEvents[filePath].on('needs-save', (filePath) => {
+        module.exports.notifyNeedsSave(filePath);
+    });
 
+    modelsDidChangedEvents[filePath].on('saved', (filePath) => {
+        module.exports.notifyIsSaved(filePath);
+    });
 
-    var tabId = contentId + "_" + tabsCount;
+    var tabId = filePath + "_t";
 
     var closeTabIcon = "<img id='" + tabId + "' src='icons/close-24px.svg' class='float-left'> </img>";
 
-    openEditorsContentContainer.append("<div id='" + contentId + "' class='fileNameSpan'> <div class='folder-descriptor'>" + closeTabIcon + "<p class='float-left'>" + fileName + " </p> </div> </div>");
+    openEditorsContentContainer.append("<div id='" + filePath + "' class='fileNameSpan'> <div class='folder-descriptor'>" + closeTabIcon + "<p class='float-left'>" + fileName + " </p> </div> </div>");
 
-    tabsCount++;
-
-    document.getElementById(contentId).addEventListener('click', function () {
+    document.getElementById(filePath).addEventListener('click', function () {
         editor.focusModel(filePath);
     });
 
     document.getElementById(tabId).addEventListener('click', function() {
         var tab = this.id.split('_')[0];
-        $("#" + tab).remove();
+        var element = document.getElementById(tab);
+        element.parentNode.removeChild(element);
+        editor.removeModelWithId(tab);
     });
 }
 
-removeOpenedFile = function (filePath) {
-    var openEditorsContentContainer = $("#" + openEditorsContentContainerId);
+notifyIsSaved = function(filePath) {
+    console.log(filePath);
+    document.getElementById(filePath + '_t').src = 'icons/close-24px.svg';
+    console.log('should be printed if ctrl+S is clicked');
+}
+
+notifyNeedsSave = function(filePath) {
+    document.getElementById(filePath + '_t').src = 'icons/modified.svg';
+    console.log('should be printed if needs saved');
 }
 
 module.exports = {
     addOpenEditors,
-    addOpenedFile
+    addOpenedFile,
+    notifyIsSaved,
+    notifyNeedsSave
 }
