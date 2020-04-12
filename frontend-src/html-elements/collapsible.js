@@ -55,7 +55,6 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
 populateFiles = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
         contentId = Path.join(path, files[i].name);
-        contentId = contentId.replace(/[^\u0600-\u06FF0-9a-zA-Z\ \\\/\.\:_-]/g, '');
         contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
         document.getElementById(contentId).addEventListener('click', function () {
             var doc = fs.readFileSync(this.id, "utf8");
