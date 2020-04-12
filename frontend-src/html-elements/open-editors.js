@@ -11,6 +11,8 @@ const Path = require('path');
 
 const editor = require('../editor/editor');
 
+tabsCount = 0;
+
 addOpenEditors = function () {
     var openEditorsContainer = $('#open-editors-container');
 
@@ -44,10 +46,24 @@ addOpenedFile = function (filePath) {
         }
     }
 
-    openEditorsContentContainer.append("<div id='" + filePath + "' class='fileNameSpan'>" + fileName + "</div>");
+    var contentId = filePath.replace(/[^\u0600-\u06FF0-9a-zA-Z_-]/g, '-');
 
-    document.getElementById(filePath).addEventListener('click', function () {
+
+    var tabId = contentId + "_" + tabsCount;
+
+    var closeTabIcon = "<img id='" + tabId + "' src='icons/close-24px.svg' class='float-left'> </img>";
+
+    openEditorsContentContainer.append("<div id='" + contentId + "' class='fileNameSpan'> <div class='folder-descriptor'>" + closeTabIcon + "<p class='float-left'>" + fileName + " </p> </div> </div>");
+
+    tabsCount++;
+
+    document.getElementById(contentId).addEventListener('click', function () {
         editor.focusModel(filePath);
+    });
+
+    document.getElementById(tabId).addEventListener('click', function() {
+        var tab = this.id.split('_')[0];
+        $("#" + tab).remove();
     });
 }
 
