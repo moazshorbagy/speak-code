@@ -3,7 +3,6 @@
   padding: 0;
   background-color: #1c1b18;
   display: grid;
-  grid-template-rows: auto 1fr;
 }
 
 #editor {
@@ -17,6 +16,7 @@
   height: 20px;
   width: 100%;
   margin: 0;
+  border-bottom: 1px solid black;
   padding: 0;
   font-size: medium;
   color: white;

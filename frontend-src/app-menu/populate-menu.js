@@ -27,6 +27,9 @@ const template = [
                         var doc = fileOptions.getFileContent(filePath);
                         const monaco = require('./editor/editor')
                         monaco.openDoc(doc, filePath);
+                        const openedFiles = require('./html-elements/open-editors');
+                        openedFiles.addOpenEditors();
+                        openedFiles.addOpenedFile(filePath);
                     });
                 },
             },

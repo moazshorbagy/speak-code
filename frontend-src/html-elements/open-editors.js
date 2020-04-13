@@ -17,9 +17,18 @@ const modelsEventEmitters = require('../editor/model-did-change-event');
 tabsCount = 0;
 
 addOpenEditors = function () {
+
+    var doesExist = $("#" + openEditorsId).length;
+    console.log(doesExist);
+    if(doesExist) {
+        return;
+    }
+
     var openEditorsContainer = $('#open-editors-container');
 
     openEditorsContainer.css("margin-top", "30px");
+
+    openEditorsContainer.css("border-bottom", "black 1px solid");
 
     openEditorsContainer.append("<div id='" + openEditorsId + "' class='" + openEditorsClass + "'> > Opened files </div>");
 
@@ -49,7 +58,7 @@ addOpenedFile = function (filePath) {
         }
     }
 
-    displayCurrentlyOpenedFileName(filePath);
+    module.exports.displayCurrentlyOpenedFileName(filePath);
 
     modelsDidChangedEvents = modelsEventEmitters.modelsEventEmitters;
     modelsDidChangedEvents[filePath].on('needs-save', (filePath) => {
@@ -67,7 +76,7 @@ addOpenedFile = function (filePath) {
     openEditorsContentContainer.append("<div id='OFcontainer_" + filePath + "' class='fileNameSpan'> <div class='folder-descriptor'>" + closeTabIcon + "<p id='" + filePath + "' class='float-left'>" + fileName + " </p> </div> </div>");
 
     document.getElementById(filePath).addEventListener('click', function () {
-        displayCurrentlyOpenedFileName(this.id);
+        module.exports.displayCurrentlyOpenedFileName(this.id);
         editor.focusModel(this.id);
     });
 
@@ -76,8 +85,7 @@ addOpenedFile = function (filePath) {
         var element = document.getElementById('OFcontainer_' + tab);
         element.parentNode.removeChild(element);
         var nextTab = editor.removeModelWithId(tab);
-        displayCurrentlyOpenedFileName(nextTab);
-
+        module.exports.displayCurrentlyOpenedFileName(nextTab);
     });
 }
 
@@ -89,7 +97,7 @@ notifyNeedsSave = function(filePath) {
     document.getElementById(filePath + '_t').src = 'icons/modified.svg';
 }
 
-function displayCurrentlyOpenedFileName(filePath) {
+displayCurrentlyOpenedFileName = function(filePath) {
     var currentlyOpenedFile = $("#editor-top-panel").empty();
     if(!filePath) {
         return;
@@ -101,5 +109,6 @@ module.exports = {
     addOpenEditors,
     addOpenedFile,
     notifyIsSaved,
-    notifyNeedsSave
+    notifyNeedsSave,
+    displayCurrentlyOpenedFileName
 }
