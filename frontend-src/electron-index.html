@@ -62,11 +62,18 @@
 </script>
 <script>
 	const { ipcRenderer } = require('electron');
+
 	const editor = require('./editor/editor');
 
 	ipcRenderer.on('save-file', function (event, arg) {
 		editor.saveFile();
 	});
+
+	ipcRenderer.on('insert-text', function (event, arg) {
+		console.log(arg.msg);
+		editor.insertText(arg.msg);
+	});
+
 </script>
 
 </html>
