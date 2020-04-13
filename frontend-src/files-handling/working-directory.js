@@ -17,7 +17,6 @@ module.exports = {
 
     displayWorkingDirectory: function () {
         explorerContainer.empty();
-        $("#open-editors-container").empty();
         const openEditors = require('./../html-elements/open-editors');
         openEditors.addOpenEditors();
         this.openSubDir(currentWorkingDirectory, explorerContainer);

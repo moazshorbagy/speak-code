@@ -19,7 +19,6 @@ tabsCount = 0;
 addOpenEditors = function () {
 
     var doesExist = $("#" + openEditorsId).length;
-    console.log(doesExist);
     if(doesExist) {
         return;
     }
