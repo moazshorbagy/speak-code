@@ -10,3 +10,15 @@
   display: none;
   overflow: hidden;
 }
+
+.float-left {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  filter: invert(13%) sepia(2%) saturate(30%) hue-rotate(14deg) brightness(99%) contrast(81%);
+}
+
+.folder-descriptor:hover {
+  color: black;
+  filter: brightness(1000%);
+}

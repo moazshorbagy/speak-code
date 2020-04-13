@@ -5,6 +5,8 @@ const fs = require('fs');
 const Path = require('path');
 const openEditors = require('../html-elements/open-editors');
 
+const closedFolderIcon = "<img src='icons/folder-24px.svg' class='float-left'> </img>";
+
 addCollapsible = function (container, divId, path, name, content, isRootDir) {
 
     // the container div that encloses a folder and its content.
@@ -13,13 +15,8 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
     // the div to append collapsible div and content div to.
     var div = $("#" + divId);
 
-    // add a border to the root directory
-    if (isRootDir) {
-        div.css("border-bottom", "1px solid black");
-    }
-
     /// The folder div only contains the folder name and an event listener is attached to it.
-    div.append("<div class='" + _class + "' id='b" + divId + "'> > " + name + "</div>");
+    div.append("<div class='" + _class + "' id='b" + divId + "'> <div class='folder-descriptor'>" + closedFolderIcon + "<p class='float-left'>" + name + " </p> </div> </div>");
 
     /// The content container which holds the files and the folders all whith class='content'.
     div.append("<div id='c" + divId + "' class='content " + _class + "'></div>");
@@ -35,6 +32,13 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
 
     files = content.filter(entry => entry.isFile());
     populateFiles(files, path, contentContainer);
+
+        // add a border to the root directory
+        // expand by default the root dir only.
+        if (isRootDir) {
+            div.css("border-bottom", "1px solid black");
+            contentContainer.css("display", "block");
+        }
 
     $(document).ready(function () {
         document.getElementById('b' + divId).addEventListener('click', function () {
@@ -52,13 +56,14 @@ populateFiles = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
         contentId = Path.join(path, files[i].name);
         contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
-
         document.getElementById(contentId).addEventListener('click', function () {
             var doc = fs.readFileSync(this.id, "utf8");
             const monacoEditor = require('../editor/editor');
             if (!monacoEditor.modelIsAlreadyOpen(this.id)) {
                 monacoEditor.openDoc(doc, this.id);
                 openEditors.addOpenedFile(this.id);
+            } else {
+                monacoEditor.focusModel(this.id);
             }
         }, false);
     }
@@ -69,14 +74,14 @@ populateFolders = function (folders, path, explorerContainer) {
         var folderPath = Path.join(path, folders[i].name);
         folderName = folderPath.split(Path.sep).pop();
         contentId = folderPath.split(Path.sep).join('');
-        contentId = contentId.replace(/[^0-9a-zA-Z_-]/g, '');
+        contentId = contentId.replace(/[^\u0600-\u06FF0-9a-zA-Z_-]/g, '');
         module.exports.addCollapsible(explorerContainer, contentId, folderPath, folderName, fs.readdirSync(folderPath, { withFileTypes: true }));
     }
 }
 
 populateOtherTypes = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
-        var contentId = Path.join(path, files[i].name);
+        var contentId = Path.join(path, files[i].name).replace(/[^\u0600-\u06FF0-9a-zA-Z\ \\\/\.\:_-]/g, '');
         contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
     }
 }

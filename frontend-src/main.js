@@ -1,5 +1,6 @@
 const electron = require('electron')
 const app = electron.app
+const globalShortcut = electron.globalShortcut
 const BrowserWindow = electron.BrowserWindow
 const { spawn } = require('child_process');
 
@@ -50,6 +51,14 @@ function spawnPythonChild() {
 }
 
 
+
+app.whenReady().then(() => {
+	globalShortcut.register('CommandOrControl+S', () => {
+	  mainWindow.webContents.send('save-file')
+	})
+  }).catch((e) => {
+	console.log(e);
+  });
 
 app.on('activate', function () {
 	if (mainWindow === null) {

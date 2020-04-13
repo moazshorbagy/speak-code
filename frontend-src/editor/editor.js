@@ -1,4 +1,6 @@
 const path = require('path');
+const fs = require('fs');
+const modelsEventEmitters = require('./model-did-change-event');
 
 function uriFromPath(_path) {
     var pathName = path.resolve(_path).replace(/\\/g, '/');
@@ -9,6 +11,8 @@ function uriFromPath(_path) {
 }
 
 const models = {};
+
+const savedModelsValues = {};
 
 const cursorPositions = {};
 
@@ -50,6 +54,7 @@ initEditor = function (doc, filePath, type) {
         var model = monaco.editor.createModel(doc, type);
         editor.setModel(model);
         models[filePath] = model;
+        savedModelsValues[filePath] = model.getValue();
         monaco.editor.defineTheme('monokai', monokai);
         monaco.editor.setTheme('monokai')
         let currentWindow = remote.getCurrentWindow();
@@ -60,8 +65,17 @@ initEditor = function (doc, filePath, type) {
         currentFilePath = filePath;
 
         //track position of cursor
-        editor.onDidChangeCursorPosition(function(position) {
+        editor.onDidChangeCursorPosition(function (position) {
             cursorPositions[currentFilePath] = position.position;
+        });
+
+
+        editor.onDidChangeModelContent(function(e) {
+            if(savedModelsValues[currentFilePath] !== models[currentFilePath].getValue()) {
+                modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath);
+            } else {
+                emitModelIsSaved(currentFilePath);
+            }
         });
 
         var r = new ResizeSensor($('#editor'), function () {
@@ -82,10 +96,12 @@ openDoc = function (doc, filePath) {
     } else {
         var model = monaco.editor.createModel(doc, type);
         models[filePath] = model;
+        savedModelsValues[filePath] = model.getValue();
         editor.setModel(model);
         currentFilePath = filePath;
         getFileType(filePath);
     }
+    modelsEventEmitters.addModelEventEmitter(filePath);
 }
 
 // generally, fileId is the filePath
@@ -106,8 +122,8 @@ modelIsAlreadyOpen = function (filePath) {
     return false;
 }
 
-retrieveCursorPosition = function(filePath) {
-    if(!(filePath in cursorPositions)) {
+retrieveCursorPosition = function (filePath) {
+    if (!(filePath in cursorPositions)) {
         return;
     }
     editor.setPosition(
@@ -116,13 +132,13 @@ retrieveCursorPosition = function(filePath) {
     editor.focus();
 }
 
-insertText = function(text, position) {
+insertText = function (text, position) {
 
-    if(!editor) {
+    if (!editor) {
         return;
     }
 
-    if(position) {
+    if (position) {
         editor.setPosition(
             position
         );
@@ -135,8 +151,8 @@ insertText = function(text, position) {
         identifier: 'id',
         text: text,
         range: new monaco.Range(currentPosition.lineNumber,
-            currentPosition.column, 
-            currentPosition.lineNumber, 
+            currentPosition.column,
+            currentPosition.lineNumber,
             currentPosition.column)
     }
 
@@ -147,7 +163,7 @@ insertText = function(text, position) {
 
 }
 
-focusModel = function(filePath) {
+focusModel = function (filePath) {
     module.exports.setModelWithId(filePath);
     module.exports.retrieveCursorPosition(filePath);
 }
@@ -157,12 +173,37 @@ function getFileType(filePath) {
     return fileType[type];
 }
 
-getCursorPosition = function() {
+getCursorPosition = function () {
     return editor.getPosition();
 }
 
-setCursorPosition = function(position) {
+setCursorPosition = function (position) {
     editor.setPosition(position);
+}
+
+saveFile = function () {
+    if(!editor || !currentFilePath) {
+        return;
+    }
+    fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
+    savedModelsValues[currentFilePath] = editor.getValue();
+    modelsEventEmitters.emitModelIsSaved(currentFilePath);
+}
+
+removeModelWithId = function(filePath) {
+    if (models.hasOwnProperty(filePath)) {
+        delete models[filePath];
+        delete savedModelsValues[filePath];
+        delete cursorPositions[filePath];
+        var keys = Object.keys(models);
+        if(keys.length == 0) {
+            editor.setModel(null);
+            return null;
+        }
+        var nextModel = keys[keys.length - 1];
+        module.exports.focusModel(nextModel);
+        return nextModel;
+    }
 }
 
 module.exports = {
@@ -173,5 +214,7 @@ module.exports = {
     insertText,
     focusModel,
     getCursorPosition,
-    setCursorPosition
+    setCursorPosition,
+    saveFile,
+    removeModelWithId
 }

@@ -23,10 +23,7 @@ openFile = function (mainWindow, callback) {
     }).then(result => {
         //if the result is cancelled
         resultCancelled = result.canceled;
-        filePath = result.filePaths[0].toString();
-        var tokenized = filePath.split('.')
-        var extension = tokenized[tokenized.length - 1]
-        type = mapExtention2DocType(extension)
+        filePath = result.filePaths[0];
         if (!resultCancelled) {
             callback(filePath);
         }
