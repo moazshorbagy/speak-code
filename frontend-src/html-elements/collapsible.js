@@ -62,6 +62,8 @@ populateFiles = function (files, path, contentContainer) {
             if (!monacoEditor.modelIsAlreadyOpen(this.id)) {
                 monacoEditor.openDoc(doc, this.id);
                 openEditors.addOpenedFile(this.id);
+            } else {
+                monacoEditor.focusModel(this.id);
             }
         }, false);
     }
