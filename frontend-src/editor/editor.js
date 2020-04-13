@@ -109,8 +109,6 @@ setModelWithId = function (fileId) {
     if (editor.getModel() == models[fileId]) {
         return;
     }
-    console.log(fileId);
-    console.log(models[fileId])
     editor.setModel(models[fileId]);
     currentFilePath = fileId;
 }
@@ -200,10 +198,11 @@ removeModelWithId = function(filePath) {
         var keys = Object.keys(models);
         if(keys.length == 0) {
             editor.setModel(null);
-            return;
+            return null;
         }
         var nextModel = keys[keys.length - 1];
         module.exports.focusModel(nextModel);
+        return nextModel;
     }
 }
 
