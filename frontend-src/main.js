@@ -26,13 +26,19 @@ function createWindow() {
 	})
 }
 
-// const zeroRPCServer = require('./server/server');
+const zeroRPCServer = require('./server/server');
 
+let spawnedChild;
 
 app.on('ready', function () {
-	// spawnPythonChild();
-	// zeroRPCServer.initializeServer();
 	createWindow();
+	zeroRPCServer.initializeServer();
+
+	// start the python client after 100 ms to ensure all renderer process scripts are run.
+	setTimeout(function() {
+		spawnPythonChild();
+	}, 100);
+
 });
 
 app.on('window-all-closed', function () {
@@ -42,10 +48,10 @@ app.on('window-all-closed', function () {
 });
 
 function spawnPythonChild() {
-	spawnedChild = spawn('python3', ['python-client.py']);
+	spawnedChild = spawn('python', ['python-client.py']);
 
 	spawnedChild.on('close', (code, signal) => {
-		console.log(`child error: ${code}, ${signal}`);
+		console.log(`child closed: ${code}, ${signal}`);
 	});
 	spawnedChild.on('error', (err) => console.error(err));
 

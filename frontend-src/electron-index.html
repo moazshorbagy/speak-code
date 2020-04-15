@@ -36,6 +36,11 @@
 </body>
 <script src="import.js"></script>
 <script>
+	ipcRenderer.on('request-open-folder', () => {
+		ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
+	});
+</script>
+<script>
 	var workingDirectory = wd.getCurrentWorkingDirectory();
 
 	if (workingDirectory == null) {
@@ -44,16 +49,6 @@
 		folderspanel.append("<button id='open-folder-button'>Open Folder</button>")
 	}
 </script>
-<script>
-	var Split = require('split-grid')
-	Split({
-		columnGutters: [{
-			track: 1,
-			element: document.querySelector('.horizontal-gutter'),
-		}]
-	})
-</script>
-<script type="text/javascript" src="app-menu/populate-menu.js"></script>
 <script>
 	var button = document.getElementById('open-folder-button');
 	button.addEventListener("click", () => {
@@ -66,7 +61,6 @@
 			wd.displayWorkingDirectory()
 		}
 	});
-
 
 	ipcRenderer.on('chosen-file', (event, args) => {
 		editor.openDoc(args.doc, args.filePath);
@@ -85,5 +79,15 @@
 	});
 
 </script>
+<script>
+	var Split = require('split-grid')
+	Split({
+		columnGutters: [{
+			track: 1,
+			element: document.querySelector('.horizontal-gutter'),
+		}]
+	})
+</script>
+<script type="text/javascript" src="app-menu/populate-menu.js"></script>
 
 </html>
