@@ -34,9 +34,8 @@
 		</div>
 	</div>
 </body>
-
+<script src="import.js"></script>
 <script>
-	const wd = require('./files-handling/working-directory');
 	var workingDirectory = wd.getCurrentWorkingDirectory();
 
 	if (workingDirectory == null) {
@@ -56,15 +55,26 @@
 </script>
 <script type="text/javascript" src="app-menu/populate-menu.js"></script>
 <script>
-	const dialogHandler = require('./files-handling/openDialog');
 	var button = document.getElementById('open-folder-button');
-	button.addEventListener("click", openDialog);
+	button.addEventListener("click", () => {
+		ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
+	});
+
+	ipcRenderer.on('chosen-directory', (event, path) => {
+		if (path) {
+			wd.setWorkingDirectory(path)
+			wd.displayWorkingDirectory()
+		}
+	});
+
+
+	ipcRenderer.on('chosen-file', (event, args) => {
+		editor.openDoc(args.doc, args.filePath);
+		openedFiles.addOpenEditors();
+		openedFiles.addOpenedFile(args.filePath);
+	});
 </script>
 <script>
-	const { ipcRenderer } = require('electron');
-
-	const editor = require('./editor/editor');
-
 	ipcRenderer.on('save-file', function (event, arg) {
 		editor.saveFile();
 	});

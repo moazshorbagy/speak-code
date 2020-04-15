@@ -1,4 +1,4 @@
-const fileOptions = require('./files-handling/open-file')
+
 const template = [
     {
         label: 'VoiceProgramming',
@@ -23,23 +23,16 @@ const template = [
             {
                 label: 'open file',
                 click: function () {
-                    fileOptions.openFile(mainWindow, function (filePath) {
-                        var doc = fileOptions.getFileContent(filePath);
-                        const monaco = require('./editor/editor')
-                        monaco.openDoc(doc, filePath);
-                        const openedFiles = require('./html-elements/open-editors');
-                        openedFiles.addOpenEditors();
-                        openedFiles.addOpenedFile(filePath);
-                    });
+                    ipcRenderer.send('open-file');
                 },
+                accelerator: process.platform === 'darwin' ? 'Cmd+Shift+O' : 'Ctrl+Shift+O',
             },
             {
                 label: 'open folder',
                 click: function () {
-                    const wd = require('./files-handling/working-directory');
-                    const dialogHandler = require('./files-handling/openDialog')
-                    dialogHandler.openDialog(wd.getCurrentWorkingDirectory());
-                }
+                    ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
+                },
+                accelerator: process.platform === 'darwin' ? 'Cmd+O' : 'Ctrl+O',
             }
         ]
     }
