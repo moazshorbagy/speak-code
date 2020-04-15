@@ -64,6 +64,7 @@ populateFiles = function (files, path, contentContainer) {
                 openEditors.addOpenedFile(this.id);
             } else {
                 monacoEditor.focusModel(this.id);
+                openEditors.displayCurrentlyOpenedFileName(this.id.split(Path.sep).pop());
             }
         }, false);
     }
