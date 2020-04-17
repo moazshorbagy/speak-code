@@ -33,12 +33,12 @@ addCollapsible = function (container, divId, path, name, content, isRootDir) {
     files = content.filter(entry => entry.isFile());
     populateFiles(files, path, contentContainer);
 
-        // add a border to the root directory
-        // expand by default the root dir only.
-        if (isRootDir) {
-            div.css("border-bottom", "1px solid black");
-            contentContainer.css("display", "block");
-        }
+    // add a border to the root directory
+    // expand by default the root dir only.
+    if (isRootDir) {
+        div.css("border-bottom", "1px solid black");
+        contentContainer.css("display", "block");
+    }
 
     $(document).ready(function () {
         document.getElementById('b' + divId).addEventListener('click', function () {
@@ -56,18 +56,54 @@ populateFiles = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
         contentId = Path.join(path, files[i].name);
         contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
-        document.getElementById(contentId).addEventListener('click', function () {
-            var doc = fs.readFileSync(this.id, "utf8");
-            const monacoEditor = require('../editor/editor');
-            if (!monacoEditor.modelIsAlreadyOpen(this.id)) {
-                monacoEditor.openDoc(doc, this.id);
-                openEditors.addOpenedFile(this.id);
-            } else {
-                monacoEditor.focusModel(this.id);
-                openEditors.displayCurrentlyOpenedFileName(this.id.split(Path.sep).pop());
-            }
-        }, false);
+        document.getElementById(contentId).addEventListener('click', fileEventHandlers);
     }
+}
+
+function smallScript(e) {
+    if (e.keyCode == 13) {
+        e.srcElement.contentEditable = false;
+        e.srcElement.value = e.target.textContent;
+        renameFile(e.srcElement.id, e.srcElement.value);
+    }
+}
+
+function fileEventHandlers(event) {
+    if(event.srcElement === document.activeElement) {
+        return;
+    }
+    elementId = event.srcElement.id;
+    if (event.detail == 2) {
+        clearTimeout(pendingClick);
+        event.srcElement.contentEditable = true;
+        event.srcElement.focus();
+        event.srcElement.addEventListener('keydown', smallScript);
+        return;
+    }
+
+    pendingClick = setTimeout(function () {
+        var doc = fs.readFileSync(elementId, "utf8");
+        const monacoEditor = require('../editor/editor');
+        if (!monacoEditor.modelIsAlreadyOpen(elementId)) {
+            monacoEditor.openDoc(doc, elementId);
+            openEditors.addOpenedFile(elementId);
+        } else {
+            monacoEditor.focusModel(elementId);
+            openEditors.displayCurrentlyOpenedFileName(elementId.split(Path.sep).pop());
+        }
+    }, 300);
+}
+
+// just does the function of renaming the file.
+function renameFile(filePath, newName) {
+    directoryPath = filePath.split(Path.sep);
+    directoryPath.pop();
+    directoryPath = directoryPath.join(Path.sep);
+    var newPath = directoryPath + Path.sep + newName;
+    fs.renameSync(filePath, newPath);
+
+    oldElement = document.getElementById(filePath);
+    oldElement.id = newPath;
 }
 
 populateFolders = function (folders, path, explorerContainer) {
@@ -79,6 +115,7 @@ populateFolders = function (folders, path, explorerContainer) {
         module.exports.addCollapsible(explorerContainer, contentId, folderPath, folderName, fs.readdirSync(folderPath, { withFileTypes: true }));
     }
 }
+
 
 populateOtherTypes = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
