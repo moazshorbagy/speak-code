@@ -59,6 +59,13 @@ parseCommand = function (mainWindow, command) {
             mainWindow.webContents.send('request-open-folder');
             break;
         }
+        case 'save-file': {
+            mainWindow.webContents.send('save-file');
+            break;
+        }
+        case 'open-file': {
+            mainWindow.webContents.send('request-open-file');
+        }
     }
 }
 

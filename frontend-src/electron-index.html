@@ -39,6 +39,9 @@
 	ipcRenderer.on('request-open-folder', () => {
 		ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
 	});
+	ipcRenderer.on('request-open-file', () => {
+		ipcRenderer.send('open-file');
+	});
 </script>
 <script>
 	var workingDirectory = wd.getCurrentWorkingDirectory();
