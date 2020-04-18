@@ -61,7 +61,8 @@ addCollapsible = function (container, path, name, content, isRootDir) {
 populateFiles = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
         contentId = Path.join(path, files[i].name);
-        c = contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
+        contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
+        c = $("div > [id='" + contentId + "']");
         c.on('click', fileEventHandlers);
         // document.getElementById(contentId).addEventListener('click', fileEventHandlers);
     }
@@ -76,15 +77,17 @@ function smallScript(e) {
 }
 
 function fileEventHandlers(event) {
-    if (event.srcElement === document.activeElement) {
+    e = event.originalEvent;
+    console.log(e);
+    if (e.srcElement === document.activeElement) {
         return;
     }
-    elementId = event.srcElement.id;
-    if (event.detail == 2) {
+    elementId = e.srcElement.id;
+    if (e.detail == 2) {
         clearTimeout(pendingClick);
-        event.srcElement.contentEditable = true;
-        event.srcElement.focus();
-        event.srcElement.addEventListener('keydown', smallScript);
+        e.srcElement.contentEditable = true;
+        e.srcElement.focus();
+        e.srcElement.addEventListener('keydown', smallScript);
         return;
     }
 

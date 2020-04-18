@@ -1,7 +1,7 @@
 const zerorpc = require('zerorpc');
 const {BrowserWindow} = require('electron');
 const commandsParser = require('./commands-parser');
-const codeParser = require('./code-parser');
+// const codeParser = require('./code-parser');
 
 let server;
 
