@@ -15,7 +15,7 @@
             "-": "minus",
             "*": "mul",
             "/": "by",
-            "//": "by int"
+            "//": "bint"
         },
         "keywords": {
             "if": "if",
@@ -73,21 +73,53 @@
         }
     },
     "grammar": {
+        "conditionals": "alphabet[conditions]",
         "code insertion": {
             "variabla names": "^[a-zA-Z-_]+[0-9a-zA-Z-_]*$",
             "int values": "^[1-9][0-9]*$",
             "undo a command": "undo",
             "redo a command": "redo",
-            "variable declaration": {},
-            "variable initialization": {},
+            "variable declaration": {
+                "let": {
+                    "variable name spoken": "variable names.."
+                }
+            },
+            "variable initialization": {
+                "mut": {
+                    "parameters ordered": {
+                        "variable name": "variable names..",
+                        "value": "value of a variable.."
+                    }
+                }
+            },
+            "variable calls method": {
+                "variable name": {
+                    "parameters (ordered)": {
+                        "grab": {
+                            "function name": "calling a function.."
+                        }
+                    }
+                }
+            },
             "function definition": {
-                "sdef": {
+                "defi": {
                     "parameters (ordered)": {
                         "function name": "variables names..",
                         "function parameters": {
-                            "normal paramaters": {},
-                            "default parameters": {}
-                        }
+                            "normal paramaters": {
+                                "parameter name": "variable names.."
+                            },
+                            "pend": "means there is another parameter",
+                            "default parameters": {
+                                "depar": {
+                                    "parameters (ordered)": {
+                                        "parameter name": "variable names..",
+                                        "value": "value of a variable.."
+                                    }
+                                }
+                            }
+                        },
+                        "dof": "end of parameters"
                     }
                 }
             },
@@ -96,15 +128,35 @@
                     "parameters (ordered)": {
                         "function name": "variables names..",
                         "function parameters (ordered)": {
-                            "normal parameters": {},
-                            "named parameters": {}
+                            "normal parameters": "/// TO BE",
+                            "named parameters": "/// TO BE"
                         }
                     }
                 }
             },
-            "condition formation": {},
+            "condition formation": {
+                "cond": {
+                    "parameters (ordered": {
+                        "variable or value": "variable names.. | value of a variable..",
+                        "conditionals": "conditionals..",
+                        "another variable or value": "variable names.. | value of a variable..",
+                        "cof": "end of condition formation (enclosed between brackets)"
+                    }
+                }
+            },
             "mathematical expressions": {},
-            "indexing": {},
+            "indexing": {
+                "dex": {
+                    "parameters ordered": {
+                        "variable name": "variable names..",
+                        "index": {
+                            "int value": "int values..",
+                            "variable": "variable names..",
+                            "zed": "end of indexing"
+                        }
+                    }
+                }
+            },
             "for loop block": {
                 "sfor": {
                     "parameters (ordered)": {
@@ -125,29 +177,52 @@
                     "parameters (ordered)": {
                         "dummy variable": "variables names..",
                         "iteratable": {
-                            "indexable method": "calling a function..",
+                            "method of an indexable": "calling a function..",
                             "indexing a list of indexables": "indexing.."
                         }
                     }
                 }
             },
-            "if block": {},
-            "while block": {}
+            "if block": {
+                "sif": {
+                    "condition": "condition formation.."
+                }
+            },
+            "while block": {
+                "swhile": {
+                    "condition": "condition formation.."
+                }
+            }
         },
         "other commands": {
-            "change directory": "",
-            "open new file": "",
-            "navigate to unopened file in current directory": {},
-            "navigate to tab": {},
-            "close tab": {},
+            "change directory": "cd",
+            "open new file": "nodel",
+            "navigate to unopened file in current directory": {
+                "nop": {
+                    "parameters (ordered)": {
+                        "d": "means directory",
+                        "#number": "the file number"
+                    }
+                }
+            },
+            "expand folder in current directory": {
+                "pand": {
+                    "parameters (ordered)": {
+                        "d": "means directory",
+                        "#number": "the folder number"
+                    }
+                }
+            },
+            "navigate to tab": "/// TO BE",
+            "close tab": "/// TO BE",
             "close all tabs": "",
-            "save file": {},
-            "save file as": {},
-            "add file to target directory in current existing directory": {},
-            "scroll to line": {},
-            "set cursor": {},
-            "goto scope": {},
-            "exit scope": {}
+            "save file": "swave",
+            "save file as": "/// TO BE",
+            "add file to target directory in current existing directory": "/// TO BE",
+            "scroll to line": "/// TO BE",
+            "set cursor": "/// TO BE",
+            "goto scope": "/// TO BE",
+            "exit scope": "/// TO BE"
         }
     }
 }
