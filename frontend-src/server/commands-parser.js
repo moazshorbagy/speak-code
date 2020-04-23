@@ -1,33 +1,8 @@
-// commands that take effect in the editor container area.
-commandListEditorContainer = [
-    'scroll-to-line',
-    'reveal-cursor',
-    'goto-scope',
-    'scroll-to-column',
-    'set-cursor',
-];
-
-// commands that take effect in the left panel.
-commandListLeftPanel = [
-    'change-directory',
-    'new-file',
-    'open-file-from-directory',
-    'open-file',
-    'close-tab',
-    'close-all-tabs',
-    'save-file',
-    'navgiate-to-tab',
-    'save-file-as',
-    'add-file-to-target-directory',
-    'add-folder-to-target-directory'
-];
-
 // all available commands (keywords).
 availableCommands = [
     'change-directory',
     'new-file',
     'open-file-from-directory',
-    'open-file',
     'close-tab',
     'close-all-tabs',
     'save-file',
@@ -40,7 +15,9 @@ availableCommands = [
     'goto-scope',
     'scroll-to-column',
     'set-cursor',
-]
+];
+
+currentConstructedCommand = [];
 
 function checkCommand(command) {
     if (!availableCommands.includes(command)) {
@@ -49,8 +26,16 @@ function checkCommand(command) {
     return true;
 }
 
+cancelConstructingCommand = function() {
+    currentConstructedCommand = [];
+}
+
+createIndicrectCommand = function(keyword) {
+    currentConstructedCommand.add(keyword);
+}
+
 // returns false if the command doesn't exist
-parseCommand = function (mainWindow, command) {
+executeCommand = function (mainWindow, command) {
     if (!checkCommand(command)) {
         return false;
     }
@@ -63,7 +48,7 @@ parseCommand = function (mainWindow, command) {
             mainWindow.webContents.send('save-file');
             break;
         }
-        case 'open-file': {
+        case 'new-file': {
             mainWindow.webContents.send('request-open-file');
         }
     }
@@ -71,5 +56,6 @@ parseCommand = function (mainWindow, command) {
 
 
 module.exports = {
-    parseCommand
+    executeCommand,
+    createIndicrectCommand
 };
