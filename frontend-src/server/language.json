@@ -72,20 +72,21 @@
     "commands": {
         "direct-commands": {
             "cd": "change-directory",
-            "save": "save-file"
+            "save": "save-file",
+            "exit": "close-all-tabs",
+            "cruise": "reveal-cursor",
+            "model": "new-file",
+            "unscope": "exit-scope"
         },
         "indirect-commands": {
-            "model": "new-file",
             "nop": "open-file-from-directory",
             "pand": "expand-folder",
             "close": "close-tab",
-            "exit": "close-all-tabs",
             "mad": "navgiate-to-tab",
             "camouflage": "save-file-as",
             "addhoc": "add-file-to-target-directory",
             "addfold": "add-folder-to-target-directory",
             "verizon": "scroll-to-line",
-            "cruise": "reveal-cursor",
             "goto": "goto-scope",
             "horizon": "scroll-to-column",
             "scarce": "set-cursor"

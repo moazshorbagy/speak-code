@@ -213,16 +213,16 @@
                     }
                 }
             },
-            "navigate to tab": "/// TO BE",
-            "close tab": "/// TO BE",
-            "close all tabs": "",
-            "save file": "swave",
-            "save file as": "/// TO BE",
-            "add file to target directory in current existing directory": "/// TO BE",
-            "scroll to line": "/// TO BE",
-            "set cursor": "/// TO BE",
-            "goto scope": "/// TO BE",
-            "exit scope": "/// TO BE"
+            "navigate to tab": "mad",
+            "close tab": "close",
+            "close all tabs": "exit",
+            "save file": "save",
+            "save file as": "camouflage",
+            "add file to target directory": "addhoc",
+            "scroll to line": "verizon",
+            "set cursor": "scarce",
+            "goto scope": "goto",
+            "exit scope": "unscope"
         }
     }
 }
