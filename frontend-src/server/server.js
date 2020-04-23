@@ -1,7 +1,7 @@
 const zerorpc = require('zerorpc');
 const {BrowserWindow} = require('electron');
-const commandsParser = require('./commands-parser');
-// const codeParser = require('./code-parser');
+// const commandsParser = require('./commands-parser');
+const parser = require('./parser');
 
 let server;
 
@@ -23,11 +23,9 @@ initializeServer = function() {
         sendData: function (command, reply) {
             try {
                 mainWindow = BrowserWindow.getAllWindows()[0];
-                var cmd = commandsParser.parseCommand(mainWindow, command);
-                // if(cmd === false) {
-                //     cmd = codeParser.parseCode(command);
-                // } 
-                //if all is okay, reply with a success to the python client.
+                parser.parseCommand(mainWindow, command);
+
+                // if all is okay.
                 reply(null, 'ok');
             } catch(e) {
                 console.log(e);
