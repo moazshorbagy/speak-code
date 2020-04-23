@@ -56,7 +56,8 @@
         "osquare": "[",
         "csquare": "]",
         "undo": "undo",
-        "redo": "redo"
+        "redo": "redo",
+        "unscope": "exit-scope"
     },
     "indirect-code-insertion": {
         "swhile": "while-loop-block",
@@ -67,16 +68,16 @@
         "dex": "index-a-variable",
         "cond": "condition-formation",
         "define": "define-function",
-        "grab": "variable-calls-method"
+        "grab": "variable-calls-method",
+        "goto": "goto-scope"
     },
     "commands": {
         "direct-commands": {
             "cd": "change-directory",
             "save": "save-file",
             "exit": "close-all-tabs",
-            "cruise": "reveal-cursor",
             "model": "new-file",
-            "unscope": "exit-scope"
+            "cruise": "reveal-cursor"
         },
         "indirect-commands": {
             "nop": "open-file-from-directory",
@@ -87,7 +88,6 @@
             "addhoc": "add-file-to-target-directory",
             "addfold": "add-folder-to-target-directory",
             "verizon": "scroll-to-line",
-            "goto": "goto-scope",
             "horizon": "scroll-to-column",
             "scarce": "set-cursor"
         }
