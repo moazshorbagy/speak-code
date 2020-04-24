@@ -1,5 +1,4 @@
 
-let currentParameteredCommand = {};
 
 let avaialbleCodeBlocksParameterNumbers = {
     'for-loop-block': '2', // indexer name + nuimber passed to range.
@@ -9,7 +8,7 @@ let avaialbleCodeBlocksParameterNumbers = {
     'variable-calls-method': '2+', // variable name + method name + parameters.
     'while-loop-block': '1+', // condition formation.
     'condition-formation': '4+', // var1 + condition + var2 + ..... + 'cof'
-    'index-a-variable': '2', // variable name + index,
+    'index-variable': '2', // variable name + index,
     'if-block': '1+' // condition formation
 };
 
@@ -19,22 +18,67 @@ let currentCodeArea;
 // updated after every code insertion.
 let currentVariables = [];
 
+let currentCommandKeyword;
+
 let currentCodeBlockBeingConstructed = [];
 
 cancelConstructingCodeblock = function() {
     currentCodeBlockBeingConstructed = [];
 }
 
-insertPlainCode = function(mainnWindow, word) {
-    mainnWindow.webContents.send('insert-plain-code', word);
+insertPlainCode = function(mainnWindow, code) {
+    mainnWindow.webContents.send('insert-plain-code', code);
+}
+
+constructIndicrectCodeBlock = function(mainnWindow, parameter) {
+    if(currentCommandKeyword == '') {
+        
+    }
+    currentCodeBlockBeingConstructed.add(parameter)
 }
 
 createCodeInsertionBlock = function(keyword) {
-    currentCodeBlockBeingConstructed.addd(keyword);
+    currentCodeBlockBeingConstructed.add(keyword);
 }
 
-function executeConstructedCommand() {
-
+function executeConstructedCommand(mainnWindow, ...parameters) {
+    switch(currentCommandKeyword) {
+        case 'for-loop-block': {
+            insertPlainCode(mainnWindow, forLoopBlock(parameters[0], parameters[1]));
+            break;
+        }
+        case 'while-loop-block': {
+            insertPlainCode(mainnWindow, whileLoopBlock(parameters));
+            break;
+        }
+        case 'foreach-block': {
+            insertPlainCode(mainnWindow, foreachBlock(parameters[0], parameters[1]));
+            break;
+        }
+        case 'define-function': {
+            insertPlainCode(mainnWindow, defineFunction(parameters[0], parameters[1]));
+            break;
+        }
+        case 'if-block': {
+            insertPlainCode(mainnWindow, ifBlock(parameters));
+            break;
+        }
+        case 'variable-calls-method': {
+            insertPlainCode(mainnWindow, variableCallsMethod(parameters[0], parameters[1], parameters[2]));
+            break;
+        }
+        case 'index-variable': {
+            insertPlainCode(mainnWindow, indexVariable(parameters[0], parameters[1]));
+            break;
+        }
+        case 'call-function': {
+            insertPlainCode(mainnWindow, callFunction(parameters[0], parameters[1]));
+            break;
+        }
+        default: {
+            break;
+        }
+    }
 }
 
 
