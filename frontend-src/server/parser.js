@@ -8,7 +8,7 @@ let lastCommand;
 let currentCursorPosition;
 
 // a boolean to detect whether the last word was a command or not.
-let lastWordIsCommand;
+let constructingCommand;
 
 // a boolean to track if a current command or code bloc
 // is being formed
@@ -24,101 +24,103 @@ let undoStack = [];
 
 let redoStack = [];
 
-function isDirectWordInsertion(word) {
-    if (word in language['direct-code-insertion']) {
-        commandIsBeingConstructed = false;
-        return language['indirect-code-insertion'][word];
+
+function cancelCommandOrCodeBlockCreation(word) {
+    if (word in language['cancel-executing-indirects']) {
+        codeParser.cancelConstructingCodeblock();
+        commandParser.cancelCostructingCommand();
     }
 }
 
 function isWordNotInGrammar(word) {
-    if (word in language) {
-        return true;
+    if (word in language['cancel-executing-indirects'] || word in language['commands']['direct'] || word in language['commands']['indirect'] || word in language['code-insertion']['direct'] || word in language['code-insertion']['indirect']) {
+        return false;
     }
-    return false;
+    return true;
 }
 
-function isDirectCommand(word) {
-    if (word in language['commands']) {
-        if (word in language['commands']['direct-commands']) {
-            commandIsBeingConstructed = false;
-            return language['commands']['direct-commands'][word];
-        }
-    }
-}
-
-function cancelCommandOrCodeBlockCreation(word) {
-    if (word in language['cancel-executing-indirects']) {
-        codeParser.cancelConstructingCommand();
-        commandParser.cancelConstructingCodeBlock();
+function isDirectWordInsertion(word) {
+    if (word in language['code-insertion']['direct']) {
+        return language['code-insertion']['direct'][word];
     }
 }
 
 function isIndirectCodeInsertion(word) {
-    if (word in language['indirect-code-insertion']) {
+    if (word in language['code-insertion']['indirect']) {
         commandIsBeingConstructed = true;
-        return language['indirect-code-insertion'][word];
+        constructingCommand = false;
+        return language['code-insertion']['indirect'][word];
     }
+}
+
+function isDirectCommand(word) {
+    if (word in language['commands']['direct']) {
+        return language['commands']['direct'][word];
+    }
+
 }
 
 function isIndirectCommand(word) {
     if (word in language['commands']) {
-        if (word in language['commands']['indirect-commands']) {
+        if (word in language['commands']['indirect']) {
             commandIsBeingConstructed = true;
-            return language['commands']['indirect-commands'][word];
+            constructingCommand = true;
+            return language['commands']['indirect'][word];
         }
     }
 }
 
 module.exports = {
     parseCommand: function (mainWindow, cmd) {
-
         // if the user says cancel, the buffer of creating commands
         // or code blocks is flushed.
         if (cancelCommandOrCodeBlockCreation(cmd)) {
             return;
         }
 
-        // if the word is not in the language, then there is 2 possibilities:
-        // the word would be directly inserted to the editor, or the 
-        // word is part of a command being constructed in 
-        // either codeaParser, or commandParser. 
-        var complementary = isWordNotInGrammar(cmd);
-        if (complementary) {
-            if (commandIsBeingConstructed) {
-                if (lastWordIsCommand) {
-                    commandParser.constructIndicrectCommand(mainWindow, complementary);
-                } else {
-                    codeParser.constructIndicrectCodeBlock(mainWindow, complementary);
+        wordNotInGrammar = isWordNotInGrammar(cmd);
+        directCode = isDirectWordInsertion(cmd);
+        indicrectCode = isIndirectCodeInsertion(cmd);
+
+        if (commandIsBeingConstructed) {
+            if (constructingCommand) {
+                if (wordNotInGrammar) {
+                    commandParser.constructIndicrectCommand(mainWindow, cmd);
                 }
             } else {
-                codeParser.insertPlainCode(mainWindow, complementary);
+                if (wordNotInGrammar) {
+                    codeParser.constructIndicrectCodeBlock(mainWindow, cmd);
+                } else {
+                    if (directCode) {
+                        codeParser.constructIndicrectCodeBlock(mainWindow, directCode);
+                    } else if (indicrectCode) {
+                        codeParser.constructIndicrectCodeBlock(mainWindow, indicrectCode);
+                    }
+                }
+            }
+            return;
+        } else {
+            directCommand = isDirectCommand(cmd);
+            indirectCommand = isIndirectCommand(cmd);
+
+            if (wordNotInGrammar) {
+                codeParser.insertPlainCode(cmd);
+            } else if (directCode) {
+                codeParser.insertPlainCode(directCode);
+            } else if (indicrectCode) {
+                if (codeParser.constructIndicrectCodeBlock(mainWindow, indicrectCode)) {
+                    commandIsBeingConstructed = false;
+                }
+            } else if (directCommand) {
+                commandParser.executeCommand(mainWindow, directCommand);
+            } else if (indirectCommand) {
+                if (commandParser.constructIndicrectCommand(mainWindow, directCommand)) {
+                    commandIsBeingConstructed = false;
+                }
             }
         }
 
-        var keyword = isDirectWordInsertion(cmd);
-        if (keyword) {
-            codeParser.insertPlainCode(mainWindow, keyword);
-            return;
-        }
 
-
-        keyword = isDirectCommand(cmd);
-        if (keyword) {
-            commandParser.executeCommand(mainWindow, keyword);
-            return;
-        }
-
-        keyword = isIndirectCodeInsertion(cmd);
-        if (keyword) {
-            codeParser.createCodeInsertionBlock(keyword);
-            return;
-        }
-
-        keyword = isIndirectCommand(cmd);
-        if (keyword) {
-            commandParser.createIndicrectCommand(keyword);
-        }
     }
 }
 

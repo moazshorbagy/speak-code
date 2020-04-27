@@ -175,6 +175,12 @@ insertText = function (text, position) {
         "what", [op]
     );
 
+    editor.focus();
+
+}
+
+getCurrentLine = function() {
+    editor.getModel().getLineContent(editor.getPosition().lineNumber);
 }
 
 focusModel = function (filePath) {
@@ -230,5 +236,6 @@ module.exports = {
     getCursorPosition,
     setCursorPosition,
     saveFile,
+    getCurrentLine,
     removeModelWithId
 }

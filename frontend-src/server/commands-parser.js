@@ -30,8 +30,8 @@ cancelConstructingCommand = function() {
     currentConstructedCommand = [];
 }
 
-createIndicrectCommand = function(keyword) {
-    currentConstructedCommand.add(keyword);
+constructIndicrectCommand = function(mainWindow, keyword) {
+    currentConstructedCommand.push(keyword);
 }
 
 // returns false if the command doesn't exist
@@ -57,5 +57,5 @@ executeCommand = function (mainWindow, command) {
 
 module.exports = {
     executeCommand,
-    createIndicrectCommand
+    constructIndicrectCommand
 };

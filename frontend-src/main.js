@@ -34,10 +34,10 @@ app.on('ready', function () {
 	createWindow();
 	zeroRPCServer.initializeServer();
 
-	// start the python client after 100 ms to ensure all renderer process scripts are run.
-	setTimeout(function() {
-		spawnPythonChild();
-	}, 100);
+	// // start the python client after 100 ms to ensure all renderer process scripts are run.
+	// setTimeout(function() {
+	// 	spawnPythonChild();
+	// }, 15000);
 
 });
 

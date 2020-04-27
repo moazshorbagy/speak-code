@@ -76,9 +76,8 @@
 		editor.saveFile();
 	});
 
-	ipcRenderer.on('insert-text', function (event, arg) {
-		console.log(arg.msg);
-		editor.insertText(arg.msg);
+	ipcRenderer.on('insert-plain-code', function (event, arg) {
+		editor.insertText(arg);
 	});
 
 </script>

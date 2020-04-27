@@ -12,37 +12,77 @@ let avaialbleCodeBlocksParameterNumbers = {
     'if-block': '1+' // condition formation
 };
 
+let availableCommands = [
+    'for-loop-block',
+    'foreach-block',
+    'define-function',
+    'call-function',
+    'variable-calls-method',
+    'while-loop-block',
+    'condition-formation',
+    'index-variable',
+    'if-block',
+    'end-of-command'
+];
+
 // updated after every code insertion.
 let currentCodeArea;
 
 // updated after every code insertion.
 let currentVariables = [];
 
-let currentCommandKeyword;
+let currentCommandStack = [];
 
-let currentCodeBlockBeingConstructed = [];
-
-cancelConstructingCodeblock = function() {
-    currentCodeBlockBeingConstructed = [];
+cancelConstructingCodeblock = function () {
+    currentCommandStack = [];
 }
 
-insertPlainCode = function(mainnWindow, code) {
+insertPlainCode = function (mainnWindow, code) {
     mainnWindow.webContents.send('insert-plain-code', code);
 }
 
-constructIndicrectCodeBlock = function(mainnWindow, parameter) {
-    if(currentCommandKeyword == '') {
-        
+constructIndicrectCodeBlock = function (mainWindow, parameter) {
+    currentCommandStack.push(parameter);
+    if (parameter == 'cof') {
+        // pop the word 'cof'
+        endofCommand = currentCommandStack.pop();
+        codeBlockArray = [];
+        while (currentCommandStack.length != 0) {
+            parameters = [];
+            while (!(availableCommands.includes(currentCommandStack[currentCommandStack.length - 1]))) {
+                parameters.push(currentCommandStack.pop());
+            }
+            command = currentCommandStack.pop();
+            param = '';
+            switch (command) {
+                case 'condition-formation': {
+                    param = parameters.join(' ');
+                    codeBlockArray.push(param);
+                    break;
+                }
+                case 'if-block': {
+                    codeBlockArray.push('if');
+                }
+            }
+        }
+        command = codeBlockArray.pop();
+        code = '';
+        switch(command) {
+            case 'if': {
+                code = codeBlockArray.join(' ');
+                code = 'if ' + code;
+                code += [':', '\t'].join('\n');
+                break;
+            }
+        }
+        module.exports.insertPlainCode(mainWindow, code);
+        return true;
     }
-    currentCodeBlockBeingConstructed.add(parameter)
-}
-
-createCodeInsertionBlock = function(keyword) {
-    currentCodeBlockBeingConstructed.add(keyword);
+    return false;
 }
 
 function executeConstructedCommand(mainnWindow, ...parameters) {
-    switch(currentCommandKeyword) {
+    switch (currentCommandKeyword) {
         case 'for-loop-block': {
             insertPlainCode(mainnWindow, forLoopBlock(parameters[0], parameters[1]));
             break;
@@ -85,7 +125,7 @@ function executeConstructedCommand(mainnWindow, ...parameters) {
 module.exports = {
     cancelConstructingCodeblock,
     insertPlainCode,
-    createCodeInsertionBlock
+    constructIndicrectCodeBlock
 }
 
 function forLoopBlock(indexerName, range) {
@@ -101,11 +141,11 @@ function whileLoopBlock(...conditions) {
 }
 
 function ifBlock(...conditions) {
-    return `if ${formCondition(conditions)}:`, `\t`,join('\n');
+    return `if ${formCondition(conditions)}:`, `\t`, join('\n');
 }
 
 function formCondition(...conditions) {
-    var condition = '('; 
+    var condition = '(';
     for (item in conditions) {
         condition += `${item} `;
     }
@@ -115,7 +155,7 @@ function formCondition(...conditions) {
 }
 
 function insertParameters(...parameters) {
-    if(parameters.length == 0) {
+    if (parameters.length == 0) {
         return '';
     }
     var params = '';
