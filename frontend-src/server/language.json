@@ -65,7 +65,7 @@
             "efor": "foreach-block",
             "ef": "call-function",
             "sfor": "for-loop-block",
-            "dex": "index-a-variable",
+            "dex": "index-variable",
             "cond": "condition-formation",
             "define": "define-function",
             "grab": "variable-calls-method"

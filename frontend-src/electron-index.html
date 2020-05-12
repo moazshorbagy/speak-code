@@ -80,6 +80,10 @@
 		editor.insertText(arg);
 	});
 
+	ipcRenderer.on('get-current-line', function(event, arg) {
+		event.sender.send('current-line', editor.getCurrentLine());
+	});
+
 </script>
 <script>
 	var Split = require('split-grid')

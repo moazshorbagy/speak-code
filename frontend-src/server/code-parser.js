@@ -1,7 +1,9 @@
+const electron = require('electron');
 
+const ipcMain = electron.ipcMain;
 
 let avaialbleCodeBlocksParameterNumbers = {
-    'for-loop-block': '2', // indexer name + nuimber passed to range.
+    'for-loop-block': '2', // indexer name + number passed to range.
     'foreach-block': '2', // iterator name + iteraetable.
     'define-function': '1+', // function name + parameters.
     'call-function': '1+', // function name + parameters.
@@ -22,16 +24,29 @@ let availableCommands = [
     'condition-formation',
     'index-variable',
     'if-block',
-    'end-of-command'
+    'end-of-command',
+    'initialize-variable'
 ];
 
-// updated after every code insertion.
-let currentCodeArea;
+let currentState = {
+    'currentScope': 0,
+    'currentCodeBlock': ''
+};
+
+let avaiableStates = [
+    'indexing',
+    'calling-a-function',
+    'forming-condition',
+    'forming-while-loop',
+    'forming-for-loop',
+    'forming-foreach-loop',
+]
 
 // updated after every code insertion.
 let currentVariables = [];
 
 let currentCommandStack = [];
+
 
 cancelConstructingCodeblock = function () {
     currentCommandStack = [];
@@ -41,82 +56,99 @@ insertPlainCode = function (mainnWindow, code) {
     mainnWindow.webContents.send('insert-plain-code', code);
 }
 
+
+// returns false if commmand is not completed yet
+// return true if command is successfully executed.
 constructIndicrectCodeBlock = function (mainWindow, parameter) {
-    currentCommandStack.push(parameter);
+    mainWindow.webContents.send('get-current-line');
+
+    ipcMain.once('current-line', function(event, line) {
+        scope = getScope(line);
+    });
+    // keyword that means end of command.
     if (parameter == 'cof') {
-        // pop the word 'cof'
-        endofCommand = currentCommandStack.pop();
         codeBlockArray = [];
+        // parsing process
         while (currentCommandStack.length != 0) {
             parameters = [];
+
+            // pop parameters until 
             while (!(availableCommands.includes(currentCommandStack[currentCommandStack.length - 1]))) {
-                parameters.push(currentCommandStack.pop());
+                parameters.unshift(currentCommandStack.pop());
             }
             command = currentCommandStack.pop();
-            param = '';
-            switch (command) {
-                case 'condition-formation': {
-                    param = parameters.join(' ');
-                    codeBlockArray.push(param);
-                    break;
-                }
-                case 'if-block': {
-                    codeBlockArray.push('if');
-                }
-            }
+            codeBlockArray.push(formCodeArray(command, parameters));
         }
         command = codeBlockArray.pop();
-        code = '';
-        switch(command) {
-            case 'if': {
-                code = codeBlockArray.join(' ');
-                code = 'if ' + code;
-                code += [':', '\t'].join('\n');
-                break;
-            }
-        }
+        code = formCodeInsertion(command, codeBlockArray);
+
         module.exports.insertPlainCode(mainWindow, code);
         return true;
+    } else {
+        currentCommandStack.push(parameter);
+        return false;
     }
-    return false;
 }
 
-function executeConstructedCommand(mainnWindow, ...parameters) {
-    switch (currentCommandKeyword) {
-        case 'for-loop-block': {
-            insertPlainCode(mainnWindow, forLoopBlock(parameters[0], parameters[1]));
-            break;
-        }
-        case 'while-loop-block': {
-            insertPlainCode(mainnWindow, whileLoopBlock(parameters));
-            break;
-        }
-        case 'foreach-block': {
-            insertPlainCode(mainnWindow, foreachBlock(parameters[0], parameters[1]));
-            break;
-        }
-        case 'define-function': {
-            insertPlainCode(mainnWindow, defineFunction(parameters[0], parameters[1]));
-            break;
+// assuming that the indentation is 4 spaces
+function getScope(currentLine) {
+    k = 0;
+   for(let i = 0; i < currentLine.length; i++) {
+      if(currentLine[i] == ' ') {
+          k += 1;
+      }  else {
+          break;
+      }
+   } 
+   return k / 4;
+}
+
+function formCodeArray(command, params) {
+    switch (command) {
+        case 'condition-formation': {
+            return params.join(' ');
         }
         case 'if-block': {
-            insertPlainCode(mainnWindow, ifBlock(parameters));
-            break;
+            return 'if';
         }
-        case 'variable-calls-method': {
-            insertPlainCode(mainnWindow, variableCallsMethod(parameters[0], parameters[1], parameters[2]));
-            break;
+        case 'while-loop-block': {
+            return 'while';
+        }
+        case 'for-loop-block': {
+            return params.join(' ');
+        }
+        case 'foreach-block': {
+            return 'foreach';
         }
         case 'index-variable': {
-            insertPlainCode(mainnWindow, indexVariable(parameters[0], parameters[1]));
-            break;
+            return [params[0], '[', params[1], ']'].join('');
+        }
+        case 'define-function': {
+            return 'defunc';
         }
         case 'call-function': {
-            insertPlainCode(mainnWindow, callFunction(parameters[0], parameters[1]));
-            break;
+           functionName = params.shift();
+           return [functionName, '(', params.join(', '), ')'],join('');
         }
-        default: {
-            break;
+        case 'variable-calls-method': {
+            return params.join('.');
+        }
+    }
+}
+
+function formCodeInsertion(command, codeBlockArray) {
+    switch(command) {
+        case 'if': {
+            code = codeBlockArray.join(' ');
+            code = 'if ' + code;
+            code += [':', '\t'].join('\n');
+            return code;
+        }
+        case 'while': {
+           code = codeBlockArray.join(' ');
+           code = 'while ' + code;
+           code += [':', '\t'].join('\n');  
+           return code;
         }
     }
 }
@@ -126,58 +158,4 @@ module.exports = {
     cancelConstructingCodeblock,
     insertPlainCode,
     constructIndicrectCodeBlock
-}
-
-function forLoopBlock(indexerName, range) {
-    return `for ${indexerName} in range(${range}):`, `\t`.join('\n');
-}
-
-function foreachBlock(iteratorName, iteraetable) {
-    return `for ${iteratorName} in ${iteraetable}:`, `\t`.join('\n');
-}
-
-function whileLoopBlock(...conditions) {
-    return `while ${formCondition(conditions)}:`, `\t`.join('\n');
-}
-
-function ifBlock(...conditions) {
-    return `if ${formCondition(conditions)}:`, `\t`, join('\n');
-}
-
-function formCondition(...conditions) {
-    var condition = '(';
-    for (item in conditions) {
-        condition += `${item} `;
-    }
-    condition = condition[condition.length - 2];
-    condition += ')';
-    return condition;
-}
-
-function insertParameters(...parameters) {
-    if (parameters.length == 0) {
-        return '';
-    }
-    var params = '';
-    for (item in parameters) {
-        params += `${item}, `;
-    }
-    // remove last space and ','
-    return params[params.length - 3];
-}
-
-function variableCallsMethod(variableName, methodName, ...parameters) {
-    return `${variableName}.${methodName}(${insertParameters(parameters)}) `;
-}
-
-function callFunction(methodName, ...parameters) {
-    return `${methodName}(${insertParameters(parameters)}) `;
-}
-
-function defineFunction(functionName, ...parameters) {
-    return `def ${functionName}(${insertParameters(parameters)}):`, '\t'.join('\n');
-}
-
-function indexVariable(variableName, index) {
-    return `${variableName}[${index}] `;
 }

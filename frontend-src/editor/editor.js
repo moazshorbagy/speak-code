@@ -180,7 +180,7 @@ insertText = function (text, position) {
 }
 
 getCurrentLine = function() {
-    editor.getModel().getLineContent(editor.getPosition().lineNumber);
+    return editor.getModel().getLineContent(editor.getPosition().lineNumber);
 }
 
 focusModel = function (filePath) {
