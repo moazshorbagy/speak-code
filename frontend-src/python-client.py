@@ -4,27 +4,23 @@ import time
 client = zerorpc.Client(heartbeat=30000, timeout=32000)
 client.connect("tcp://127.0.0.1:4242")
 
+simpleWhileLoop = [
+    'swhile', 'x', 'equal', 'y', 'and', 'hamada', 'unequal', 'z', 'cof'
+]
 
-client.sendData('swhile')
+ifBlockWithIndexingVars = [
+    'sif', 'dex', 'x', '0', 'unequal', 'dex', 'x', '1', 'cof'
+]
 
-# client.sendData('cond')
+ifBlockWithFunctionCall = [
+    'sif', 'call', 'len', 'x', 'puff', 'equal', '0', 'cof'
+]
 
-# client.sendData('dex')
+whileLoopWithVarCallsMethod = [
+    'swhile', 'call', 'len', 'grab', 'hamdy', 'keys', 'puff', 'puff', 'unequal', 'zero', 'cof'
+]
 
-# client.sendData('x')
 
-# client.sendData('0')
-
-# client.sendData('unequal')
-
-# client.sendData('0')
-
-# client.sendData('and')
-
-# client.sendData('z')
-
-# client.sendData('equal')
-
-# client.sendData('w')
-
-# client.sendData('cof')
+for i in range(len(simpleWhileLoop)):
+    client.sendData(simpleWhileLoop[i])
+    time.sleep(1)
