@@ -1,3 +1,4 @@
+from visualization import plot_accuracy, plot_loss
 from model import create_model, create_optimizer
 from BeamSearch import ctcBeamSearch
 from dataset import create_dataset
@@ -34,6 +35,12 @@ def train():
         validation_data=generator(X_test, y_test, c.batch_size),
         validation_steps=int(np.ceil(X_test.shape[0]/c.batch_size))
         )
+    
+    plot_accuracy(history)
+    plot_loss(history)
+    
+    model.load_weights(c.checkpoint_filepath)
+    model.save('model.h5')
 
     sub_model = Model(inputs=model.get_layer('masking_layer').input, outputs=model.get_layer('output_layer').output)
 

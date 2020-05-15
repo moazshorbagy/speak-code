@@ -50,3 +50,7 @@ relu_clip = 20.0    # ReLU clipping value for non-recurrent layers
 learning_rate = 0.001
 beta_1 = 0.9
 beta_2 = 0.999
+
+# General
+
+checkpoint_filepath = 'tmp/checkpoint'

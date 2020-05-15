@@ -48,11 +48,12 @@ def create_loss_function(args):
     y_pred, labels, input_length, label_length = args
     return k.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
-def create_early_stopping_cb():
-    pass
-
 def create_model_checkpoint_cb():
-    pass
+    return tf.keras.callbacks.ModelCheckpoint(
+        monitor='loss',
+        filepath=c.checkpoint_filepath,
+        save_weights_only=True,
+        save_best_only=True)
 
 def create_early_stopping_cb():
     # return tf.keras.callbacks.EarlyStopping(monitor='loss', patience=15)
