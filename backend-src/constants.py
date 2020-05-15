@@ -1,9 +1,7 @@
-import os
-
-
 alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ']
 masking_value = -10000
 number_of_char = len(alphabet)
+
 # Sound Processing
 
 sample_rate = 8000  # sample rate value expected by model
@@ -34,8 +32,8 @@ n_steps = None          # sequence length
 
 # Global Constants
 
-epochs = 70             # an epoch is an iteration over the entire x and y data provided
-batch_size = 10          # number of samples per gradient update.
+epochs = 200            # an epoch is an iteration over the entire x and y data provided
+batch_size = 10         # number of samples per gradient update.
 validation_split = 0.2  # fraction of the training data to be used as validation data
 
 dropout_1 = 0.1     # dropout rate for layer 1
@@ -52,8 +50,3 @@ relu_clip = 20.0    # ReLU clipping value for non-recurrent layers
 learning_rate = 0.001
 beta_1 = 0.9
 beta_2 = 0.999
-
-# Files
-
-train_audio_path = os.path.join('audio', 'train')
-test_audio_path = os.path.join('audio', 'test')

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
     NAME    : LDC TIMIT Dataset
     URL     : https://catalog.ldc.upenn.edu/ldc93s1
@@ -10,14 +9,16 @@
     LICENCE : LDC User Agreement
 """
 
-import errno
 import fnmatch
 import os
-import subprocess
-import sys
 from os import path
 
+import constants
+
 import pandas as pd
+import numpy as np
+import librosa
+from tqdm import tqdm
 
 
 def clean(word):
@@ -35,44 +36,24 @@ def clean(word):
     return new
 
 
-def _preprocess_data():
-
-    # Assume data is downloaded from LDC - https://catalog.ldc.upenn.edu/ldc93s1
+def prepare_timit():
 
     # SA sentences are repeated throughout by each speaker therefore can be removed for ASR as they will affect WER
-    ignoreSASentences = True
-
-    if ignoreSASentences:
-        print("Using recommended ignore SA sentences")
-        print("Ignoring SA sentences (2 x sentences which are repeated by all speakers)")
-    else:
-        print("Using unrecommended setting to include SA sentences")
+    # We are ignoring SA sentences (2 x sentences which are repeated by all speakers)
 
     target = "TIMIT"
 
-    print("Preprocessing data")
-    # convert the .WAV (NIST sphere format) into MSOFT .wav
-    # creates _rif.wav as the new .wav file
-    for root, dirnames, filenames in os.walk(target):
-        for filename in fnmatch.filter(filenames, "*.WAV"):
-            sph_file = os.path.join(root, filename)
-            wav_file = os.path.join(root, filename)[:-4] + "_rif.wav"
-            print("converting {} to {}".format(sph_file, wav_file))
-            subprocess.check_call(["sox", sph_file, wav_file])
-
-    print("Preprocessing Complete")
     print("Building CSVs")
 
     # Lists to build CSV files
-    train_list_wavs, train_list_trans, train_list_size = [], [], []
-    test_list_wavs, test_list_trans, test_list_size = [], [], []
+    train_list_wavs, train_list_trans = [], []
+    test_list_wavs, test_list_trans = [], []
 
     for root, dirnames, filenames in os.walk(target):
-        for filename in fnmatch.filter(filenames, "*_rif.wav"):
+        for filename in fnmatch.filter(filenames, "*.wav"):
             full_wav = os.path.join(root, filename)
-            wav_filesize = path.getsize(full_wav)
 
-            # need to remove _rif.wav (8chars) then add .TXT
+            # need to remove .WAV.wav (8chars) then add .TXT
             trans_file = full_wav[:-8] + ".TXT"
             with open(trans_file, "r") as f:
                 for line in f:
@@ -85,47 +66,40 @@ def _preprocess_data():
                     for t in t_list:
                         trans = trans + " " + clean(t)
 
-            # if ignoreSAsentences we only want those without SA in the name
-            # OR
-            # if not ignoreSAsentences we want all to be added
-            if (ignoreSASentences and not ("SA" in os.path.basename(full_wav))) or (not ignoreSASentences):
+            if not ("SA" in os.path.basename(full_wav)):
+
                 if "train" in full_wav.lower():
                     train_list_wavs.append(full_wav)
                     train_list_trans.append(trans)
-                    train_list_size.append(wav_filesize)
                 elif "test" in full_wav.lower():
                     test_list_wavs.append(full_wav)
                     test_list_trans.append(trans)
-                    test_list_size.append(wav_filesize)
                 else:
                     raise IOError
 
     a = {
         "wav_filename": train_list_wavs,
-        "wav_filesize": train_list_size,
         "transcript": train_list_trans,
     }
 
     c = {
         "wav_filename": test_list_wavs,
-        "wav_filesize": test_list_size,
         "transcript": test_list_trans,
     }
 
     all = {
         "wav_filename": train_list_wavs + test_list_wavs,
-        "wav_filesize": train_list_size + test_list_size,
         "transcript": train_list_trans + test_list_trans,
     }
 
     df_all = pd.DataFrame(
-        all, columns=["wav_filename", "wav_filesize", "transcript"], dtype=int
+        all, columns=["wav_filename", "transcript"], dtype=int
     )
     df_train = pd.DataFrame(
-        a, columns=["wav_filename", "wav_filesize", "transcript"], dtype=int
+        a, columns=["wav_filename", "transcript"], dtype=int
     )
     df_test = pd.DataFrame(
-        c, columns=["wav_filename", "wav_filesize", "transcript"], dtype=int
+        c, columns=["wav_filename", "transcript"], dtype=int
     )
 
     df_all.to_csv(
@@ -138,7 +112,13 @@ def _preprocess_data():
         target + "/timit_test.csv", sep=",", header=True, index=False, encoding="ascii"
     )
 
+    print('Converting wav files to numpy files..')
+
+    for f_path in tqdm(df_all['wav_filename']):
+        samples, sr = librosa.load(f_path, sr=constants.sample_rate)
+        np.save(f_path + '.npy', samples)
+
 
 if __name__ == "__main__":
-    _preprocess_data()
+    prepare_timit()
     print("Completed")

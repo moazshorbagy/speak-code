@@ -68,4 +68,5 @@ def get_features(samples):
 
     mfcc= scipy.fftpack.dct(fbank_output, type=2, axis=1, norm='ortho')
     mfcc -= (np.mean(mfcc, axis=0) + 1e-8)
-    return mfcc[:,0:13],None,None
+    
+    return mfcc[:, 0:13]
