@@ -63,7 +63,7 @@
             "swhile": "while-loop-block",
             "sif": "if-block",
             "efor": "foreach-block",
-            "ef": "call-function",
+            "call": "call-function",
             "sfor": "for-loop-block",
             "dex": "index-variable",
             "cond": "condition-formation",
