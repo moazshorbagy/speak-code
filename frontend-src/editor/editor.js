@@ -179,6 +179,14 @@ insertText = function (text, position) {
 
 }
 
+incrementCursor = function(value) {
+    position = editor.getPosition();
+    console.log(position)
+    position.column += value;
+    console.log(position)
+    editor.setPosition(position)
+}
+
 getCurrentLine = function() {
     return editor.getModel().getLineContent(editor.getPosition().lineNumber);
 }
@@ -237,5 +245,6 @@ module.exports = {
     setCursorPosition,
     saveFile,
     getCurrentLine,
-    removeModelWithId
+    removeModelWithId,
+    incrementCursor
 }

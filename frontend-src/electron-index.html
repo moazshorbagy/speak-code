@@ -84,6 +84,10 @@
 		event.sender.send('current-line', editor.getCurrentLine());
 	});
 
+	ipcRenderer.on('increment-cursor', function(event, args) {
+		editor.incrementCursor(args);
+	});
+
 </script>
 <script>
 	var Split = require('split-grid')

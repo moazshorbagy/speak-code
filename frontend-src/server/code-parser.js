@@ -2,18 +2,6 @@ const electron = require('electron');
 
 const ipcMain = electron.ipcMain;
 
-let avaialbleCodeBlocksParameterNumbers = {
-    'for-loop-block': '2', // indexer name + number passed to range.
-    'foreach-block': '2', // iterator name + iteraetable.
-    'define-function': '1+', // function name + parameters.
-    'call-function': '1+', // function name + parameters.
-    'variable-calls-method': '2+', // variable name + method name + parameters.
-    'while-loop-block': '1+', // condition formation.
-    'condition-formation': '4+', // var1 + condition + var2 + ..... + 'cof'
-    'index-variable': '2', // variable name + index,
-    'if-block': '1+' // condition formation
-};
-
 let availableCommands = [
     'for-loop-block',
     'foreach-block',
@@ -25,24 +13,12 @@ let availableCommands = [
     'index-variable',
     'if-block',
     'end-of-command',
-    'initialize-variable'
+    'initialize-variable',
+    'define-class',
+    'parameters-insertion'
 ];
 
-let currentState = {
-    'currentScope': 0,
-    'currentCodeBlock': ''
-};
-
-let avaiableStates = [
-    'indexing',
-    'calling-a-function',
-    'forming-condition',
-    'forming-while-loop',
-    'forming-for-loop',
-    'forming-foreach-loop',
-]
-
-// updated after every code insertion.
+// TODO 1: updated after every code insertion.
 let currentVariables = [];
 
 let currentCommandStack = [];
@@ -52,40 +28,184 @@ cancelConstructingCodeblock = function () {
     currentCommandStack = [];
 }
 
-insertPlainCode = function (mainnWindow, code) {
-    mainnWindow.webContents.send('insert-plain-code', code);
+// idicates that the current command being executed 
+// may have infinite parameters.
+let transformCmds = {
+    'call-function': 'parameters',
+    'define-function': 'parameters',
+    'variable-calls-method': 'parameters',
+    'if-block': 'conditions',
+    'while-loop-block': 'conditions'
 }
 
+// moving the cursor horizontally
+// taking care of inserting the root
+// last array element indicates moving the cursor 
+// out of the command
+let cursorMovingValues = {
+    'index-variable': [-2, 1, 1],
+    'variable-calls-method': [-3, 1, 1],
+    'call-function': [-2, 1],
+    'if-block': [-1],
+    'while-loop-block': [-1],
+    'for-loop-block': [-12, 10],
+    'foreach-block': [-5, 4],
+    'define-function': [-3, 1]
+}
+
+let commandRoots = {
+    'index-variable': '[]',
+    'variable-calls-method': '.()',
+    'call-function': '()',
+    'if-block': 'if :',
+    'while-loop-block': 'while :',
+    'for-loop-block': 'for  in range():',
+    'foreach-block': 'for  in :',
+    'define-function': 'def ():'
+}
+
+// is one of the `available` commands.
+let cmdStack = [];
+
+// current stage effectively determines the index
+// at which we are in the `cursorMovingValues`.
+let cmdStage = [];
+
+// code blocks that must be in a separate line
+let needsIndependentLine = [
+    'if-block',
+    'while-block',
+    'define-function',
+    'for-loop-block',
+    'foreach-block'
+]
+
+// for indefinite number of variables,
+// spacing between them after every variable insertion is defined below.
+let variablesSpacing = {
+    'conditions': ' ',
+    'parameters': ', '
+}
+
+// infinite parameters commands
+let infiniteParamsCmd = [
+    'conditions',
+    'parameters'
+]
+
+// the keywords that terminates indefinite parameters commands
+let infParamsTermination = {
+    'conditions': 'cof',
+    'parameters': 'puff',
+}
+
+let basicNumParams = {
+    'index-variable': 2,
+    'variable-calls-method': 2,
+    'call-function': 2,
+    'if-block': 1,
+    'while-loop-block': 1,
+    'for-loop-block': 2,
+    'foreach-block': 2,
+    'define-function': 2
+}
 
 // returns false if commmand is not completed yet
 // return true if command is successfully executed.
 constructIndicrectCodeBlock = function (mainWindow, parameter) {
     mainWindow.webContents.send('get-current-line');
 
-    ipcMain.once('current-line', function(event, line) {
+    ipcMain.once('current-line', function (event, line) {
         scope = getScope(line);
-    });
-    // keyword that means end of command.
-    if (parameter == 'cof') {
-        codeBlockArray = [];
-        // parsing process
-        while (currentCommandStack.length != 0) {
-            parameters = [];
 
-            // pop parameters until 
-            while (!(availableCommands.includes(currentCommandStack[currentCommandStack.length - 1]))) {
-                parameters.unshift(currentCommandStack.pop());
+        // check if the parameter is a keyword
+        if (availableCommands.includes(parameter)) {
+
+            // push the command to the cmdStack
+            cmdStack.push(parameter);
+
+            // stage determines the index of the cursor movement
+            // according to cursorMovingValues (initially = 0)
+            cmdStage.push(0);
+
+            // go to next new line
+            if (needsIndependentLine.includes(parameter) && line != '') {
+                insertPlainCode(mainWindow, '\n');
             }
-            command = currentCommandStack.pop();
-            codeBlockArray.push(formCodeArray(command, parameters));
-        }
-        command = codeBlockArray.pop();
-        code = formCodeInsertion(command, codeBlockArray);
 
-        module.exports.insertPlainCode(mainWindow, code);
+            // TODO 2: handle scope level
+
+            // insert the root of the codeblock
+            insertPlainCode(mainWindow, commandRoots[parameter]);
+
+            // move the cursor according to stage and cursorMovingValues
+            updateCursor(mainWindow)
+
+            // update cmd stage
+            cmdStage[cmdStage.length - 1] += 1
+
+        } else {
+            cmd = cmdStack[cmdStack.length - 1]
+
+            if (paramResolvesInfVarsCmd(parameter)) {
+
+                // TODO 3: handle end of indefinite command cursor update
+                mainWindow.webContents.send('increment-cursor', 1)
+
+                // pop the command from the command stack as well as its stage
+                cmdStack.pop();
+                cmdStage.pop();
+                return;
+            }
+
+            // check if the current command may have infinite parameters.
+            if (infiniteParamsCmd.includes(cmd)) {
+                insertPlainCode(mainWindow, variablesSpacing[cmd] + parameter)
+            } else {
+
+                insertPlainCode(mainWindow, parameter)
+                updateCursor(mainWindow)
+
+                // checks whether the command has been successfully passed all the parameters
+                // removes it from command stack and updates the cursor
+                while (!infiniteParamsCmd.includes(cmd) && cursorMovingValues[cmd].length == cmdStage[cmdStage.length - 1] + basicNumParams[cmd] - 1) {
+
+                    // check if the command may have indefinite parameters
+                    var keys = Object.keys(transformCmds)
+                    if (keys.includes(cmd)) {
+                        console.log(cmd)
+                        cmdStack.pop();
+                        cmdStack.push(transformCmds[cmd])
+                        cmd = cmdStack[cmdStack.length - 1]
+                    } else {
+                        cmdStage.pop();
+                        cmdStack.pop();
+                        cmd = cmdStack[cmdStack.length - 1]
+                        if (!cmd) {
+                            break;
+                        }
+                        // else update the cursor normally
+                        updateCursor(mainWindow)
+                        console.log(cmd)
+                    }
+                }
+            }
+            cmdStage[cmdStage.length - 1] += 1
+        }
+    });
+}
+
+// returns true if the word said ends the parameters
+// that are passed to a command with indefinite number of parameters
+function paramResolvesInfVarsCmd(param) {
+    if (cmdStack.length == 0) {
+        return false;
+    }
+
+    cmd = cmdStack[cmdStack.length - 1];
+    if (infParamsTermination[cmd] == param) {
         return true;
     } else {
-        currentCommandStack.push(parameter);
         return false;
     }
 }
@@ -93,69 +213,32 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
 // assuming that the indentation is 4 spaces
 function getScope(currentLine) {
     k = 0;
-   for(let i = 0; i < currentLine.length; i++) {
-      if(currentLine[i] == ' ') {
-          k += 1;
-      }  else {
-          break;
-      }
-   } 
-   return k / 4;
-}
-
-function formCodeArray(command, params) {
-    switch (command) {
-        case 'condition-formation': {
-            return params.join(' ');
-        }
-        case 'if-block': {
-            return 'if';
-        }
-        case 'while-loop-block': {
-            return 'while';
-        }
-        case 'for-loop-block': {
-            return params.join(' ');
-        }
-        case 'foreach-block': {
-            return 'foreach';
-        }
-        case 'index-variable': {
-            return [params[0], '[', params[1], ']'].join('');
-        }
-        case 'define-function': {
-            return 'defunc';
-        }
-        case 'call-function': {
-           functionName = params.shift();
-           return [functionName, '(', params.join(', '), ')'],join('');
-        }
-        case 'variable-calls-method': {
-            return params.join('.');
+    for (let i = 0; i < currentLine.length; i++) {
+        if (currentLine[i] == ' ') {
+            k += 1;
+        } else {
+            break;
         }
     }
+    return k / 4;
 }
 
-function formCodeInsertion(command, codeBlockArray) {
-    switch(command) {
-        case 'if': {
-            code = codeBlockArray.join(' ');
-            code = 'if ' + code;
-            code += [':', '\t'].join('\n');
-            return code;
-        }
-        case 'while': {
-           code = codeBlockArray.join(' ');
-           code = 'while ' + code;
-           code += [':', '\t'].join('\n');  
-           return code;
-        }
-    }
+// requests the renderer process to insert `code` into the editor
+// doesn't take care of the cursor position
+function insertPlainCode(mainnWindow, code) {
+    mainnWindow.webContents.send('insert-plain-code', code);
+}
+
+// updates the cursor according to the last command in the command stack
+function updateCursor(mainWindow) {
+    var currentCmd = cmdStack[cmdStack.length - 1]
+    var cursorIncrementValues = cursorMovingValues[currentCmd]
+    var val = cursorIncrementValues[cmdStage[cmdStage.length - 1]]
+    mainWindow.webContents.send('increment-cursor', val);
 }
 
 
 module.exports = {
     cancelConstructingCodeblock,
-    insertPlainCode,
     constructIndicrectCodeBlock
 }

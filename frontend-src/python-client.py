@@ -20,6 +20,26 @@ whileLoopWithVarCallsMethod = [
     'swhile', 'call', 'len', 'grab', 'hamdy', 'keys', 'puff', 'puff', 'unequal', 'zero', 'cof'
 ]
 
+nestedIndexing = [
+    'dex', 'x', 'dex', 'y', 'dex', 'z', 'dex', 'r2', '0'
+]
+
+
+for i in range(len(nestedIndexing)):
+    client.sendData(nestedIndexing[i])
+    time.sleep(1)
+
+for i in range(len(whileLoopWithVarCallsMethod)):
+    client.sendData(whileLoopWithVarCallsMethod[i])
+    time.sleep(1)
+
+for i in range(len(ifBlockWithFunctionCall)):
+    client.sendData(ifBlockWithFunctionCall[i])
+    time.sleep(1)
+
+for i in range(len(ifBlockWithIndexingVars)):
+    client.sendData(ifBlockWithIndexingVars[i])
+    time.sleep(1)
 
 for i in range(len(simpleWhileLoop)):
     client.sendData(simpleWhileLoop[i])
