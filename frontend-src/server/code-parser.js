@@ -124,7 +124,7 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
         if (availableCommands.includes(parameter)) {
 
             if (cmdStack.length != 0) {
-                if (infiniteParamsCmd.includes(cmdStack[cmdStack.length - 1])) {
+                if (infiniteParamsCmd.includes(cmdStack[cmdStack.length - 1]) && cmdStage[cmdStage.length - 1] > basicNumParams[transformedCmdsStack[transformedCmdsStack.length - 1]]) {
                     insertPlainCode(mainWindow, variablesSpacing[cmdStack[cmdStack.length - 1]]);
                 }
             }
