@@ -167,7 +167,9 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
 
                 if (cmdStack.length != 0) {
                     cmd = cmdStack[cmdStack.length - 1]
-                    updateCursor(mainWindow, cmd)
+                    if(!infiniteParamsCmd.includes(cmd)) {
+                        updateCursor(mainWindow, cmd)
+                    }
                     resolveCmd(cmd, mainWindow);
                 }
 
