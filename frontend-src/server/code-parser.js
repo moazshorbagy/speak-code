@@ -2,6 +2,15 @@ const electron = require('electron');
 
 const ipcMain = electron.ipcMain;
 
+
+/// These commands and grammar are specific to python
+/// Generalization can be made by adding available commands and their types, number
+/// of parameters, and cursor update values, for different programming languages
+
+/// More generalization can be made by exploiting the common code-blocks 
+/// across programming languages such as c++, java, python
+
+
 let availableCommands = [
     'for-loop-block',
     'foreach-block',
@@ -21,11 +30,14 @@ let availableCommands = [
 // TODO 1: updated after every code insertion.
 let currentVariables = [];
 
-let currentCommandStack = [];
-
-
+// cancel any code block being constructed that haven't been terminated yet
 cancelConstructingCodeblock = function () {
-    currentCommandStack = [];
+
+    // TODO 1.1: handle any misplacement of cursor in the code
+
+    cmdStack = [];
+    cmdStage = [];
+    transformedCmdsStack = [];
 }
 
 // idicates that the current command being executed 
@@ -53,6 +65,7 @@ let cursorMovingValues = {
     'define-function': [-3, 1]
 }
 
+// the basic strings to be inserted if any of the available commands are spoken
 let commandRoots = {
     'index-variable': '[]',
     'variable-calls-method': '.()',
@@ -99,6 +112,7 @@ let infParamsTermination = {
     'parameters': 'puff',
 }
 
+// minimum number of parameters that should be passed to any of the available command
 let basicNumParams = {
     'index-variable': 2,
     'variable-calls-method': 2,
@@ -110,6 +124,8 @@ let basicNumParams = {
     'define-function': 2
 }
 
+// keep track of transformed indefinite number of parameters commands
+// they are either transformed to `conditions` or `parameters`
 let transformedCmdsStack = [];
 
 // returns false if commmand is not completed yet
@@ -153,6 +169,7 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
             cmdStage[cmdStage.length - 1] += 1
 
         } else {
+            // update cmd variable (keeps track of the most recent command)
             cmd = cmdStack[cmdStack.length - 1]
 
             if (paramResolvesInfVarsCmd(parameter)) {
@@ -165,6 +182,7 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
                 cmdStage.pop();
                 transformedCmdsStack.pop();
 
+                // check if cursor needs update then update it
                 if (cmdStack.length != 0) {
                     cmd = cmdStack[cmdStack.length - 1]
                     if(!infiniteParamsCmd.includes(cmd)) {
@@ -173,11 +191,11 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
                     resolveCmd(cmd, mainWindow);
                 }
 
-                //TODO 4: handle scope and indentation if codeline needs a new line
+                //TODO 4: handle scope and indentation if the code block needs a new line
                 return;
             }
 
-            // check if the current command may have infinite parameters.
+            // check if the current command may have infinite parameters then apply variable spacing.
             if (infiniteParamsCmd.includes(cmd)) {
                 if (cmdStage[cmdStage.length - 1] > basicNumParams[transformedCmdsStack[transformedCmdsStack.length - 1]]) {
                     insertPlainCode(mainWindow, variablesSpacing[cmd] + parameter)
@@ -189,6 +207,7 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
                 insertPlainCode(mainWindow, parameter)
                 updateCursor(mainWindow)
 
+                // resolves command that have determinant number of parameters
                 resolveCmd(cmd, mainWindow);
 
             }
@@ -212,6 +231,7 @@ function paramResolvesInfVarsCmd(param) {
     }
 }
 
+// resolve finite number of parameters commands
 function resolveCmd(cmd, mainWindow) {
     // checks whether the command has been successfully passed all the parameters
     // removes it from command stack and updates the cursor
