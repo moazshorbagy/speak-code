@@ -110,6 +110,8 @@ let basicNumParams = {
     'define-function': 2
 }
 
+let transformedCmdsStack = [];
+
 // returns false if commmand is not completed yet
 // return true if command is successfully executed.
 constructIndicrectCodeBlock = function (mainWindow, parameter) {
@@ -120,6 +122,12 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
 
         // check if the parameter is a keyword
         if (availableCommands.includes(parameter)) {
+
+            if (cmdStack.length != 0) {
+                if (infiniteParamsCmd.includes(cmdStack[cmdStack.length - 1])) {
+                    insertPlainCode(mainWindow, variablesSpacing[cmdStack[cmdStack.length - 1]]);
+                }
+            }
 
             // push the command to the cmdStack
             cmdStack.push(parameter);
@@ -155,40 +163,32 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
                 // pop the command from the command stack as well as its stage
                 cmdStack.pop();
                 cmdStage.pop();
+                transformedCmdsStack.pop();
+
+                if (cmdStack.length != 0) {
+                    cmd = cmdStack[cmdStack.length - 1]
+                    updateCursor(mainWindow, cmd)
+                    resolveCmd(cmd, mainWindow);
+                }
+
+                //TODO 4: handle scope and indentation if codeline needs a new line
                 return;
             }
 
             // check if the current command may have infinite parameters.
             if (infiniteParamsCmd.includes(cmd)) {
-                insertPlainCode(mainWindow, variablesSpacing[cmd] + parameter)
+                if (cmdStage[cmdStage.length - 1] > basicNumParams[transformedCmdsStack[transformedCmdsStack.length - 1]]) {
+                    insertPlainCode(mainWindow, variablesSpacing[cmd] + parameter)
+                } else {
+                    insertPlainCode(mainWindow, parameter);
+                }
             } else {
 
                 insertPlainCode(mainWindow, parameter)
                 updateCursor(mainWindow)
 
-                // checks whether the command has been successfully passed all the parameters
-                // removes it from command stack and updates the cursor
-                while (!infiniteParamsCmd.includes(cmd) && cursorMovingValues[cmd].length == cmdStage[cmdStage.length - 1] + basicNumParams[cmd] - 1) {
+                resolveCmd(cmd, mainWindow);
 
-                    // check if the command may have indefinite parameters
-                    var keys = Object.keys(transformCmds)
-                    if (keys.includes(cmd)) {
-                        console.log(cmd)
-                        cmdStack.pop();
-                        cmdStack.push(transformCmds[cmd])
-                        cmd = cmdStack[cmdStack.length - 1]
-                    } else {
-                        cmdStage.pop();
-                        cmdStack.pop();
-                        cmd = cmdStack[cmdStack.length - 1]
-                        if (!cmd) {
-                            break;
-                        }
-                        // else update the cursor normally
-                        updateCursor(mainWindow)
-                        console.log(cmd)
-                    }
-                }
             }
             cmdStage[cmdStage.length - 1] += 1
         }
@@ -207,6 +207,29 @@ function paramResolvesInfVarsCmd(param) {
         return true;
     } else {
         return false;
+    }
+}
+
+function resolveCmd(cmd, mainWindow) {
+    // checks whether the command has been successfully passed all the parameters
+    // removes it from command stack and updates the cursor
+    while (!infiniteParamsCmd.includes(cmd) && cursorMovingValues[cmd].length == cmdStage[cmdStage.length - 1] + basicNumParams[cmd] - 1) {
+        // check if the command may have indefinite parameters
+        var keys = Object.keys(transformCmds)
+        if (keys.includes(cmd)) {
+            transformedCmdsStack.push(cmdStack.pop())
+            cmdStack.push(transformCmds[cmd])
+            cmd = cmdStack[cmdStack.length - 1]
+        } else {
+            cmdStage.pop();
+            cmdStack.pop();
+            cmd = cmdStack[cmdStack.length - 1]
+            if (!cmd || infiniteParamsCmd.includes(cmd)) {
+                break;
+            }
+            // else update the cursor normally
+            updateCursor(mainWindow)
+        }
     }
 }
 
