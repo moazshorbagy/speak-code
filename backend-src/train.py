@@ -1,5 +1,5 @@
+from model import create_model, create_optimizer, create_model_checkpoint_cb, create_lr_scheduler_cb
 from visualization import plot_accuracy, plot_loss
-from model import create_model, create_optimizer
 from BeamSearch import ctcBeamSearch
 from dataset import create_dataset
 from generator import generator
@@ -33,7 +33,8 @@ def train():
         steps_per_epoch=int(np.ceil(X_train.shape[0]/c.batch_size)),
         epochs=c.epochs,
         validation_data=generator(X_test, y_test, c.batch_size),
-        validation_steps=int(np.ceil(X_test.shape[0]/c.batch_size))
+        validation_steps=int(np.ceil(X_test.shape[0]/c.batch_size)),
+        callbacks=[create_model_checkpoint_cb(), create_lr_scheduler_cb()]
         )
     
     plot_accuracy(history)
