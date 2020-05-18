@@ -56,7 +56,7 @@ let transformCmds = {
 // out of the command
 let cursorMovingValues = {
     'index-variable': [-2, 1, 1],
-    'variable-calls-method': [-3, 1, 1],
+    'variable-calls-method': [-3, 1, 1, 1],
     'call-function': [-2, 1],
     'if-block': [-1],
     'while-loop-block': [-1],
@@ -87,7 +87,7 @@ let cmdStage = [];
 // code blocks that must be in a separate line
 let needsIndependentLine = [
     'if-block',
-    'while-block',
+    'while-loop-block',
     'define-function',
     'for-loop-block',
     'foreach-block'
@@ -115,10 +115,10 @@ let infParamsTermination = {
 // minimum number of parameters that should be passed to any of the available command
 let basicNumParams = {
     'index-variable': 2,
-    'variable-calls-method': 2,
+    'variable-calls-method': 3,
     'call-function': 2,
-    'if-block': 1,
-    'while-loop-block': 1,
+    'if-block': 0,
+    'while-loop-block': 0,
     'for-loop-block': 2,
     'foreach-block': 2,
     'define-function': 2
@@ -139,8 +139,23 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
         // check if the parameter is a keyword
         if (availableCommands.includes(parameter)) {
 
+            // go to next new line
+            if (needsIndependentLine.includes(parameter) && line != '') {
+                insertPlainCode(mainWindow, '\n');
+            }
+
+
             if (cmdStack.length != 0) {
-                if (infiniteParamsCmd.includes(cmdStack[cmdStack.length - 1]) && cmdStage[cmdStage.length - 1] > basicNumParams[transformedCmdsStack[transformedCmdsStack.length - 1]]) {
+
+                var keys = Object.keys(transformCmds)
+                cmd = cmdStack[cmdStack.length - 1]
+                if (keys.includes(cmd)) {
+                    transformedCmdsStack.push(cmdStack.pop())
+                    cmdStack.push(transformCmds[cmd])
+                    cmd = cmdStack[cmdStack.length - 1]
+                }
+
+                if (infiniteParamsCmd.includes(cmdStack[cmdStack.length - 1]) && cmdStage[cmdStage.length - 1] - 1 > basicNumParams[transformedCmdsStack[transformedCmdsStack.length - 1]]) {
                     insertPlainCode(mainWindow, variablesSpacing[cmdStack[cmdStack.length - 1]]);
                 }
             }
@@ -151,11 +166,6 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
             // stage determines the index of the cursor movement
             // according to cursorMovingValues (initially = 0)
             cmdStage.push(0);
-
-            // go to next new line
-            if (needsIndependentLine.includes(parameter) && line != '') {
-                insertPlainCode(mainWindow, '\n');
-            }
 
             // TODO 2: handle scope level
 
@@ -185,7 +195,7 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
                 // check if cursor needs update then update it
                 if (cmdStack.length != 0) {
                     cmd = cmdStack[cmdStack.length - 1]
-                    if(!infiniteParamsCmd.includes(cmd)) {
+                    if (!infiniteParamsCmd.includes(cmd)) {
                         updateCursor(mainWindow, cmd)
                     }
                     resolveCmd(cmd, mainWindow);
@@ -197,6 +207,8 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
 
             // check if the current command may have infinite parameters then apply variable spacing.
             if (infiniteParamsCmd.includes(cmd)) {
+                console.log(cmd)
+                console.log(cmdStage)
                 if (cmdStage[cmdStage.length - 1] > basicNumParams[transformedCmdsStack[transformedCmdsStack.length - 1]]) {
                     insertPlainCode(mainWindow, variablesSpacing[cmd] + parameter)
                 } else {
