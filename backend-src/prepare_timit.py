@@ -50,9 +50,9 @@ def prepare_timit():
     test_list_wavs, test_list_trans = [], []
 
     for root, dirnames, filenames in os.walk(target):
-        for filename in fnmatch.filter(filenames, "*.wav"):
+        for filename in [n for n in filenames if fnmatch.fnmatchcase(n, '*.wav')]:
             full_wav = os.path.join(root, filename)
-
+            
             # need to remove .WAV.wav (8chars) then add .TXT
             trans_file = full_wav[:-8] + ".TXT"
             with open(trans_file, "r") as f:
