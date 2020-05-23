@@ -15,7 +15,7 @@ def prepare_data():
     print("Building CSVs")
 
     # Lists to build CSV files
-    train_list_wavs, train_list_trans = [], []
+    list_wavs, list_trans = [], []
     
     dirs = os.listdir(target)
 
@@ -25,8 +25,8 @@ def prepare_data():
             if(filename.endswith('.wav')):
                 wav_path = os.path.join(target, directory, filename)
 
-                train_list_wavs.append(wav_path)
-                train_list_trans.append(directory)
+                list_wavs.append(wav_path)
+                list_trans.append(directory)
 
                 if(os.path.exists(wav_path + '.npy')):
                     continue                
@@ -35,16 +35,16 @@ def prepare_data():
                 np.save(wav_path + '.npy', y)
 
     a = {
-        "wav_filename": train_list_wavs,
-        "transcript": train_list_trans,
+        "wav_filename": list_wavs,
+        "transcript": list_trans,
     }
 
-    df_train = pd.DataFrame(
+    df_all = pd.DataFrame(
         a, columns=["wav_filename", "transcript"], dtype=int
     )
 
-    df_train.to_csv(
-        target + "/tf_train.csv", sep=",", header=True, index=False, encoding="ascii"
+    df_all.to_csv(
+        target + "/tf_all.csv", sep=",", header=True, index=False, encoding="ascii"
     )
 
 if __name__ == "__main__":
