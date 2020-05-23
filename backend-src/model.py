@@ -1,56 +1,84 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense, Dropout, LSTM, Bidirectional, Lambda, TimeDistributed, Masking, BatchNormalization,ReLU
+from tensorflow.keras.layers import Input, Dense, Dropout, GRU, Bidirectional, Concatenate, Lambda, TimeDistributed, Masking, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as k
+from attention import AttentionLayer
+import numpy as np
 
 import constants as c
 
-def create_model():
+def create_model(max_input_seq_length, max_ouput_seq_length):
     k.clear_session()
 
-    input_data      = Input(shape=(c.n_steps, c.n_input),name='input')
+    # Encoder
 
-    model           = Masking(mask_value=c.masking_value,name='masking_layer')(input_data)
-    model           = BatchNormalization(axis=-1)(model)
+    encoder_input = Input(shape=(max_input_seq_length, c.n_input), name='encoder_input')
 
-    model           = Dense(c.n_hidden_1,name='layer_1')(model)
-    model           = ReLU(max_value=c.relu_clip)(model)
-    model           = Dropout(c.dropout_1, name='dropout_1')(model)
+    encoder_gru = Bidirectional(GRU(c.n_cell_dim, return_sequences=True, return_state=True, name='encoder_gru'), name='bidirectional_encoder')
 
-    model           = Dense(c.n_hidden_2, name='layer_2')(model)
-    model           = ReLU(max_value=c.relu_clip)(model)
-    model           = Dropout(c.dropout_2, name='dropout_2')(model)
+    encoder_out, encoder_fwd_state, encoder_back_state = encoder_gru(encoder_input)
+    
+    # Decoder
 
-    model           = Dense(c.n_hidden_3, name='layer_3')(model)
-    model           = ReLU(max_value=c.relu_clip)(model)
-    model           = Dropout(c.dropout_3, name='dropout_3')(model)
+    decoder_input = Input(shape=(max_ouput_seq_length, c.n_output), name='decoder_input')
+    
+    decoder_gru = GRU(c.n_cell_dim*2, return_sequences=True, return_state=True, name='decoder_gru')
+    
+    decoder_init_state = Concatenate(axis=-1)([encoder_fwd_state, encoder_back_state])
 
-    model           = Bidirectional(LSTM(c.n_hidden_4, return_sequences=True))(model)
+    decoder_out, decoder_state = decoder_gru(decoder_input, initial_state=decoder_init_state)
 
-    model           = Dense(c.n_hidden_5, name='layer_5')(model)
-    model           = ReLU(max_value=c.relu_clip)(model)
-    model           = Dropout(c.dropout_4, name='dropout_4')(model)
+    # Attention
+    
+    attn_layer = AttentionLayer(name='attention_layer')
+    
+    attn_out, attn_states = attn_layer([encoder_out, decoder_out])
 
-    y_pred          = TimeDistributed(Dense(c.n_hidden_6, activation=tf.nn.softmax), name='output_layer')(model)
+    # Concat attention input and decoder GRU output
 
-    labels          = Input(name='the_labels', shape=[None,], dtype = 'float32')
+    decoder_concat_input = Concatenate(axis=-1, name='concat_layer')([decoder_out, attn_out])
 
-    input_length    = Input(name='input_length', shape=[1], dtype = 'float32')
-    label_length    = Input(name='label_length', shape=[1], dtype = 'float32')
+    # Dense layer
 
-    loss_layer      = Lambda(function=create_loss_function, name='ctc', output_shape=[1])([y_pred, labels, input_length, label_length])
+    dense = Dense(c.n_output, activation=tf.nn.softmax, name='softmax_layer')
 
-    model           = Model(inputs=[input_data, labels, input_length, label_length], outputs=[loss_layer])
+    dense_time = TimeDistributed(dense, name='time_distributed_layer')
 
-    return model
+    decoder_pred = dense_time(decoder_concat_input)
+
+    # Full model (for training)
+
+    full_model = Model(inputs=[encoder_input, decoder_input], outputs=decoder_pred)
+
+    # Inference models (for prediction)
+    batch_size = 1
+
+    # Encoder inference model
+    encoder_inf_input = Input(batch_shape=(batch_size, max_input_seq_length, c.n_input), name='encoder_inf_input')
+    encoder_inf_out, encoder_inf_fwd_state, encoder_inf_back_state = encoder_gru(encoder_inf_input)
+    encoder_model = Model(inputs=encoder_inf_input, outputs=[encoder_inf_out, encoder_inf_fwd_state, encoder_inf_back_state])
+
+    # Decoder inference model
+    encoder_inf_state = Input(batch_shape=(batch_size, max_input_seq_length, 2*c.n_cell_dim), name='encoder_inf_state')
+    decoder_init_state = Input(batch_shape=(batch_size, 2*c.n_cell_dim), name='decoder_init')
+    decoder_inf_input = Input(batch_shape=(batch_size, 1, c.n_output), name='decoder_inf_input')
+
+    decoder_inf_out, decoder_inf_state = decoder_gru(decoder_inf_input, initial_state=decoder_init_state)
+    attn_inf_out, attn_inf_states = attn_layer([encoder_inf_state, decoder_inf_out])
+    decoder_inf_concat = Concatenate(axis=-1, name='concat_layer')([decoder_inf_out, attn_inf_out])
+    decoder_inf_pred = TimeDistributed(dense)(decoder_inf_concat)
+    decoder_model = Model(inputs=[encoder_inf_state, decoder_init_state, decoder_inf_input],
+                          outputs=[decoder_inf_pred, attn_inf_states, decoder_inf_state])
+
+    return full_model, encoder_model, decoder_model
+
 
 def create_optimizer():
     return Adam(learning_rate=c.learning_rate, beta_1=c.beta_1, beta_2=c.beta_2, amsgrad=True)
 
-def create_loss_function(args):
-    y_pred, labels, input_length, label_length = args
-    return k.ctc_batch_cost(labels, y_pred, input_length, label_length)
+def create_loss_function():
+    return tf.keras.losses.SparseCategoricalCrossentropy()
 
 def create_model_checkpoint_cb():
     return tf.keras.callbacks.ModelCheckpoint(
