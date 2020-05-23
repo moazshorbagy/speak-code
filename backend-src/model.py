@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Dense, Dropout, LSTM, Bidirectional, Lambda, TimeDistributed, Masking, BatchNormalization
+from tensorflow.keras.layers import Input, Dense, Dropout, LSTM, Bidirectional, Lambda, TimeDistributed, Masking, BatchNormalization,ReLU
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as k
 
@@ -13,20 +13,24 @@ def create_model():
 
     model           = Masking(mask_value=c.masking_value,name='masking_layer')(input_data)
     model           = BatchNormalization(axis=-1)(model)
-    model           = Dense(c.n_hidden_1,activation=tf.nn.relu,name='layer_1')(model)
-    model           = Dropout(c.dropout_1, name='droput_1')(model)
 
-    model           = Dense(c.n_hidden_2, activation=tf.nn.relu, name='layer_2')(model)
-    model           = Dropout(c.dropout_2, name='droput_2')(model)
+    model           = Dense(c.n_hidden_1,name='layer_1')(model)
+    model           = ReLU(max_value=c.relu_clip)(model)
+    model           = Dropout(c.dropout_1, name='dropout_1')(model)
 
-    model           = Dense(c.n_hidden_3, activation=tf.nn.relu, name='layer_3')(model)
-    model           = Dropout(c.dropout_3, name='droput_3')(model)
+    model           = Dense(c.n_hidden_2, name='layer_2')(model)
+    model           = ReLU(max_value=c.relu_clip)(model)
+    model           = Dropout(c.dropout_2, name='dropout_2')(model)
+
+    model           = Dense(c.n_hidden_3, name='layer_3')(model)
+    model           = ReLU(max_value=c.relu_clip)(model)
+    model           = Dropout(c.dropout_3, name='dropout_3')(model)
 
     model           = Bidirectional(LSTM(c.n_hidden_4, return_sequences=True))(model)
-    model           = Dropout(c.dropout_4, name='droput_4')(model)
 
-    model           = TimeDistributed(Dense(c.n_hidden_5, activation=tf.nn.relu), name='layer_5')(model)
-    model           = Dropout(c.dropout_5, name='droput_5')(model)
+    model           = Dense(c.n_hidden_5, name='layer_5')(model)
+    model           = ReLU(max_value=c.relu_clip)(model)
+    model           = Dropout(c.dropout_4, name='dropout_4')(model)
 
     y_pred          = TimeDistributed(Dense(c.n_hidden_6, activation=tf.nn.softmax), name='output_layer')(model)
 
@@ -74,6 +78,6 @@ def scheduler(epoch):
     and decreases it exponentially after that.
     """
     if epoch < 150:
-        return 0.001
+        return c.learning_rate
     else:
         return max(0.001 * tf.math.exp(0.1 * (150 - epoch)), 1e-5)
