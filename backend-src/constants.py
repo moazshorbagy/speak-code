@@ -46,7 +46,6 @@ dropout_2 = 0.3     # dropout rate for layer 2
 dropout_3 = 0.3     # dropout rate for layer 3
 dropout_4 = 0.3     # dropout rate for layer 4
 
-
 relu_clip = 20.0    # ReLU clipping value for non-recurrent layers
 
 # Adam Optimizer
@@ -54,6 +53,9 @@ relu_clip = 20.0    # ReLU clipping value for non-recurrent layers
 learning_rate = 0.0001
 beta_1 = 0.9
 beta_2 = 0.999
+
+lr_decay_epoch = 100
+minimum_lr = 1e-5
 
 # General
 

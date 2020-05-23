@@ -77,7 +77,7 @@ def scheduler(epoch):
     This function keeps the learning rate at 0.001 for the first ten epochs
     and decreases it exponentially after that.
     """
-    if epoch < 150:
+    if epoch < c.lr_decay_epoch:
         return c.learning_rate
     else:
-        return max(0.001 * tf.math.exp(0.1 * (150 - epoch)), 1e-5)
+        return max(c.learning_rate * tf.math.exp(0.1 * (c.lr_decay_epoch - epoch)), c.minimum_lr)
