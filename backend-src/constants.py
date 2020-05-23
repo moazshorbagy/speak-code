@@ -1,14 +1,21 @@
-alphabet        = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ']
-masking_value   = -10000
-number_of_char  = len(alphabet)
+start_token = '@'
+end_token = '!'
+pad_token = '*'
+
+alphabet = ['*', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', start_token, end_token]
+masking_value = -900.
 
 # Sound Processing
 
-sample_rate       = 16000         # sample rate value expected by model
+sample_rate       = 16000       # sample rate value expected by model
 pre_emphasis      = 0.97
-frame_duration    = 0.025     #in seconds
-frame_overlap     = 0.015     #in seconds
+frame_duration    = 0.025       #in seconds
+frame_overlap     = 0.015       #in seconds
 n_filters         = 40
+
+add_context       = False
+n_context         = 3           # number of context frames (overlapped frames)
+
 with_deltas       = False
 
 
@@ -21,33 +28,16 @@ else:
 
 # Geometry
 
-add_context     = False
-n_context       = 9                                                         # number of context frames (overlapped frames)
 n_input         = n_mfcc+(2*n_context*n_mfcc) if add_context else n_mfcc
+n_output = len(alphabet)
 
-n_cell_dim      = 1024        # dimension of lstm state cell
-
-n_hidden_1      = 1024                   # number of units in layer 1
-n_hidden_2      = n_hidden_1            # number of units in layer 2
-n_hidden_3      = n_cell_dim            # number of units in layer 3
-n_hidden_4      = n_cell_dim            # number of units in layer 4
-n_hidden_5      = n_hidden_1            # number of units in layer 5
-n_hidden_6      = number_of_char+1      # number of units in layer 6 (output layer) (+1 for CTC blank label)
-
-n_steps         = None                  # sequence length
+n_cell_dim = 100        # dimension of lstm state cell
 
 # Global Constants
 
-epochs              = 30            # an epoch is an iteration over the entire x and y data provided
-batch_size          = 80            # number of samples per gradient update.
-validation_split    = 0.2           # fraction of the training data to be used as validation data
-
-dropout_1 = 0.3     # dropout rate for layer 1
-dropout_2 = 0.3     # dropout rate for layer 2
-dropout_3 = 0.3     # dropout rate for layer 3
-dropout_4 = 0.3     # dropout rate for layer 4
-
-relu_clip = 20.0    # ReLU clipping value for non-recurrent layers
+epochs = 20            # an epoch is an iteration over the entire x and y data provided
+batch_size = 50         # number of samples per gradient update.
+validation_split = 0.2  # fraction of the training data to be used as validation data
 
 # Adam Optimizer
 

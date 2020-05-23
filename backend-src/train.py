@@ -1,62 +1,39 @@
-from model import create_model, create_optimizer, create_model_checkpoint_cb, create_lr_scheduler_cb
-from visualization import plot_accuracy, plot_loss
-from BeamSearch import ctcBeamSearch
-from dataset import create_dataset
-from generator import generator
-from text import decode
 import constants as c
-
+from dataset import create_dataset
 from tensorflow.keras.utils import plot_model
-from tensorflow.keras import backend as k
-from tensorflow.keras.models import Model
-import numpy as np
+from visualization import plot_accuracy, plot_loss
+from model import create_model, create_optimizer, create_loss_function
 
+if __name__=="__main__":
+    
+    X_train, X_test, y_train, y_test, y_lag_train, y_lag_test = create_dataset()
 
-def train():
+    full_model, encoder_model, decoder_model = create_model(X_train.shape[1], y_train.shape[1])
 
-    X_train, X_test, y_train, y_test = create_dataset()
-
-    model = create_model()
-
-    model.summary()
-
-    plot_model(model, to_file='rnn.png')
+    full_model.summary()
 
     optimizer = create_optimizer()
 
-    loss = {'ctc': lambda y_true, y_pred: y_pred}
+    loss = create_loss_function()
 
-    model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
-
-    history = model.fit(
-        generator(X_train, y_train, c.batch_size),
-        steps_per_epoch=int(np.ceil(X_train.shape[0]/c.batch_size)),
-        epochs=c.epochs,
-        validation_data=generator(X_test, y_test, c.batch_size),
-        validation_steps=int(np.ceil(X_test.shape[0]/c.batch_size)),
-        callbacks=[create_model_checkpoint_cb(), create_lr_scheduler_cb()]
-        )
+    full_model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
     
+    plot_model(encoder_model, to_file='encoder_model.png', show_shapes=True)
+    plot_model(decoder_model, to_file='decoder_model.png', show_shapes=True)
+    plot_model(full_model, to_file='full_model.png', show_shapes=True)
+
+    history = full_model.fit(
+        [X_train, y_train],
+        y_lag_train,
+        batch_size=c.batch_size,
+        epochs=20,
+        initial_epoch=0
+        )
+
     plot_accuracy(history)
     plot_loss(history)
+
+    full_model.save_weights("full_model.h5")
+    encoder_model.save_weights("encoder_model.h5")
+    decoder_model.save_weights("decoder_model.h5")
     
-    model.load_weights(c.checkpoint_filepath)
-    model.save('model.h5')
-
-    sub_model = Model(inputs=model.get_layer('masking_layer').input, outputs=model.get_layer('output_layer').output)
-
-    for i in range(15):
-        data = X_test[i]
-        d = np.array([data])
-        
-        prediction=sub_model.predict(d)
-        output = k.get_value(prediction)        
-        path = ctcBeamSearch(output[0], ''.join(c.alphabet), None)
-
-        print('true:', decode(y_test[i]))
-        print('pred:', path)
-        print()
-
-
-if(__name__ == "__main__"):
-    train()
