@@ -21,8 +21,9 @@ else:
 
 # Geometry
 
-n_context       = 9                           # number of context frames (overlapped frames)
-n_input         = n_mfcc+(2*n_context*n_mfcc) # number of features at each time step with c context
+add_context     = False
+n_context       = 9                                                         # number of context frames (overlapped frames)
+n_input         = n_mfcc+(2*n_context*n_mfcc) if add_context else n_mfcc
 
 n_cell_dim      = 1024        # dimension of lstm state cell
 

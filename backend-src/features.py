@@ -23,11 +23,12 @@ def get_features(signal):
     mfcc                = mfcc[:,1:c.n_mfcc+1]
 
     # this part add context frames to the mfcc features
-    dummy_array = np.zeros((c.n_context,c.n_mfcc),dtype=mfcc.dtype)
-    mfcc_temp   = np.concatenate((dummy_array,mfcc,dummy_array),axis=0).ravel()
-    mfcc        = np.lib.stride_tricks.as_strided(  mfcc_temp,
-                                                    shape=(mfcc.shape[0],c.n_input),
-                                                    strides=(c.n_mfcc*mfcc.itemsize,mfcc.itemsize))
+    if add_context:
+        dummy_array = np.zeros((c.n_context,c.n_mfcc),dtype=mfcc.dtype)
+        mfcc_temp   = np.concatenate((dummy_array,mfcc,dummy_array),axis=0).ravel()
+        mfcc        = np.lib.stride_tricks.as_strided(  mfcc_temp,
+                                                        shape=(mfcc.shape[0],c.n_input),
+                                                        strides=(c.n_mfcc*mfcc.itemsize,mfcc.itemsize))
 
     return mfcc
 
