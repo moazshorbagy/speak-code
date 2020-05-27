@@ -158,9 +158,9 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
                 insertPlainCode(mainWindow, '\n');
             }
 
-            if(cmdStack.length != 0) {
+            if (cmdStack.length != 0) {
                 cmd = cmdStack[cmdStack.length - 1];
-                if(infiniteParamsCmd.includes(cmd) && cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
+                if (infiniteParamsCmd.includes(cmd) && cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
                     insertPlainCode(mainWindow, variablesSpacing[cmd])
                 }
             }
@@ -184,10 +184,6 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
             // update cmd variable (keeps track of the most recent command)
             cmd = cmdStack[cmdStack.length - 1]
 
-            if (parameter == 'r3') {
-                console.log('from here');
-            }
-
             if (infiniteParamsCmd.includes(cmd) && paramResolvesInfVarsCmd(parameter)) {
                 resolveCmd(cmd, mainWindow, parameter);
             } else {
@@ -204,7 +200,9 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
         }
 
         // update cmd stage
-        cmdStage[cmdStage.length - 1] += 1
+        if (cmdStage.length != 0) {
+            cmdStage[cmdStage.length - 1] += 1
+        }
     });
 }
 
@@ -235,6 +233,13 @@ function resolveCmd(cmd, mainWindow, parameter) {
         cmdStack.pop();
         cmdStage.pop();
 
+        cmd = cmdStack[cmdStack.length - 1];
+        if(cmdStack.length == 0) {
+            return;
+        }
+        if(!infiniteParamsCmd.includes(cmd)) {
+            updateCursor(mainWindow);
+        }
     }
     // checks whether the command has been successfully passed all the parameters
     // removes it from command stack and updates the cursor
