@@ -56,7 +56,7 @@ let transformCmds = {
 // out of the command
 let cursorMovingValues = {
     'index-variable': [-2, 1, 1],
-    'variable-calls-method': [-3, 1, 1, 1],
+    'variable-calls-method': [-3, 1, 1],
     'call-function': [-2, 1],
     'if-block': [-1],
     'while-loop-block': [-1],
@@ -96,32 +96,46 @@ let needsIndependentLine = [
 // for indefinite number of variables,
 // spacing between them after every variable insertion is defined below.
 let variablesSpacing = {
-    'conditions': ' ',
-    'parameters': ', '
+    'if-block': ' ',
+    'while-loop-block': ' ',
+    'condition-formation': ' ',
+    'call-function': ', ',
+    'variable-calls-method': ', ',
+    'define-function': ', ',
+    'for-loop-block': ', '
 }
 
 // infinite parameters commands
 let infiniteParamsCmd = [
-    'conditions',
-    'parameters'
+    'if-block',
+    'while-loop-block',
+    'condition-formation',
+    'call-function',
+    'variable-calls-method',
+    'define-function',
+    'for-loop-block',
 ]
 
 // the keywords that terminates indefinite parameters commands
 let infParamsTermination = {
-    'conditions': 'cof',
-    'parameters': 'puff',
+    'if-block': 'cof',
+    'while-loop-block': 'cof',
+    'call-function': 'puff',
+    'variable-calls-method': 'puff',
+    'define-function': 'puff',
+    'for-loop-block': 'puff'
 }
 
 // minimum number of parameters that should be passed to any of the available command
 let basicNumParams = {
     'index-variable': 2,
-    'variable-calls-method': 3,
+    'variable-calls-method': 2,
     'call-function': 2,
-    'if-block': 0,
-    'while-loop-block': 0,
-    'for-loop-block': 2,
+    'if-block': 1,
+    'while-loop-block': 1,
+    'for-loop-block': 1,
     'foreach-block': 2,
-    'define-function': 2
+    'define-function': 1
 }
 
 // keep track of transformed indefinite number of parameters commands
@@ -144,19 +158,10 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
                 insertPlainCode(mainWindow, '\n');
             }
 
-
-            if (cmdStack.length != 0) {
-
-                var keys = Object.keys(transformCmds)
-                cmd = cmdStack[cmdStack.length - 1]
-                if (keys.includes(cmd)) {
-                    transformedCmdsStack.push(cmdStack.pop())
-                    cmdStack.push(transformCmds[cmd])
-                    cmd = cmdStack[cmdStack.length - 1]
-                }
-
-                if (infiniteParamsCmd.includes(cmdStack[cmdStack.length - 1]) && cmdStage[cmdStage.length - 1] - 1 > basicNumParams[transformedCmdsStack[transformedCmdsStack.length - 1]]) {
-                    insertPlainCode(mainWindow, variablesSpacing[cmdStack[cmdStack.length - 1]]);
+            if(cmdStack.length != 0) {
+                cmd = cmdStack[cmdStack.length - 1];
+                if(infiniteParamsCmd.includes(cmd) && cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
+                    insertPlainCode(mainWindow, variablesSpacing[cmd])
                 }
             }
 
@@ -175,56 +180,31 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
             // move the cursor according to stage and cursorMovingValues
             updateCursor(mainWindow)
 
-            // update cmd stage
-            cmdStage[cmdStage.length - 1] += 1
-
         } else {
             // update cmd variable (keeps track of the most recent command)
             cmd = cmdStack[cmdStack.length - 1]
 
-            if (paramResolvesInfVarsCmd(parameter)) {
-
-                // TODO 3: handle end of indefinite command cursor update
-                mainWindow.webContents.send('increment-cursor', 1)
-
-                // pop the command from the command stack as well as its stage
-                cmdStack.pop();
-                cmdStage.pop();
-                transformedCmdsStack.pop();
-
-                // check if cursor needs update then update it
-                if (cmdStack.length != 0) {
-                    cmd = cmdStack[cmdStack.length - 1]
-                    if (!infiniteParamsCmd.includes(cmd)) {
-                        updateCursor(mainWindow, cmd)
-                    }
-                    resolveCmd(cmd, mainWindow);
-                }
-
-                //TODO 4: handle scope and indentation if the code block needs a new line
-                return;
+            if (parameter == 'r3') {
+                console.log('from here');
             }
 
-            // check if the current command may have infinite parameters then apply variable spacing.
-            if (infiniteParamsCmd.includes(cmd)) {
-                console.log(cmd)
-                console.log(cmdStage)
-                if (cmdStage[cmdStage.length - 1] > basicNumParams[transformedCmdsStack[transformedCmdsStack.length - 1]]) {
+            if (infiniteParamsCmd.includes(cmd) && paramResolvesInfVarsCmd(parameter)) {
+                resolveCmd(cmd, mainWindow, parameter);
+            } else {
+                if (infiniteParamsCmd.includes(cmd) && cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
                     insertPlainCode(mainWindow, variablesSpacing[cmd] + parameter)
                 } else {
-                    insertPlainCode(mainWindow, parameter);
+                    insertPlainCode(mainWindow, parameter)
+                    updateCursor(mainWindow)
+
+                    // resolves command
+                    resolveCmd(cmd, mainWindow);
                 }
-            } else {
-
-                insertPlainCode(mainWindow, parameter)
-                updateCursor(mainWindow)
-
-                // resolves command that have determinant number of parameters
-                resolveCmd(cmd, mainWindow);
-
             }
-            cmdStage[cmdStage.length - 1] += 1
         }
+
+        // update cmd stage
+        cmdStage[cmdStage.length - 1] += 1
     });
 }
 
@@ -243,27 +223,32 @@ function paramResolvesInfVarsCmd(param) {
     }
 }
 
-// resolve finite number of parameters commands
-function resolveCmd(cmd, mainWindow) {
+// resolve commands ending whether manual or automatically
+function resolveCmd(cmd, mainWindow, parameter) {
+
+    if (infiniteParamsCmd.includes(cmd) && paramResolvesInfVarsCmd(parameter)) {
+
+        // TODO 3: handle end of indefinite command cursor update
+        mainWindow.webContents.send('increment-cursor', 1)
+
+        // pop the command from the command stack as well as its stage
+        cmdStack.pop();
+        cmdStage.pop();
+
+    }
     // checks whether the command has been successfully passed all the parameters
     // removes it from command stack and updates the cursor
-    while (!infiniteParamsCmd.includes(cmd) && cursorMovingValues[cmd].length == cmdStage[cmdStage.length - 1] + basicNumParams[cmd] - 1) {
-        // check if the command may have indefinite parameters
-        var keys = Object.keys(transformCmds)
-        if (keys.includes(cmd)) {
-            transformedCmdsStack.push(cmdStack.pop())
-            cmdStack.push(transformCmds[cmd])
-            cmd = cmdStack[cmdStack.length - 1]
-        } else {
-            cmdStage.pop();
-            cmdStack.pop();
-            cmd = cmdStack[cmdStack.length - 1]
-            if (!cmd || infiniteParamsCmd.includes(cmd)) {
-                break;
-            }
-            // else update the cursor normally
-            updateCursor(mainWindow)
+    cmd = cmdStack[cmdStack.length - 1];
+
+    while (!infiniteParamsCmd.includes(cmd) && basicNumParams[cmd] == cmdStage[cmdStage.length - 1]) {
+        cmdStage.pop();
+        cmdStack.pop();
+        cmd = cmdStack[cmdStack.length - 1];
+        if (!cmd || infiniteParamsCmd.includes(cmd)) {
+            break;
         }
+        // else update the cursor normally
+        updateCursor(mainWindow)
     }
 }
 
