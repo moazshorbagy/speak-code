@@ -31,17 +31,10 @@ def create_dataset(dataset='TIMIT'):
     
     for i in range(y.shape[0]):
         y[i] = to_categorical(_y[i], num_classes=c.n_output)
-    
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=c.validation_split, shuffle=True)
 
-    y_lag_train = y_train.copy()
-    y_lag_train = np.delete(y_lag_train, 0, 1)
-    pad = np.reshape([to_categorical(encode(c.pad_token)[0], num_classes=c.n_output)]*y_train.shape[0], (y_train.shape[0], 1, -1))
-    y_lag_train = np.append(y_lag_train, pad, 1)
-    
-    y_lag_test = y_test.copy()
-    y_lag_test = np.delete(y_lag_test, 0, 1)
-    pad = np.reshape([to_categorical(encode(c.pad_token)[0], num_classes=c.n_output)]*y_test.shape[0], (y_test.shape[0], 1, -1))
-    y_lag_test = np.append(y_lag_test, pad, 1)
+    y_lag = y.copy()
+    y_lag = np.delete(y_lag, 0, 1)
+    pad = np.reshape([to_categorical(encode(c.pad_token)[0], num_classes=c.n_output)]*y.shape[0], (y.shape[0], 1, -1))
+    y_lag = np.append(y_lag, pad, 1)
 
-    return X_train, X_test, y_train, y_test, y_lag_train, y_lag_test
+    return X, y, y_lag

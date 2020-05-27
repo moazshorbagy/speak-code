@@ -6,9 +6,9 @@ from model import create_model, create_optimizer, create_loss_function
 
 if __name__=="__main__":
     
-    X_train, X_test, y_train, y_test, y_lag_train, y_lag_test = create_dataset()
+    X, y, y_lag = create_dataset()
 
-    full_model, encoder_model, decoder_model = create_model(X_train.shape[1], y_train.shape[1])
+    full_model, encoder_model, decoder_model = create_model(X.shape[1], y.shape[1])
 
     full_model.summary()
 
@@ -23,10 +23,12 @@ if __name__=="__main__":
     plot_model(full_model, to_file='full_model.png', show_shapes=True)
 
     history = full_model.fit(
-        [X_train, y_train],
-        y_lag_train,
+        [X, y],
+        y_lag,
         batch_size=c.batch_size,
-        epochs=20,
+        epochs=100,
+        validation_split=0.2,
+        shuffle=True,
         initial_epoch=0
         )
 
@@ -37,3 +39,4 @@ if __name__=="__main__":
     encoder_model.save_weights("encoder_model.h5")
     decoder_model.save_weights("decoder_model.h5")
     
+    return full_model, encoder_model, decoder_model

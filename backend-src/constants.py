@@ -2,7 +2,7 @@ start_token = '@'
 end_token = '!'
 pad_token = '*'
 
-alphabet = ['*', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', start_token, end_token]
+alphabet = [pad_token, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', start_token, end_token]
 masking_value = -900.
 
 # Sound Processing
@@ -35,13 +35,13 @@ n_cell_dim = 100        # dimension of lstm state cell
 
 # Global Constants
 
-epochs = 20            # an epoch is an iteration over the entire x and y data provided
+epochs = 100            # an epoch is an iteration over the entire x and y data provided
 batch_size = 50         # number of samples per gradient update.
 validation_split = 0.2  # fraction of the training data to be used as validation data
 
 # Adam Optimizer
 
-learning_rate = 0.0001
+learning_rate = 0.001
 beta_1 = 0.9
 beta_2 = 0.999
 
