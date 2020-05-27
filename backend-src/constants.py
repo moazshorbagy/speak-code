@@ -7,7 +7,7 @@ masking_value = -900.
 
 # Sound Processing
 
-sample_rate       = 16000       # sample rate value expected by model
+sample_rate       = 8000       # sample rate value expected by model
 pre_emphasis      = 0.97
 frame_duration    = 0.025       #in seconds
 frame_overlap     = 0.015       #in seconds
