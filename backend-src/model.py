@@ -28,7 +28,7 @@ def create_model():
 
     model           = Bidirectional(LSTM(c.n_hidden_4, return_sequences=True))(model)
 
-    model           = Dense(c.n_hidden_5, name='layer_5')(model)
+    model           = TimeDistributed(Dense(c.n_hidden_5), name='layer_5')(model)
     model           = ReLU(max_value=c.relu_clip)(model)
     model           = Dropout(c.dropout_4, name='dropout_4')(model)
 
@@ -50,6 +50,7 @@ def create_optimizer():
 
 def create_loss_function(args):
     y_pred, labels, input_length, label_length = args
+    y_pred = y_pred[:, 2:, :]
     return k.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
 def create_model_checkpoint_cb():

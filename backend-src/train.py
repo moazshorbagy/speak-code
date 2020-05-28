@@ -19,7 +19,6 @@ def train():
     model = create_model()
 
     model.summary()
-
     plot_model(model, to_file='rnn.png')
 
     optimizer = create_optimizer()
@@ -36,10 +35,10 @@ def train():
         validation_steps=int(np.ceil(X_test.shape[0]/c.batch_size)),
         callbacks=[create_model_checkpoint_cb(), create_lr_scheduler_cb()]
         )
-    
+
     plot_accuracy(history)
     plot_loss(history)
-    
+
     model.load_weights(c.checkpoint_filepath)
     model.save('model.h5')
 
@@ -48,9 +47,9 @@ def train():
     for i in range(15):
         data = X_test[i]
         d = np.array([data])
-        
+
         prediction=sub_model.predict(d)
-        output = k.get_value(prediction)        
+        output = k.get_value(prediction)
         path = ctcBeamSearch(output[0], ''.join(c.alphabet), None)
 
         print('true:', decode(y_test[i]))
