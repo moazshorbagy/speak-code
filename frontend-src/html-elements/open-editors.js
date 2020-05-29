@@ -33,7 +33,7 @@ addOpenEditors = function () {
 
     openEditorsContainer.append("<div id='" + openEditorsContentContainerId + "' class='" + openEditorsContentContainerClass + "'> </div>");
 
-    $("#" + openEditorsContentContainerId).css("display", "block");
+    $("#" + openEditorsContentContainerId).css("display", "none");
 
     document.getElementById(openEditorsId).addEventListener('click', function () {
         var content = this.nextElementSibling;

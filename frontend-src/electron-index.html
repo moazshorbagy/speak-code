@@ -34,9 +34,16 @@
 		</div>
 	</div>
 </body>
-
+<script src="import.js"></script>
 <script>
-	const wd = require('./files-handling/working-directory');
+	ipcRenderer.on('request-open-folder', () => {
+		ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
+	});
+	ipcRenderer.on('request-open-file', () => {
+		ipcRenderer.send('open-file');
+	});
+</script>
+<script>
 	var workingDirectory = wd.getCurrentWorkingDirectory();
 
 	if (workingDirectory == null) {
@@ -44,6 +51,43 @@
 		folderspanel.append("<p class='leftpanel-text'>Tap to open a folder</p>")
 		folderspanel.append("<button id='open-folder-button'>Open Folder</button>")
 	}
+</script>
+<script>
+	var button = document.getElementById('open-folder-button');
+	button.addEventListener("click", () => {
+		ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
+	});
+
+	ipcRenderer.on('chosen-directory', (event, path) => {
+		if (path) {
+			wd.setWorkingDirectory(path)
+			wd.displayWorkingDirectory()
+		}
+	});
+
+	ipcRenderer.on('chosen-file', (event, args) => {
+		editor.openDoc(args.doc, args.filePath);
+		openedFiles.addOpenEditors();
+		openedFiles.addOpenedFile(args.filePath);
+	});
+</script>
+<script>
+	ipcRenderer.on('save-file', function (event, arg) {
+		editor.saveFile();
+	});
+
+	ipcRenderer.on('insert-plain-code', function (event, arg) {
+		editor.insertText(arg);
+	});
+
+	ipcRenderer.on('get-current-line', function(event, arg) {
+		event.sender.send('current-line', editor.getCurrentLine());
+	});
+
+	ipcRenderer.on('increment-cursor', function(event, args) {
+		editor.incrementCursor(args);
+	});
+
 </script>
 <script>
 	var Split = require('split-grid')
@@ -55,25 +99,5 @@
 	})
 </script>
 <script type="text/javascript" src="app-menu/populate-menu.js"></script>
-<script>
-	const dialogHandler = require('./files-handling/openDialog');
-	var button = document.getElementById('open-folder-button');
-	button.addEventListener("click", openDialog);
-</script>
-<script>
-	const { ipcRenderer } = require('electron');
-
-	const editor = require('./editor/editor');
-
-	ipcRenderer.on('save-file', function (event, arg) {
-		editor.saveFile();
-	});
-
-	ipcRenderer.on('insert-text', function (event, arg) {
-		console.log(arg.msg);
-		editor.insertText(arg.msg);
-	});
-
-</script>
 
 </html>

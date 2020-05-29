@@ -64,6 +64,20 @@ initEditor = function (doc, filePath, type) {
 
         currentFilePath = filePath;
 
+        var myBinding = editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.US_DOT, function() {
+            console.log(editor.getOptions()._values[36]);
+            editor.updateOptions({
+                fontSize: editor.getOptions()._values[36] + 2
+            });
+        });
+
+        var anotherBinding = editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.US_COMMA, function() {
+            console.log(editor.getOptions()._values[36]);
+            editor.updateOptions({
+                fontSize: editor.getOptions()._values[36] - 2
+            });
+        });
+
         //track position of cursor
         editor.onDidChangeCursorPosition(function (position) {
             cursorPositions[currentFilePath] = position.position;
@@ -161,6 +175,20 @@ insertText = function (text, position) {
         "what", [op]
     );
 
+    editor.focus();
+
+}
+
+incrementCursor = function(value) {
+    position = editor.getPosition();
+    console.log(position)
+    position.column += value;
+    console.log(position)
+    editor.setPosition(position)
+}
+
+getCurrentLine = function() {
+    return editor.getModel().getLineContent(editor.getPosition().lineNumber);
 }
 
 focusModel = function (filePath) {
@@ -216,5 +244,7 @@ module.exports = {
     getCursorPosition,
     setCursorPosition,
     saveFile,
-    removeModelWithId
+    getCurrentLine,
+    removeModelWithId,
+    incrementCursor
 }

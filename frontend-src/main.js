@@ -1,11 +1,12 @@
-const electron = require('electron')
-const app = electron.app
-const globalShortcut = electron.globalShortcut
-const BrowserWindow = electron.BrowserWindow
+const electron = require('electron');
+const app = electron.app;
+const globalShortcut = electron.globalShortcut;
+const BrowserWindow = electron.BrowserWindow;
 const { spawn } = require('child_process');
 
-const { ipcMain } = require('electron')
+const ipcMain = electron.ipcMain;
 
+const dialog = electron.dialog;
 
 let mainWindow;
 
@@ -27,11 +28,17 @@ function createWindow() {
 
 const zeroRPCServer = require('./server/server');
 
+let spawnedChild;
 
 app.on('ready', function () {
-	spawnPythonChild();
-	zeroRPCServer.initializeServer();
 	createWindow();
+	zeroRPCServer.initializeServer();
+
+	// // start the python client after 100 ms to ensure all renderer process scripts are run.
+	// setTimeout(function() {
+	// 	spawnPythonChild();
+	// }, 15000);
+
 });
 
 app.on('window-all-closed', function () {
@@ -41,24 +48,34 @@ app.on('window-all-closed', function () {
 });
 
 function spawnPythonChild() {
-	spawnedChild = spawn('python3', ['python-client.py']);
+	spawnedChild = spawn('python', ['python-client.py']);
 
 	spawnedChild.on('close', (code, signal) => {
-		console.log(`child error: ${code}, ${signal}`);
+		console.log(`child closed: ${code}, ${signal}`);
 	});
 	spawnedChild.on('error', (err) => console.error(err));
 
 }
 
+const folderOptions = require('./files-handling/open-directory');
 
+ipcMain.on('open-folder', (event, prevPath) => {
+	folderOptions.openDirectory(mainWindow, dialog, event, prevPath);
+});
+
+const fileOptions = require('./files-handling/open-file')
+
+ipcMain.on('open-file', (event, args) => {
+	fileOptions.openFile(mainWindow, dialog, event);
+});
 
 app.whenReady().then(() => {
 	globalShortcut.register('CommandOrControl+S', () => {
-	  mainWindow.webContents.send('save-file')
+		mainWindow.webContents.send('save-file')
 	})
-  }).catch((e) => {
+}).catch((e) => {
 	console.log(e);
-  });
+});
 
 app.on('activate', function () {
 	if (mainWindow === null) {
