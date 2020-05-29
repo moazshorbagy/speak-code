@@ -28,6 +28,9 @@ else:
 
 # Geometry
 
+max_X_seq_len = 620     # Only used for Common Voice dataset
+max_y_seq_len = 32      # Only used for Common Voice dataset
+
 n_input         = n_mfcc+(2*n_context*n_mfcc) if add_context else n_mfcc
 n_output = len(alphabet)
 
