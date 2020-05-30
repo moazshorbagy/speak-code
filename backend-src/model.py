@@ -115,6 +115,7 @@ def predict(encoder_model,decoder_model,data,beam_search=False):
                 if paths[0][0][-1]==c.end_token:
                     break
             predictions.append(paths[0][0])
+    return predictions
 
 
 def create_optimizer():
