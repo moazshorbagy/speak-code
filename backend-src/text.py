@@ -15,3 +15,11 @@ def encode(text):
 
 def decode(label_vector):
     return ''.join([idx2char[idx] for idx in label_vector])
+
+def encode_to_one_hot(char):
+    z=np.zeros((1,1,c.n_output))
+    z[0,0,c.alphabet.index(char)]=1
+    return np.array(z)
+
+def decode_from_one_hot(vector):
+    return c.alphabet[np.where(vector==1)[0][0]]

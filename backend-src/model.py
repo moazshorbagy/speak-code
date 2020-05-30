@@ -4,9 +4,10 @@ from tensorflow.keras.layers import Input, Dense, Dropout, GRU, Bidirectional, C
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as k
 from attention import AttentionLayer
-import numpy as np
 
+import numpy as np
 import constants as c
+from text import encode_to_one_hot,decode_from_one_hot
 
 def create_model(max_input_seq_length, max_ouput_seq_length):
     k.clear_session()
@@ -18,21 +19,21 @@ def create_model(max_input_seq_length, max_ouput_seq_length):
     encoder_gru = Bidirectional(GRU(c.n_cell_dim, return_sequences=True, return_state=True, name='encoder_gru'), name='bidirectional_encoder')
 
     encoder_out, encoder_fwd_state, encoder_back_state = encoder_gru(encoder_input)
-    
+
     # Decoder
 
     decoder_input = Input(shape=(max_ouput_seq_length, c.n_output), name='decoder_input')
-    
+
     decoder_gru = GRU(c.n_cell_dim*2, return_sequences=True, return_state=True, name='decoder_gru')
-    
+
     decoder_init_state = Concatenate(axis=-1)([encoder_fwd_state, encoder_back_state])
 
     decoder_out, decoder_state = decoder_gru(decoder_input, initial_state=decoder_init_state)
 
     # Attention
-    
+
     attn_layer = AttentionLayer(name='attention_layer')
-    
+
     attn_out, attn_states = attn_layer([encoder_out, decoder_out])
 
     # Concat attention input and decoder GRU output
@@ -72,6 +73,48 @@ def create_model(max_input_seq_length, max_ouput_seq_length):
                           outputs=[decoder_inf_pred, attn_inf_states, decoder_inf_state])
 
     return full_model, encoder_model, decoder_model
+
+
+def predict(encoder_model,decoder_model,data,beam_search=False):
+    predictions=[]
+    for sample in data:
+        encoder_out,encoder_fwd_state,encoder_back_state = encoder_model.predict(sample.reshape((1,sample.shape[0],sample.shape[1])))
+        dec_init    = np.concatenate([encoder_fwd_state,encoder_back_state],axis=-1)
+        decoder_out = np.zeros((1,1,c.n_output))
+        decoder_out[0,0,-2]=1
+
+        if not beam_search: # greedy search
+            output=''
+            while(1):
+                decoder_out,attention,dec_init=decoder_model.predict([encoder_out,dec_init,decoder_out])
+                chindex=np.argmax(decoder_out,axis=-1)[0,0]
+                output+=c.alphabet[chindex]
+
+                if output[-1]==c.end_token:
+                    break
+
+                decoder_out = np.zeros((1,1,c.n_output))
+                decoder_out[0,0,chindex]=1
+            predictions.append(output)
+
+        else: # beam search
+            decoder_out,attention,dec_init=decoder_model.predict([encoder_out,dec_init,decoder_out])
+            paths=[(c.alphabet[i],decoder_out[0,0,i],dec_init) for i in range(1,c.n_output)] # store tuple -> (path,path probability,dec_init)
+            paths=sorted(paths,key=lambda x:x[1],reverse=True)[0:c.beam_width]
+
+            while(1):
+                new_paths=[]
+                while paths:
+                    path=paths.pop(0)
+                    decoder_out,attention,dec_init=decoder_model.predict([encoder_out,path[2],encode_to_one_hot(path[0][-1])])
+                    for char in c.alphabet[1:]:
+                        new_paths.append((path[0]+char,path[1]*decoder_out[0,0,c.alphabet.index(char)],dec_init))
+
+                paths=sorted(new_paths,key=lambda x:x[1],reverse=True)[0:c.beam_width]
+
+                if paths[0][0][-1]==c.end_token:
+                    break
+            predictions.append(paths[0][0])
 
 
 def create_optimizer():

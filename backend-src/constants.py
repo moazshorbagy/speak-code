@@ -42,6 +42,9 @@ epochs = 100            # an epoch is an iteration over the entire x and y data 
 batch_size = 50         # number of samples per gradient update.
 validation_split = 0.2  # fraction of the training data to be used as validation data
 
+# parameter for beam search
+beam_width=5
+
 # Adam Optimizer
 
 learning_rate = 0.001
