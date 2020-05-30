@@ -234,10 +234,10 @@ function resolveCmd(cmd, mainWindow, parameter) {
         cmdStage.pop();
 
         cmd = cmdStack[cmdStack.length - 1];
-        if(cmdStack.length == 0) {
+        if (cmdStack.length == 0) {
             return;
         }
-        if(!infiniteParamsCmd.includes(cmd)) {
+        if (!infiniteParamsCmd.includes(cmd)) {
             updateCursor(mainWindow);
         }
     }
@@ -276,6 +276,11 @@ function insertPlainCode(mainnWindow, code) {
     mainnWindow.webContents.send('insert-plain-code', code);
 }
 
+// insert code directly
+insertDirectCode = function (mainWindow, code) {
+    insertPlainCode(mainWindow, code);
+}
+
 // updates the cursor according to the last command in the command stack
 function updateCursor(mainWindow) {
     var currentCmd = cmdStack[cmdStack.length - 1]
@@ -287,5 +292,6 @@ function updateCursor(mainWindow) {
 
 module.exports = {
     cancelConstructingCodeblock,
-    constructIndicrectCodeBlock
+    constructIndicrectCodeBlock,
+    insertDirectCode
 }

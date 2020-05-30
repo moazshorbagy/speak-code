@@ -104,9 +104,9 @@ module.exports = {
             indirectCommand = isIndirectCommand(cmd);
 
             if (wordNotInGrammar) {
-                codeParser.insertPlainCode(cmd);
+                codeParser.insertDirectCode(mainWindow, cmd);
             } else if (directCode) {
-                codeParser.insertPlainCode(directCode);
+                codeParser.insertDirectCode(mainWindow, directCode);
             } else if (indicrectCode) {
                 if (codeParser.constructIndicrectCodeBlock(mainWindow, indicrectCode)) {
                     commandIsBeingConstructed = false;
