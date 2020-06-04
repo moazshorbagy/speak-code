@@ -27,7 +27,7 @@ def generator(data_type='train', batch_size=c.batch_size):
         X = [''] * int(batch_data.shape[0])
         _y = [''] * int(batch_data.shape[0])
         
-        for j, (path, transcript) in enumerate(batch_data):    
+        for j, (path, transcript) in enumerate(batch_data):
             X[j] = get_features(np.load(path + '.npy'))
             _y[j] = encode(c.start_token + transcript + c.end_token)
 
@@ -45,6 +45,32 @@ def generator(data_type='train', batch_size=c.batch_size):
         y_lag = np.delete(y_lag, 0, 1)
         pad = np.reshape([to_categorical(encode(c.pad_token)[0], num_classes=c.n_output)]*y.shape[0], (y.shape[0], 1, -1))
         y_lag = np.append(y_lag, pad, 1)
+
+        yield [X, y], y_lag
+
+        i += 1
+
+
+def generator_compiled(data_type='train', batch_size=c.batch_size):
+    data = pd.read_csv(os.path.join('CV', f'cv_{data_type}.csv')).to_numpy()
+    np.random.shuffle(data)
+    steps_per_epoch = int(np.ceil(data.shape[0]/batch_size))
+    i = 0
+
+    while True:
+        if i==steps_per_epoch:
+            i = 0
+            np.random.shuffle(data)
+
+        batch_data = data[i*batch_size:(i+1)*batch_size]
+
+        X = np.zeros((batch_size, c.max_X_seq_len, c.n_input))
+        y = np.zeros((batch_size, c.max_y_seq_len, c.n_output))
+        y_lag = np.zeros((batch_size, c.max_y_seq_len, c.n_output))
+
+        for j, (path, _) in enumerate(batch_data):
+            X[j] = np.load(path + '.X.npy')
+            y[j], y_lag[j] = np.load(path + '.y.npy')
 
         yield [X, y], y_lag
 
