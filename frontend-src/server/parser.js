@@ -33,7 +33,7 @@ function cancelCommandOrCodeBlockCreation(word) {
 }
 
 function isWordNotInGrammar(word) {
-    if (word in language['cancel-executing-indirects'] || word in language['commands']['direct'] || word in language['commands']['indirect'] || word in language['code-insertion']['direct'] || word in language['code-insertion']['indirect']) {
+    if (word in language['cancel-executing-indirects'] || word in language['editor-commands']['direct'] || word in language['editor-commands']['indirect'] || word in language['code-insertion']['direct'] || word in language['code-insertion']['indirect']) {
         return false;
     }
     return true;
@@ -54,18 +54,17 @@ function isIndirectCodeInsertion(word) {
 }
 
 function isDirectCommand(word) {
-    if (word in language['commands']['direct']) {
-        return language['commands']['direct'][word];
+    if (word in language['editor-commands']['direct']) {
+        return language['editor-commands']['direct'][word];
     }
-
 }
 
 function isIndirectCommand(word) {
-    if (word in language['commands']) {
-        if (word in language['commands']['indirect']) {
+    if (word in language['editor-commands']) {
+        if (word in language['editor-commands']['indirect']) {
             commandIsBeingConstructed = true;
             constructingCommand = true;
-            return language['commands']['indirect'][word];
+            return language['editor-commands']['indirect'][word];
         }
     }
 }
