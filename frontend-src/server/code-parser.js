@@ -1,4 +1,5 @@
 const electron = require('electron');
+const fs = require('fs')
 
 const ipcMain = electron.ipcMain;
 
@@ -27,9 +28,6 @@ let availableCommands = [
     'parameters-insertion'
 ];
 
-// TODO 1: updated after every code insertion.
-let currentVariables = [];
-
 // cancel any code block being constructed that haven't been terminated yet
 cancelConstructingCodeblock = function () {
 
@@ -37,7 +35,6 @@ cancelConstructingCodeblock = function () {
 
     cmdStack = [];
     cmdStage = [];
-    transformedCmdsStack = [];
 }
 
 // idicates that the current command being executed 
@@ -138,16 +135,13 @@ let basicNumParams = {
     'define-function': 1
 }
 
-// keep track of transformed indefinite number of parameters commands
-// they are either transformed to `conditions` or `parameters`
-let transformedCmdsStack = [];
-
 // returns false if commmand is not completed yet
 // return true if command is successfully executed.
 constructIndicrectCodeBlock = function (mainWindow, parameter) {
     mainWindow.webContents.send('get-current-line');
 
     ipcMain.once('current-line', function (event, line) {
+        
         scope = getScope(line);
 
         // check if the parameter is a keyword
@@ -257,7 +251,7 @@ function resolveCmd(cmd, mainWindow, parameter) {
     }
 }
 
-// assuming that the indentation is 4 spaces
+// assuming that the indentation is 4 spaces (programming language specific).
 function getScope(currentLine) {
     k = 0;
     for (let i = 0; i < currentLine.length; i++) {
@@ -289,6 +283,81 @@ function updateCursor(mainWindow) {
     mainWindow.webContents.send('increment-cursor', val);
 }
 
+var commentSymbol = '#';
+
+//this dictionary holds every model's variables and their type.
+let modelsVariables = {};
+
+// This function is programming language specific.
+function getFileVariables(mainWindow) {
+    mainWindow.webContents.send('get-file-content');
+
+    ipcMain.once('file-content', function (event, args) {
+
+        var keys = Object.keys(modelsVariables);
+        if(keys.includes(args)) {
+            return;
+        }
+
+        lines = fs.readFileSync(args, "utf8").split('\n');
+
+        for (index in lines) {
+            tokens = lines[index].split(' ');
+
+            //TODO 1: skip comments and strings.
+            iComment = tokens.indexOf(commentSymbol);
+            iString = tokens.findIndex(element => element.includes("'"));
+
+            // if there is a string inside a comment or a comment symbol inside a string
+            if (!(iComment == -1 || iString == -1)) {
+
+                // starting from 0 till range is the area that might have variables
+                // in case of comments
+                isComment = iComment > iString ? false : true;
+                range = iComment > iString ? iString : iComment;
+
+                // then we will use range to determine the are to detect variables.
+                if (isComment) {
+                    for (i = 0; i < range; i++) {
+
+                    }
+                }
+            }
+
+            //TODO 2: get imports. 
+            if (tokens.includes('import')) {
+                if (tokens.includes('as')) {
+
+                }
+            }
+
+            //TODO 3: variables that are assigned in an assignment statement.
+
+            //TODO 4: Member functions of imports
+
+            //TODO 5: get class names, their members and methods names.
+
+            //TODO 6: get functions names that are defined in a regular way (e.g. `def funName():` in python).
+
+            //TODO 7: 
+
+            if (!tokens.includes('=')) {
+                continue;
+            }
+
+            for (i = 0; i < tokens.length; i++) {
+                if (tokens[i] == '=' && i > 0) {
+                    varName = tokens[i - 1];
+                    if (varName == 'client') {
+                        console.log(tokens[i + 1]);
+                    }
+                    // console.log(tokens[i + 1]);
+                    break;
+                }
+            }
+        }
+    });
+}
 
 module.exports = {
     cancelConstructingCodeblock,
