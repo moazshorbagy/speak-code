@@ -234,6 +234,15 @@ removeModelWithId = function(filePath) {
     }
 }
 
+getCurrentModel = function() {
+    var keys = Object.keys(models);
+    if(keys.length == 0) {
+        return null;
+    }
+
+    return currentFilePath;
+}
+
 module.exports = {
     openDoc,
     setModelWithId,
@@ -246,5 +255,6 @@ module.exports = {
     saveFile,
     getCurrentLine,
     removeModelWithId,
-    incrementCursor
+    incrementCursor,
+    getCurrentModel
 }

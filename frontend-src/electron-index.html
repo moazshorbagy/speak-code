@@ -88,6 +88,10 @@
 		editor.incrementCursor(args);
 	});
 
+	ipcRenderer.on('get-file-content', function(event, args) {
+		event.sender.send('file-content', editor.getCurrentModel());
+	});
+
 </script>
 <script>
 	var Split = require('split-grid')
