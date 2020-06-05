@@ -2,22 +2,28 @@
     "code-insertion": {
         "direct": {
             "and": "and",
+            "end": "and",
             "or": "or",
             "equal": "==",
+            "equals": "==",
             "unequal": "!=",
-            "GE": ">=",
-            "LE": "<=",
-            "GThan": ">",
-            "LThan": "<",
+            "inequal": "!=",
+            "at least": ">=",
+            "at most": "<=",
+            "greater": ">",
+            "lesser": "<",
             "plus": "+",
             "minus": "-",
-            "mul": "*",
-            "by": "/",
-            "bint": "//",
+            "by": "*",
+            "split": "/",
+            "splits": "/",
+            "split int": "//",
             "if": "if",
             "while": "while",
+            "wild": "while",
             "break": "break",
             "def": "def",
+            "deaf": "def",
             "range": "range",
             "for": "for",
             "else": "else",
@@ -56,17 +62,19 @@
             "cbrace": "}",
             "osquare": "[",
             "csquare": "]",
+            "single quote": "'",
+            "double quote": "\"",
             "undo": "undo",
             "redo": "redo"
         },
         "indirect": {
-            "swhile": "while-loop-block",
-            "sif": "if-block",
+            "while loop": "while-loop-block",
+            "if statement": "if-block",
             "efor": "foreach-block",
             "call": "call-function",
             "sfor": "for-loop-block",
             "dex": "index-variable",
-            "cond": "condition-formation",
+            "condition": "condition-formation",
             "define": "define-function",
             "grab": "variable-calls-method"
         }
@@ -81,9 +89,9 @@
             "unscope": "exit-scope"
         },
         "indirect": {
-            "goto": "goto-scope",
+            "scope": "goto-scope",
             "nop": "open-file-from-directory",
-            "pand": "expand-folder",
+            "expand": "expand-folder",
             "close": "close-tab",
             "mad": "navgiate-to-tab",
             "camouflage": "save-file-as",
@@ -91,7 +99,7 @@
             "addfold": "add-folder-to-target-directory",
             "verizon": "scroll-to-line",
             "horizon": "scroll-to-column",
-            "scarce": "set-cursor"
+            "set cursor": "set-cursor"
         }
     },
     "cancel-executing-indirects": {
