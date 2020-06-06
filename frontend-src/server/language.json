@@ -63,6 +63,7 @@
             "under": "_",
             "dash": "-",
             "dot": ".",
+            "comma": ", ",
             "open-bracket": "(",
             "close-bracket": ")",
             "bracket": "()",
@@ -101,8 +102,7 @@
             "variable": "name-variable",
             "camel-case": "camel-case-the-variable",
             "snake-case": "snake-case-the-variable",
-            "end-condition": "end-condition",
-            "end-parameters": "end-parameters"
+            "finish": "finish"
         }
     },
     "editor-commands": {
