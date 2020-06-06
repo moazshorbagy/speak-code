@@ -88,10 +88,10 @@
         "indirect": {
             "while-loop": "while-loop-block",
             "if-statement": "if-block",
-            "efor": "foreach-block",
+            "for-each": "foreach-block",
             "call": "call-function",
-            "sfor": "for-loop-block",
-            "dex": "index-variable",
+            "for-loop": "for-loop-block",
+            "of": "index-variable",
             "condition": "condition-formation",
             "define": "define-function",
             "variable": "name-variable",
