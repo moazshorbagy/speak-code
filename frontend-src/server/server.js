@@ -20,10 +20,10 @@ initializeServer = function() {
         // parsing the command here means only knowing exactly what the command is
         // then it will sent as an event to the renderer process if it needs to.
         // through mainWindow.webContents.send() function. 
-        sendData: function (command, reply) {
+        sendData: function (words, reply) {
             try {
                 mainWindow = BrowserWindow.getAllWindows()[0];
-                parser.parseCommand(mainWindow, command);
+                parser.parseCommand(mainWindow, words);
 
                 // if all is okay.
                 reply(null, 'ok');
