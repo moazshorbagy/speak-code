@@ -52,9 +52,13 @@ callFuncWithParams = [
     'call', 'findVulnerabilities', 'call', 'x', 'puff', 'z', 'call', '3adyAho', 'puff', 'call', 'elmafroodez', 'puff', 'puff'
 ]
 
+nameVariable = [
+    'variable my first var camel case to be 0'
+]
 
-for i in range(len(ifBlockWithIndexingVars)):
-    client.sendData(ifBlockWithIndexingVars[i])
+
+for i in range(len(nameVariable)):
+    client.sendData(nameVariable[i])
     time.sleep(1)
 
 # for i in range(len(ifBlockWithFunctionCall)):
