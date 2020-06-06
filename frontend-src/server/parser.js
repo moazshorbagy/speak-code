@@ -65,6 +65,41 @@ function isIndirectCommand(word) {
     }
 }
 
+function processSentence(words) {
+
+    processedWords = [];
+
+    console.log(words);
+
+    directCodeInsertionDict = language['code-insertion']['direct'];
+    indirectCodeInsertionDict = language['code-insertion']['indirect'];
+    direcEditorCommandsDict = language['editor-commands']['direct'];
+    indirectEditorCommandsDict = language['editor-commands']['indirect'];
+
+    for (i = 0; i < words.length - 1; i++) {
+        var concatenatedWords = words[i] + '-' + words[i + 1];
+        if (Object.keys(directCodeInsertionDict).includes(concatenatedWords) || Object.keys(indirectCodeInsertionDict).includes(concatenatedWords) ||
+            Object.keys(direcEditorCommandsDict).includes(concatenatedWords) || Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
+            processedWords.push(concatenatedWords);
+            i++;
+        } else {
+            processedWords.push(words[i]);
+        }
+
+        if (i == words.length - 2) {
+            processedWords.push(words[i + 1]);
+        }
+    }
+
+    console.log(processedWords);
+
+    return processedWords;
+}
+
+
+
+
+
 function buildVariableName(words) {
 
     wordsAfterCombiningVarName = [];
@@ -135,14 +170,13 @@ module.exports = {
     parseCommand: function (mainWindow, words) {
 
         //preprocessing the sentence
-        if(typeof words === 'string') {
+        if (typeof words === 'string') {
             words = words.split(' ');
-        }
-
-        // building variable name
-        if (words.includes('variable')) {
-            words = buildVariableName(words);
-            console.log(words);
+            // building variable name
+            if (words.includes('variable')) {
+                words = buildVariableName(words);
+            }
+            words = processSentence(words);
         }
 
         for (i = 0; i < words.length; i++) {
