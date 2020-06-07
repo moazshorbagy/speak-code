@@ -131,10 +131,10 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
             // update cmd variable (keeps track of the most recent command)
             cmd = cmdStack[cmdStack.length - 1]
 
-            if (infiniteParamsCmd.includes(cmd) && paramResolvesInfVarsCmd(parameter)) {
+            if (paramResolvesInfVarsCmd(parameter)) {
                 resolveCmd(cmd, mainWindow, parameter);
             } else {
-                if (infiniteParamsCmd.includes(cmd) && cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
+                if (cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
                     insertPlainCode(mainWindow, parameter)
                 } else {
                     insertPlainCode(mainWindow, parameter)
