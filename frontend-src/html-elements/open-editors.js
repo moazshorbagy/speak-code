@@ -16,10 +16,12 @@ const modelsEventEmitters = require('../editor/model-did-change-event');
 // for new tabs 
 tabsCount = 0;
 
+let unsavedModels = [];
+
 addOpenEditors = function () {
 
     var doesExist = $("#" + openEditorsId).length;
-    if(doesExist) {
+    if (doesExist) {
         return;
     }
 
@@ -79,7 +81,7 @@ addOpenedFile = function (filePath) {
         editor.focusModel(this.id);
     });
 
-    document.getElementById(tabId).addEventListener('click', function() {
+    document.getElementById(tabId).addEventListener('click', function () {
         var tab = this.id.split('_')[0];
         var element = document.getElementById('OFcontainer_' + tab);
         element.parentNode.removeChild(element);
@@ -88,20 +90,32 @@ addOpenedFile = function (filePath) {
     });
 }
 
-notifyIsSaved = function(filePath) {
+notifyIsSaved = function (filePath) {
     document.getElementById(filePath + '_t').src = 'icons/close-24px.svg';
+    document.getElementById('savedState').innerText = 'saved';
+    console.log(unsavedModels)
+    console.log(filePath)
+    unsavedModels = unsavedModels.filter(entry => entry !== filePath);
+    console.log(unsavedModels);
 }
 
-notifyNeedsSave = function(filePath) {
+notifyNeedsSave = function (filePath) {
+    if(!unsavedModels.includes(filePath)) {
+        unsavedModels.push(filePath);
+    } 
+    
     document.getElementById(filePath + '_t').src = 'icons/modified.svg';
+    document.getElementById('savedState').innerText = 'unsaved';
 }
 
-displayCurrentlyOpenedFileName = function(filePath) {
+displayCurrentlyOpenedFileName = function (filePath) {
     var currentlyOpenedFile = $("#editor-top-panel").empty();
-    if(!filePath) {
+    if (!filePath) {
         return;
     }
-    currentlyOpenedFile.append(`${filePath.split(Path.sep).pop()}`);
+
+    currentlyOpenedFile.append(`<div id='fileName'>${filePath.split(Path.sep).pop()}</div>`);
+    currentlyOpenedFile.append(`<div id='savedState'>${unsavedModels.includes(filePath) ? 'unsaved' : 'saved'}</div>`);
 }
 
 module.exports = {
