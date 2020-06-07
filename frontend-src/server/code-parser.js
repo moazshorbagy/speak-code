@@ -91,6 +91,16 @@ let basicNumParams = {
     'define-function': 1
 }
 
+let directCodeInsertiunCmds = [
+    'brackets',
+    'braces',
+    'square-brackets',
+    'single-quote',
+    'double-quote',
+    'new-scope',
+    'exit-scope'
+];
+
 // returns false if commmand is not completed yet
 // return true if command is successfully executed.
 constructIndicrectCodeBlock = function (mainWindow, parameter) {
@@ -209,8 +219,58 @@ function insertPlainCode(mainnWindow, code) {
 }
 
 // insert code directly
-insertDirectCode = function (mainWindow, code) {
-    insertPlainCode(mainWindow, code);
+directCodeInsertion = function (mainWindow, keyword) {
+    if (directCodeInsertiunCmds.includes(keyword)) {
+        switch (keyword) {
+            case 'brackets': {
+                insertPlainCode('()');
+                mainWindow.webContents.send('increment-cursor', -1);
+                break;
+            }
+            case 'braces': {
+                insertPlainCode('{}');
+                mainWindow.webContents.send('increment-cursor', -1);
+                break;
+            }
+            case 'square-brackets': {
+                insertPlainCode('[]');
+                mainWindow.webContents.send('increment-cursor', -1);
+                break;
+            }
+            case 'single-quote': {
+                insertPlainCode("''");
+                mainWindow.webContents.send('increment-cursor', -1);
+                break;
+            }
+            case 'double-quotes': {
+                insertPlainCode("\"\"");
+                mainWindow.webContents.send('increment-cursor', -1);
+                break;
+            }
+            case 'new-scope': {
+                mainWindow.webContents.send('get-current-line');
+
+                ipcMain.once('current-line', function (event, line) {
+
+                    scope = getScope(line);
+
+                    mainWindow.webContents.send('increment-cursor', line.length);
+
+                    code = ":\n";
+
+                    code += ("\t").repeat(getScope(line));
+
+                    insertPlainCode(code);
+                });
+                break;
+            }
+            case 'exit-scope': {
+                
+            }
+        }
+    } else {
+        insertPlainCode(mainWindow, keyword);
+    }
 }
 
 // updates the cursor according to the last command in the command stack
@@ -306,5 +366,5 @@ function getFileVariables(mainWindow) {
 module.exports = {
     cancelConstructingCodeblock,
     constructIndicrectCodeBlock,
-    insertDirectCode
+    directCodeInsertion
 }

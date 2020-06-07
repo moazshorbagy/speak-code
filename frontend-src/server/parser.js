@@ -217,9 +217,9 @@ module.exports = {
                 indirectCommand = isIndirectCommand(cmd);
 
                 if (wordNotInGrammar) {
-                    codeParser.insertDirectCode(mainWindow, cmd);
+                    codeParser.directCodeInsertion(mainWindow, cmd);
                 } else if (directCode) {
-                    codeParser.insertDirectCode(mainWindow, directCode);
+                    codeParser.directCodeInsertion(mainWindow, directCode);
                 } else if (indicrectCode) {
                     if (codeParser.constructIndicrectCodeBlock(mainWindow, indicrectCode)) {
                         commandIsBeingConstructed = false;
