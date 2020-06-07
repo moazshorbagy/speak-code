@@ -64,6 +64,7 @@
             "under": "_",
             "dash": "-",
             "dot": ".",
+            "comma": ", ",
             "open-bracket": "(",
             "close-bracket": ")",
             "bracket": "()",
@@ -88,7 +89,9 @@
             "six": "6",
             "seven": "7",
             "eight": "8",
-            "nine": "9"
+            "nine": "9",
+            "new-scope": "new-scope",
+            "exit-scope": "new-scope"
         },
         "indirect": {
             "while-loop": "while-loop-block",
@@ -97,13 +100,11 @@
             "call": "call-function",
             "for-loop": "for-loop-block",
             "of": "index-variable",
-            "condition": "condition-formation",
             "define": "define-function",
             "variable": "name-variable",
             "camel-case": "camel-case-the-variable",
             "snake-case": "snake-case-the-variable",
-            "end-condition": "end-condition",
-            "end-parameters": "end-parameters"
+            "finish": "finish"
         }
     },
     "editor-commands": {
@@ -113,8 +114,6 @@
             "exit": "close-all-tabs",
             "new-file": "new-file",
             "reveal-cursor": "reveal-cursor",
-            "exit-scope": "exit-scope",
-            "new-scope": "new-scope",
             "zoom-in": "zoom-in",
             "zoom-out": "zoom-out",
             "undo": "undo",

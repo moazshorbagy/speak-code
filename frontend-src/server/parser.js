@@ -76,20 +76,25 @@ function processSentence(words) {
     direcEditorCommandsDict = language['editor-commands']['direct'];
     indirectEditorCommandsDict = language['editor-commands']['indirect'];
 
-    for (i = 0; i < words.length - 1; i++) {
-        var concatenatedWords = words[i] + '-' + words[i + 1];
-        if (Object.keys(directCodeInsertionDict).includes(concatenatedWords) || Object.keys(indirectCodeInsertionDict).includes(concatenatedWords) ||
-            Object.keys(direcEditorCommandsDict).includes(concatenatedWords) || Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
-            processedWords.push(concatenatedWords);
-            i++;
-        } else {
-            processedWords.push(words[i]);
-        }
+    if (words.length == 1) {
+        processedWords.push(words[0]);
+    } else {
+        for (i = 0; i < words.length - 1; i++) {
+            var concatenatedWords = words[i] + '-' + words[i + 1];
+            if (Object.keys(directCodeInsertionDict).includes(concatenatedWords) || Object.keys(indirectCodeInsertionDict).includes(concatenatedWords) ||
+                Object.keys(direcEditorCommandsDict).includes(concatenatedWords) || Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
+                processedWords.push(concatenatedWords);
+                i++;
+            } else {
+                processedWords.push(words[i]);
+            }
 
-        if (i == words.length - 2) {
-            processedWords.push(words[i + 1]);
+            if (i == words.length - 2) {
+                processedWords.push(words[i + 1]);
+            }
         }
     }
+
 
     console.log(processedWords);
 
@@ -104,62 +109,61 @@ function buildVariableName(words) {
 
     wordsAfterCombiningVarName = [];
 
-    // the index of the first word after variable keyword
-    i = words.indexOf('variable') + 1;
+    for (i = 0; i < words.length; i++) {
+        if (words[i] === 'variable') {
 
-    for (k = 0; k < i - 1; k++) {
-        wordsAfterCombiningVarName.push(words[k]);
-    }
+            // to get the convention desired
+            i++;
 
-    // if the user didnt say the case keyword
-    if (words.indexOf('case') < 0) {
-        return words;
-    }
+            j = i;
 
-    // index of naming convetion desired by the user
-    j = words.indexOf('case') - 1;
-
-    switch (words[j]) {
-
-        case 'camel': {
-
-            varName = words[i];
-
-            for (k = i + 1; k < j; k++) {
-                varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+            while (words[i] !== 'case' && i < words.length) {
+                i++;
             }
-            break;
-        }
-        case 'snake': {
 
-            varName = words[i];
+            // either 'camel', 'snake' or 'pascal'
+            convention = words[i - 1];
 
-            for (k = i; k < j; k++) {
-                varName += "_" + words[k];
+            switch (convention) {
+
+                case 'camel': {
+
+                    varName = words[j];
+
+                    for (k = j + 1; k < i - 1; k++) {
+                        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+                    }
+                    break;
+                }
+                case 'snake': {
+
+                    varName = words[j];
+
+                    for (k = j + 1; k < i - 1; k++) {
+                        varName += "_" + words[k];
+                    }
+                    break;
+                }
+                case 'pascal': {
+                    for (k = j; k < i - 1; k++) {
+                        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+                    }
+                    break;
+                }
+                default: {
+                    varName = words[j];
+                    for (k = i + 1; k < i - 1; k++) {
+                        varName += words[k];
+                    }
+                    break;
+                }
             }
-            break;
-        }
-        case 'pascal': {
-            varName = words[i].charAt(0).toUpperCase() + words[i].slice(1);
-            for (k = i + 1; k < j; k++) {
-                varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
-            }
-            break;
-        }
-        default: {
-            varName = words[i];
-            for (k = i + 1; k < j; k++) {
-                varName += words[k];
-            }
-            break;
-        }
-    }
 
-    //insert the variable name in the array as a whole string
-    wordsAfterCombiningVarName.push(varName);
+            wordsAfterCombiningVarName.push(varName);
 
-    for (k = j + 2; k < words.length; k++) {
-        wordsAfterCombiningVarName.push(words[k]);
+        } else {
+            wordsAfterCombiningVarName.push(words[i]);
+        }
     }
 
     return wordsAfterCombiningVarName;

@@ -37,23 +37,14 @@ cancelConstructingCodeblock = function () {
     cmdStage = [];
 }
 
-// idicates that the current command being executed 
-// may have infinite parameters.
-let transformCmds = {
-    'call-function': 'parameters',
-    'define-function': 'parameters',
-    'variable-calls-method': 'parameters',
-    'if-block': 'conditions',
-    'while-loop-block': 'conditions'
-}
+endCommandString = 'finish';
 
 // moving the cursor horizontally
 // taking care of inserting the root
 // last array element indicates moving the cursor 
 // out of the command
 let cursorMovingValues = {
-    'index-variable': [-2, 1, 1],
-    'variable-calls-method': [-3, 1, 1],
+    'index-variable': [-2, 1],
     'call-function': [-2, 1],
     'if-block': [-1],
     'while-loop-block': [-1],
@@ -65,7 +56,6 @@ let cursorMovingValues = {
 // the basic strings to be inserted if any of the available commands are spoken
 let commandRoots = {
     'index-variable': '[]',
-    'variable-calls-method': '.()',
     'call-function': '()',
     'if-block': 'if :',
     'while-loop-block': 'while :',
@@ -90,43 +80,9 @@ let needsIndependentLine = [
     'foreach-block'
 ]
 
-// for indefinite number of variables,
-// spacing between them after every variable insertion is defined below.
-let variablesSpacing = {
-    'if-block': ' ',
-    'while-loop-block': ' ',
-    'condition-formation': ' ',
-    'call-function': ', ',
-    'variable-calls-method': ', ',
-    'define-function': ', ',
-    'for-loop-block': ', '
-}
-
-// infinite parameters commands
-let infiniteParamsCmd = [
-    'if-block',
-    'while-loop-block',
-    'condition-formation',
-    'call-function',
-    'variable-calls-method',
-    'define-function',
-    'for-loop-block',
-]
-
-// the keywords that terminates indefinite parameters commands
-let infParamsTermination = {
-    'if-block': 'cof',
-    'while-loop-block': 'cof',
-    'call-function': 'puff',
-    'variable-calls-method': 'puff',
-    'define-function': 'puff',
-    'for-loop-block': 'puff'
-}
-
 // minimum number of parameters that should be passed to any of the available command
 let basicNumParams = {
     'index-variable': 2,
-    'variable-calls-method': 2,
     'call-function': 2,
     'if-block': 1,
     'while-loop-block': 1,
@@ -141,7 +97,7 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
     mainWindow.webContents.send('get-current-line');
 
     ipcMain.once('current-line', function (event, line) {
-        
+
         scope = getScope(line);
 
         // check if the parameter is a keyword
@@ -154,9 +110,6 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
 
             if (cmdStack.length != 0) {
                 cmd = cmdStack[cmdStack.length - 1];
-                if (infiniteParamsCmd.includes(cmd) && cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
-                    insertPlainCode(mainWindow, variablesSpacing[cmd])
-                }
             }
 
             // push the command to the cmdStack
@@ -178,11 +131,11 @@ constructIndicrectCodeBlock = function (mainWindow, parameter) {
             // update cmd variable (keeps track of the most recent command)
             cmd = cmdStack[cmdStack.length - 1]
 
-            if (infiniteParamsCmd.includes(cmd) && paramResolvesInfVarsCmd(parameter)) {
+            if (paramResolvesInfVarsCmd(parameter)) {
                 resolveCmd(cmd, mainWindow, parameter);
             } else {
-                if (infiniteParamsCmd.includes(cmd) && cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
-                    insertPlainCode(mainWindow, variablesSpacing[cmd] + parameter)
+                if (cmdStage[cmdStage.length - 1] > basicNumParams[cmd]) {
+                    insertPlainCode(mainWindow, parameter)
                 } else {
                     insertPlainCode(mainWindow, parameter)
                     updateCursor(mainWindow)
@@ -208,7 +161,7 @@ function paramResolvesInfVarsCmd(param) {
     }
 
     cmd = cmdStack[cmdStack.length - 1];
-    if (infParamsTermination[cmd] == param) {
+    if (param === endCommandString) {
         return true;
     } else {
         return false;
@@ -218,7 +171,7 @@ function paramResolvesInfVarsCmd(param) {
 // resolve commands ending whether manual or automatically
 function resolveCmd(cmd, mainWindow, parameter) {
 
-    if (infiniteParamsCmd.includes(cmd) && paramResolvesInfVarsCmd(parameter)) {
+    if (paramResolvesInfVarsCmd(parameter)) {
 
         // TODO 3: handle end of indefinite command cursor update
         mainWindow.webContents.send('increment-cursor', 1)
@@ -231,23 +184,8 @@ function resolveCmd(cmd, mainWindow, parameter) {
         if (cmdStack.length == 0) {
             return;
         }
-        if (!infiniteParamsCmd.includes(cmd)) {
-            updateCursor(mainWindow);
-        }
-    }
-    // checks whether the command has been successfully passed all the parameters
-    // removes it from command stack and updates the cursor
-    cmd = cmdStack[cmdStack.length - 1];
 
-    while (!infiniteParamsCmd.includes(cmd) && basicNumParams[cmd] == cmdStage[cmdStage.length - 1]) {
-        cmdStage.pop();
-        cmdStack.pop();
-        cmd = cmdStack[cmdStack.length - 1];
-        if (!cmd || infiniteParamsCmd.includes(cmd)) {
-            break;
-        }
-        // else update the cursor normally
-        updateCursor(mainWindow)
+        updateCursor(mainWindow);
     }
 }
 
@@ -278,9 +216,15 @@ insertDirectCode = function (mainWindow, code) {
 // updates the cursor according to the last command in the command stack
 function updateCursor(mainWindow) {
     var currentCmd = cmdStack[cmdStack.length - 1]
-    var cursorIncrementValues = cursorMovingValues[currentCmd]
-    var val = cursorIncrementValues[cmdStage[cmdStage.length - 1]]
-    mainWindow.webContents.send('increment-cursor', val);
+    if (currentCmd) {
+        var cursorIncrementValues = cursorMovingValues[currentCmd]
+        if (cursorMovingValues) {
+            var val = cursorIncrementValues[cmdStage[cmdStage.length - 1]]
+            if (val) {
+                mainWindow.webContents.send('increment-cursor', val);
+            }
+        }
+    }
 }
 
 var commentSymbol = '#';
@@ -295,7 +239,7 @@ function getFileVariables(mainWindow) {
     ipcMain.once('file-content', function (event, args) {
 
         var keys = Object.keys(modelsVariables);
-        if(keys.includes(args)) {
+        if (keys.includes(args)) {
             return;
         }
 
