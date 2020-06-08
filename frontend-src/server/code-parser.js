@@ -97,6 +97,7 @@ let directCodeInsertiunCmds = [
     'square-brackets',
     'single-quote',
     'double-quote',
+    'enter',
     'new-scope',
     'exit-scope'
 ];
@@ -265,7 +266,38 @@ directCodeInsertion = function (mainWindow, keyword) {
                 break;
             }
             case 'exit-scope': {
-                
+                mainWindow.webContents.send('get-current-line');
+
+                ipcMain.once('current-line', function (event, line) {
+
+                    scope = getScope(line);
+
+                    mainWindow.webContents.send('increment-cursor', line.length);
+
+                    code = "\n";
+
+                    code += ("\t").repeat(getScope(line) - 1);
+
+                    insertPlainCode(code);
+                });
+                break;
+            }
+            case 'enter': {
+                mainWindow.webContents.send('get-current-line');
+
+                ipcMain.once('current-line', function (event, line) {
+
+                    scope = getScope(line);
+
+                    mainWindow.webContents.send('increment-cursor', line.length);
+
+                    code = "\n";
+
+                    code += ("\t").repeat(getScope(line));
+
+                    insertPlainCode(code);
+                });
+                break;
             }
         }
     } else {
