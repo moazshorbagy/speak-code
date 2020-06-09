@@ -1,10 +1,11 @@
-alphabet        = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ']
+pad_token = '*'
+alphabet        = [pad_token, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ']
 masking_value   = -10000
 number_of_char  = len(alphabet)
 
 # Sound Processing
 
-sample_rate       = 16000         # sample rate value expected by model
+sample_rate       = 8000         # sample rate value expected by model
 pre_emphasis      = 0.97
 frame_duration    = 0.025     #in seconds
 frame_overlap     = 0.015     #in seconds
@@ -55,7 +56,7 @@ learning_rate = 0.0001
 beta_1 = 0.9
 beta_2 = 0.999
 
-lr_decay_epoch = 100
+lr_decay_epoch = 5
 minimum_lr = 1e-5
 
 # General

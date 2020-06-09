@@ -50,7 +50,6 @@ def create_optimizer():
 
 def create_loss_function(args):
     y_pred, labels, input_length, label_length = args
-    y_pred = y_pred[:, 2:, :]
     return k.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
 def create_model_checkpoint_cb():
