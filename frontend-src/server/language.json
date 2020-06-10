@@ -95,6 +95,7 @@
             "open-bracket": "(",
             "close-bracket": ")",
             "bracket": "brackets",
+            "brackets": "brackets",
             "open-brace": "{",
             "close-brace": "}",
             "braces": "braces",
