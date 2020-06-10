@@ -19,8 +19,6 @@ let availableCommands = [
     'call-function',
     'variable-calls-method',
     'while-loop-block',
-    'condition-formation',
-    'index-variable',
     'if-block',
     'end-of-command',
     'initialize-variable',
@@ -44,7 +42,6 @@ endCommandString = 'finish';
 // last array element indicates moving the cursor 
 // out of the command
 let cursorMovingValues = {
-    'index-variable': [-2, 1],
     'call-function': [-2, 1],
     'if-block': [-1],
     'while-loop-block': [-1],
@@ -55,7 +52,6 @@ let cursorMovingValues = {
 
 // the basic strings to be inserted if any of the available commands are spoken
 let commandRoots = {
-    'index-variable': '[]',
     'call-function': '()',
     'if-block': 'if :',
     'while-loop-block': 'while :',
@@ -82,7 +78,6 @@ let needsIndependentLine = [
 
 // minimum number of parameters that should be passed to any of the available command
 let basicNumParams = {
-    'index-variable': 2,
     'call-function': 2,
     'if-block': 1,
     'while-loop-block': 1,
@@ -99,7 +94,8 @@ let directCodeInsertiunCmds = [
     'double-quote',
     'enter',
     'new-scope',
-    'exit-scope'
+    'exit-scope',
+    'enter'
 ];
 
 // returns false if commmand is not completed yet

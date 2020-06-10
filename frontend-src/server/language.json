@@ -102,7 +102,7 @@
             "grave": "grave",
             "open-square": "[",
             "close-square": "]",
-            "square": "square-brackets",
+            "of": "square-brackets",
             "quote": "single-quote",
             "coat": "single-quote",
             "double-quote": "double-quotes",
@@ -119,19 +119,11 @@
             "eight": "8",
             "nine": "9",
             "new-scope": "new-scope",
-            "exit-scope": "exit-scope"
+            "exit-scope": "exit-scope",
+            "delete": "del ",
+            "delete-text": "delete-text"
         },
         "indirect": {
-            "while-loop": "while-loop-block",
-            "if-statement": "if-block",
-            "for-each": "foreach-block",
-            "call": "call-function",
-            "for-loop": "for-loop-block",
-            "define": "define-function",
-            "variable": "name-variable",
-            "camel-case": "camel-case-the-variable",
-            "snake-case": "snake-case-the-variable",
-            "finish": "finish"
         }
     },
     "editor-commands": {
@@ -146,7 +138,10 @@
             "undo": "undo",
             "redo": "redo",
             "close": "close-tab",
-            "next-tab": "next-tab"
+            "next-tab": "next-tab",
+            "move-right": "increment-cursor",
+            "move-left": "decrement-cursor",
+            "select-all": "select-all-text"
         },
         "indirect": {
             "open-file": "open-file-from-directory",
