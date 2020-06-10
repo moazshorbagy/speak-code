@@ -69,8 +69,6 @@ function processSentence(words) {
 
     processedWords = [];
 
-    console.log(words);
-
     directCodeInsertionDict = language['code-insertion']['direct'];
     indirectCodeInsertionDict = language['code-insertion']['indirect'];
     direcEditorCommandsDict = language['editor-commands']['direct'];
@@ -94,9 +92,6 @@ function processSentence(words) {
             }
         }
     }
-
-
-    console.log(processedWords);
 
     return processedWords;
 }
