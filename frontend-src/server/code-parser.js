@@ -259,7 +259,11 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     code = ":\n";
 
-                    code += (" ").repeat(getScope(line) * 4);
+                    newScope = 4 * (getScope(line) + 1);
+
+                    code += (" ").repeat(newScope);
+
+                    console.log(newScope);
 
                     insertPlainCode(mainWindow, code);
                 });
@@ -274,7 +278,9 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     code = "\n";
 
-                    code += (" ").repeat(4 * (getScope(line) - 1));
+                    newScope = Math.max(4 * (getScope(line) - 1), 0);
+
+                    code += (" ").repeat(newScope);
 
                     insertPlainCode(mainWindow, code);
                 });
