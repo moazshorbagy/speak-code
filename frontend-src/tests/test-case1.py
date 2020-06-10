@@ -5,11 +5,11 @@ client = zerorpc.Client(heartbeat=30000, timeout=32000)
 client.connect("tcp://127.0.0.1:4242")
 
 initvariable = [
-    'variable my first var camel case to be', 'of', 'x', 'i', 'plus', 'one', 'finish', 'plus'
+    'variable my first var camel case to be', 'x', 'of', 'i', 'plus', 'one', 'plus'
 ]
 
 indexVariableOnCondition = [
-    'of', 'x', 'call', 'length', 'x', 'finish', 'minus', 'one', 'finish', 'enter' 
+     'x', 'of', 'length', 'brackets', 'x', 'move right', 'minus', 'one', 'enter' 
 ]
 
 newLine = [
