@@ -96,6 +96,7 @@ let directCodeInsertionCmds = [
     'new-scope',
     'exit-scope',
     'enter',
+    'grave'
 ];
 
 // returns false if commmand is not completed yet
@@ -234,6 +235,11 @@ directCodeInsertion = function (mainWindow, keyword) {
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
+            case 'grave': {
+                insertPlainCode(mainWindow, '``');
+                mainWindow.webContents.send('increment-cursor', -1);
+                break;
+            }
             case 'single-quote': {
                 insertPlainCode(mainWindow, "''");
                 mainWindow.webContents.send('increment-cursor', -1);
@@ -249,13 +255,11 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                 ipcMain.once('current-line', function (event, line) {
 
-                    scope = getScope(line);
-
                     mainWindow.webContents.send('increment-cursor', line.length);
 
                     code = ":\n";
 
-                    code += ("\t").repeat(getScope(line));
+                    code += (" ").repeat(getScope(line) * 4);
 
                     insertPlainCode(mainWindow, code);
                 });
@@ -266,13 +270,11 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                 ipcMain.once('current-line', function (event, line) {
 
-                    scope = getScope(line);
-
                     mainWindow.webContents.send('increment-cursor', line.length);
 
                     code = "\n";
 
-                    code += ("\t").repeat(getScope(line) - 1);
+                    code += (" ").repeat(4 * (getScope(line) - 1));
 
                     insertPlainCode(mainWindow, code);
                 });
@@ -283,13 +285,11 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                 ipcMain.once('current-line', function (event, line) {
 
-                    scope = getScope(line);
-
                     mainWindow.webContents.send('increment-cursor', line.length);
 
                     code = "\n";
 
-                    code += ("\t").repeat(getScope(line));
+                    code += (" ").repeat(getScope(line) * 4);
 
                     insertPlainCode(mainWindow, code);
                 });
