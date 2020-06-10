@@ -84,7 +84,7 @@
             "in": " in ",
             "to-be": " = ",
             "enter": "enter",
-            "indent": "\t",
+            "indent": "    ",
             "space": " ",
             "under": "_",
             "dash": "-",
