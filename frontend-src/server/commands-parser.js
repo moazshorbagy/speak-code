@@ -15,6 +15,8 @@ availableCommands = [
     'goto-scope',
     'scroll-to-column',
     'set-cursor',
+    'increment-cursor',
+    'decrement-cursor'
 ];
 
 currentConstructedCommand = [];
@@ -50,6 +52,15 @@ executeCommand = function (mainWindow, command) {
         }
         case 'new-file': {
             mainWindow.webContents.send('request-open-file');
+            break;
+        }
+        case 'increment-cursor': {
+            mainWindow.webContents.send('increment-cursor', 1);
+            break;
+        }
+        case 'decrement-cursor': {
+            mainWindow.webContents.send('increment-cursor', -1);
+            break;
         }
     }
 }
