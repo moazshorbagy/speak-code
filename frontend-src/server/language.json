@@ -150,7 +150,8 @@
             "go-tab": "navgiate-to-tab",
             "vertical": "scroll-to-line",
             "horizontal": "scroll-to-column",
-            "set-cursor": "set-cursor"
+            "go-line": "set-cursor-to-line",
+            "go-column": "set-cursor-to-column"
         }
     },
     "cancel-executing-indirects": {
