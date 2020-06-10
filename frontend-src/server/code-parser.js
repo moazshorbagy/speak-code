@@ -86,7 +86,7 @@ let basicNumParams = {
     'define-function': 1
 }
 
-let directCodeInsertiunCmds = [
+let directCodeInsertionCmds = [
     'brackets',
     'braces',
     'square-brackets',
@@ -95,7 +95,7 @@ let directCodeInsertiunCmds = [
     'enter',
     'new-scope',
     'exit-scope',
-    'enter'
+    'enter',
 ];
 
 // returns false if commmand is not completed yet
@@ -217,30 +217,30 @@ function insertPlainCode(mainnWindow, code) {
 
 // insert code directly
 directCodeInsertion = function (mainWindow, keyword) {
-    if (directCodeInsertiunCmds.includes(keyword)) {
+    if (directCodeInsertionCmds.includes(keyword)) {
         switch (keyword) {
             case 'brackets': {
-                insertPlainCode('()');
+                insertPlainCode(mainWindow, '()');
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
             case 'braces': {
-                insertPlainCode('{}');
+                insertPlainCode(mainWindow, '{}');
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
             case 'square-brackets': {
-                insertPlainCode('[]');
+                insertPlainCode(mainWindow, '[]');
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
             case 'single-quote': {
-                insertPlainCode("''");
+                insertPlainCode(mainWindow, "''");
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
             case 'double-quotes': {
-                insertPlainCode("\"\"");
+                insertPlainCode(mainWindow, "\"\"");
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
@@ -257,7 +257,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     code += ("\t").repeat(getScope(line));
 
-                    insertPlainCode(code);
+                    insertPlainCode(mainWindow, code);
                 });
                 break;
             }
@@ -274,7 +274,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     code += ("\t").repeat(getScope(line) - 1);
 
-                    insertPlainCode(code);
+                    insertPlainCode(mainWindow, code);
                 });
                 break;
             }
@@ -291,7 +291,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     code += ("\t").repeat(getScope(line));
 
-                    insertPlainCode(code);
+                    insertPlainCode(mainWindow, code);
                 });
                 break;
             }
