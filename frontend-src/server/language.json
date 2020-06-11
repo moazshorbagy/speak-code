@@ -80,6 +80,8 @@
             "length": "len",
             "list": "list",
             "tuple": "tuple",
+            "dict": "dict",
+            "set": "set",
             "continue": "continue\n",
             "with": "with ",
             "is": " is ",
