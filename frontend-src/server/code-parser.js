@@ -182,7 +182,7 @@ function resolveCmd(cmd, mainWindow, parameter) {
     if (paramResolvesInfVarsCmd(parameter)) {
 
         // TODO 3: handle end of indefinite command cursor update
-        mainWindow.webContents.send('increment-cursor', 1)
+        mainWindow.webContents.send('request-horizontal-move-cursor', 1)
 
         // pop the command from the command stack as well as its stage
         cmdStack.pop();
@@ -222,32 +222,32 @@ directCodeInsertion = function (mainWindow, keyword) {
         switch (keyword) {
             case 'brackets': {
                 insertPlainCode(mainWindow, '()');
-                mainWindow.webContents.send('increment-cursor', -1);
+                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
                 break;
             }
             case 'braces': {
                 insertPlainCode(mainWindow, '{}');
-                mainWindow.webContents.send('increment-cursor', -1);
+                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
                 break;
             }
             case 'square-brackets': {
                 insertPlainCode(mainWindow, '[]');
-                mainWindow.webContents.send('increment-cursor', -1);
+                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
                 break;
             }
             case 'grave': {
                 insertPlainCode(mainWindow, '``');
-                mainWindow.webContents.send('increment-cursor', -1);
+                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
                 break;
             }
             case 'single-quote': {
                 insertPlainCode(mainWindow, "''");
-                mainWindow.webContents.send('increment-cursor', -1);
+                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
                 break;
             }
             case 'double-quotes': {
                 insertPlainCode(mainWindow, "\"\"");
-                mainWindow.webContents.send('increment-cursor', -1);
+                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
                 break;
             }
             case 'new-scope': {
@@ -255,7 +255,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                 ipcMain.once('current-line', function (event, line) {
 
-                    mainWindow.webContents.send('increment-cursor', line.length);
+                    mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
 
                     code = ":\n";
 
@@ -272,7 +272,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                 ipcMain.once('current-line', function (event, line) {
 
-                    mainWindow.webContents.send('increment-cursor', line.length);
+                    mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
 
                     code = "\n";
 
@@ -289,7 +289,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                 ipcMain.once('current-line', function (event, line) {
 
-                    mainWindow.webContents.send('increment-cursor', line.length);
+                    mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
 
                     code = "\n";
 
@@ -313,7 +313,7 @@ function updateCursor(mainWindow) {
         if (cursorMovingValues) {
             var val = cursorIncrementValues[cmdStage[cmdStage.length - 1]]
             if (val) {
-                mainWindow.webContents.send('increment-cursor', val);
+                mainWindow.webContents.send('request-horizontal-move-cursor', val);
             }
         }
     }
