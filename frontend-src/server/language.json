@@ -63,11 +63,13 @@
             "global": "global ",
             "import": "import ",
             "return": "return ",
+            "returns": "return ",
             "null": "null",
             "class": "class ",
             "pass": "pass\n",
             "self": "self",
             "int": "int",
+            "integer": "int",
             "float": "float",
             "string": "str",
             "true": "True",
@@ -77,6 +79,7 @@
             "lens": "len",
             "length": "len",
             "list": "list",
+            "tuple": "tuple",
             "continue": "continue\n",
             "with": "with ",
             "is": " is ",
@@ -122,6 +125,7 @@
             "new-scope": "new-scope",
             "exit-scope": "exit-scope",
             "delete": "del ",
+            "right-arrow": " -> ",
             "delete-text": "delete-text"
         },
         "indirect": {
@@ -142,7 +146,10 @@
             "next-tab": "next-tab",
             "move-right": "increment-cursor",
             "move-left": "decrement-cursor",
-            "select-all": "select-all-text"
+            "select-all": "select-all-text",
+            "cut": "cut",
+            "copy": "copy",
+            "paste": "paste"
         },
         "indirect": {
             "open-file": "open-file-from-directory",
@@ -151,7 +158,8 @@
             "vertical": "scroll-to-line",
             "horizontal": "scroll-to-column",
             "go-line": "set-cursor-to-line",
-            "go-column": "set-cursor-to-column"
+            "go-column": "set-cursor-to-column",
+            "focus-folder": "focus-folder"
         }
     },
     "cancel-executing-indirects": {
