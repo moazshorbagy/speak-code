@@ -84,7 +84,7 @@
 		event.sender.send('current-line', editor.getCurrentLine());
 	});
 
-	ipcRenderer.on('increment-cursor', function(event, args) {
+	ipcRenderer.on('request-horizontal-move-cursor', function(event, args) {
 		editor.incrementCursor(args);
 	});
 
