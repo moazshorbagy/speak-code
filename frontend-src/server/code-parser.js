@@ -263,8 +263,6 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     code += (" ").repeat(newScope);
 
-                    console.log(newScope);
-
                     insertPlainCode(mainWindow, code);
                 });
                 break;
