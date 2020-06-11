@@ -44,6 +44,7 @@ initEditor = function (doc, filePath, type) {
     self.module = undefined;
 
     amdRequire(['vs/editor/editor.main'], function () {
+
         const remote = require('electron').remote;
         editor = monaco.editor.create(document.getElementById('editor'), {
             value: '',
@@ -61,6 +62,8 @@ initEditor = function (doc, filePath, type) {
         currentWindow.on('resize', function () {
             editor.layout();
         });
+
+        editor.getModel().updateOptions({insertSpaces: true});
 
         currentFilePath = filePath;
 
@@ -112,6 +115,7 @@ openDoc = function (doc, filePath) {
         models[filePath] = model;
         savedModelsValues[filePath] = model.getValue();
         editor.setModel(model);
+        editor.getModel().updateOptions({insertSpaces: true});
         currentFilePath = filePath;
         getFileType(filePath);
     }
@@ -124,6 +128,7 @@ setModelWithId = function (fileId) {
         return;
     }
     editor.setModel(models[fileId]);
+    editor.getModel().updateOptions({insertSpaces: true});
     currentFilePath = fileId;
 }
 

@@ -19,8 +19,6 @@ let availableCommands = [
     'call-function',
     'variable-calls-method',
     'while-loop-block',
-    'condition-formation',
-    'index-variable',
     'if-block',
     'end-of-command',
     'initialize-variable',
@@ -44,7 +42,6 @@ endCommandString = 'finish';
 // last array element indicates moving the cursor 
 // out of the command
 let cursorMovingValues = {
-    'index-variable': [-2, 1],
     'call-function': [-2, 1],
     'if-block': [-1],
     'while-loop-block': [-1],
@@ -55,7 +52,6 @@ let cursorMovingValues = {
 
 // the basic strings to be inserted if any of the available commands are spoken
 let commandRoots = {
-    'index-variable': '[]',
     'call-function': '()',
     'if-block': 'if :',
     'while-loop-block': 'while :',
@@ -82,7 +78,6 @@ let needsIndependentLine = [
 
 // minimum number of parameters that should be passed to any of the available command
 let basicNumParams = {
-    'index-variable': 2,
     'call-function': 2,
     'if-block': 1,
     'while-loop-block': 1,
@@ -91,14 +86,17 @@ let basicNumParams = {
     'define-function': 1
 }
 
-let directCodeInsertiunCmds = [
+let directCodeInsertionCmds = [
     'brackets',
     'braces',
     'square-brackets',
     'single-quote',
     'double-quote',
+    'enter',
     'new-scope',
-    'exit-scope'
+    'exit-scope',
+    'enter',
+    'grave'
 ];
 
 // returns false if commmand is not completed yet
@@ -220,30 +218,35 @@ function insertPlainCode(mainnWindow, code) {
 
 // insert code directly
 directCodeInsertion = function (mainWindow, keyword) {
-    if (directCodeInsertiunCmds.includes(keyword)) {
+    if (directCodeInsertionCmds.includes(keyword)) {
         switch (keyword) {
             case 'brackets': {
-                insertPlainCode('()');
+                insertPlainCode(mainWindow, '()');
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
             case 'braces': {
-                insertPlainCode('{}');
+                insertPlainCode(mainWindow, '{}');
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
             case 'square-brackets': {
-                insertPlainCode('[]');
+                insertPlainCode(mainWindow, '[]');
+                mainWindow.webContents.send('increment-cursor', -1);
+                break;
+            }
+            case 'grave': {
+                insertPlainCode(mainWindow, '``');
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
             case 'single-quote': {
-                insertPlainCode("''");
+                insertPlainCode(mainWindow, "''");
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
             case 'double-quotes': {
-                insertPlainCode("\"\"");
+                insertPlainCode(mainWindow, "\"\"");
                 mainWindow.webContents.send('increment-cursor', -1);
                 break;
             }
@@ -252,20 +255,49 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                 ipcMain.once('current-line', function (event, line) {
 
-                    scope = getScope(line);
-
                     mainWindow.webContents.send('increment-cursor', line.length);
 
                     code = ":\n";
 
-                    code += ("\t").repeat(getScope(line));
+                    newScope = 4 * (getScope(line) + 1);
 
-                    insertPlainCode(code);
+                    code += (" ").repeat(newScope);
+
+                    insertPlainCode(mainWindow, code);
                 });
                 break;
             }
             case 'exit-scope': {
-                
+                mainWindow.webContents.send('get-current-line');
+
+                ipcMain.once('current-line', function (event, line) {
+
+                    mainWindow.webContents.send('increment-cursor', line.length);
+
+                    code = "\n";
+
+                    newScope = Math.max(4 * (getScope(line) - 1), 0);
+
+                    code += (" ").repeat(newScope);
+
+                    insertPlainCode(mainWindow, code);
+                });
+                break;
+            }
+            case 'enter': {
+                mainWindow.webContents.send('get-current-line');
+
+                ipcMain.once('current-line', function (event, line) {
+
+                    mainWindow.webContents.send('increment-cursor', line.length);
+
+                    code = "\n";
+
+                    code += (" ").repeat(getScope(line) * 4);
+
+                    insertPlainCode(mainWindow, code);
+                });
+                break;
             }
         }
     } else {
