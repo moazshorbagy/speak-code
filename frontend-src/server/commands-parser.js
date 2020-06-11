@@ -1,44 +1,44 @@
 // all available commands (keywords).
-availableCommands = [
+directCommands = [
     'change-directory',
-    'new-file',
-    'open-file-from-directory',
-    'close-tab',
-    'close-all-tabs',
     'save-file',
-    'navgiate-to-tab',
-    'save-file-as',
-    'add-file-to-target-directory',
-    'add-folder-to-target-directory',
-    'scroll-to-line',
+    'close-all-tabs',
+    'new-file',
     'reveal-cursor',
-    'goto-scope',
-    'scroll-to-column',
-    'set-cursor',
+    'zoom-in',
+    'zoom-out',
+    'undo',
+    'redo',
+    'close-tab',
+    'next-tab',
     'increment-cursor',
-    'decrement-cursor'
+    'decrement-cursor',
+    'select-all-text',
+    'cut',
+    'copy',
+    'paste'
 ];
 
 currentConstructedCommand = [];
 
-function checkCommand(command) {
-    if (!availableCommands.includes(command)) {
+function checkDirectCommand(command) {
+    if (!directCommands.includes(command)) {
         return false;
     }
     return true;
 }
 
-cancelConstructingCommand = function() {
+cancelConstructingCommand = function () {
     currentConstructedCommand = [];
 }
 
-constructIndicrectCommand = function(mainWindow, keyword) {
+constructIndicrectCommand = function (mainWindow, keyword) {
     currentConstructedCommand.push(keyword);
 }
 
 // returns false if the command doesn't exist
 executeCommand = function (mainWindow, command) {
-    if (!checkCommand(command)) {
+    if (!checkDirectCommand(command)) {
         return false;
     }
     switch (command) {
@@ -47,19 +47,71 @@ executeCommand = function (mainWindow, command) {
             break;
         }
         case 'save-file': {
-            mainWindow.webContents.send('save-file');
+            mainWindow.webContents.send('request-save-file');
+            break;
+        }
+        case 'close-all-tabs': {
+            mainWindow.webContents.send('request-close-all-tabs');
             break;
         }
         case 'new-file': {
-            mainWindow.webContents.send('request-open-file');
+            mainWindow.webContents.send('request-new-file');
+            break;
+        }
+        case 'reveal-cursor': {
+            mainWindow.webContents.send('request-reveal-cursor');
+            break;
+        }
+        case 'zoom-in': {
+            mainWindow.webContents.send('request-zoom-in');
+            break;
+        }
+        case 'zoom-out': {
+            mainWindow.webContents.send('request-zoom-out');
+            break;
+        }
+        case 'undo': {
+            mainWindow.webContents.send('request-undo');
+            break;
+        }
+        case 'redo': {
+            mainWindow.webContents.send('request-redo');
+            break;
+        }
+        case 'close-tab': {
+            mainWindow.webContents.send('request-close-tab');
+            break;
+        }
+        case 'next-tab': {
+            mainWindow.webContents.send('request-next-tab');
             break;
         }
         case 'increment-cursor': {
-            mainWindow.webContents.send('increment-cursor', 1);
+            mainWindow.webContents.send('request-horizontal-move-cursor', 1);
             break;
         }
         case 'decrement-cursor': {
-            mainWindow.webContents.send('increment-cursor', -1);
+            mainWindow.webContents.send('request-horizontal-move-cursor', -1);
+            break;
+        }
+        case 'select-all-text': {
+            mainWindow.webContents.send('request-select-all-text');
+            break;
+        }
+        case 'cut': {
+            mainWindow.webContents.send('request-cut');
+            break;
+        }
+        case 'copy': {
+            mainWindow.webContents.send('request-copy');
+            break;
+        }
+        case 'paste': {
+            mainWindow.webContents.send('request-paste');
+            break;
+        }
+        default: {
+            mainWindow.webContents.send('request-' + command);
             break;
         }
     }
