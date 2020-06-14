@@ -127,8 +127,7 @@
             "new-scope": "new-scope",
             "exit-scope": "exit-scope",
             "delete": "del ",
-            "right-arrow": " -> ",
-            "delete-text": "delete-text"
+            "right-arrow": " -> "
         },
         "indirect": {
         }
@@ -151,7 +150,10 @@
             "select-all": "select-all-text",
             "cut": "cut",
             "copy": "copy",
-            "paste": "paste"
+            "paste": "paste",
+            "backspace": "backspace",
+            "comment-line": "comment-line",
+            "delete-line": "delete-line"
         },
         "indirect": {
             "open-file": "open-file-from-directory",
