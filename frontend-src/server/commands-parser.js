@@ -16,7 +16,10 @@ directCommands = [
     'select-all-text',
     'cut',
     'copy',
-    'paste'
+    'paste',
+    'backspace',
+    'comment-line',
+    'delete-line'
 ];
 
 currentConstructedCommand = [];
