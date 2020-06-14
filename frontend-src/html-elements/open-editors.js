@@ -80,11 +80,8 @@ addOpenedFile = function (filePath) {
     });
 
     document.getElementById(tabId).addEventListener('click', function() {
-        var tab = this.id.split('_')[0];
-        var element = document.getElementById('OFcontainer_' + tab);
-        element.parentNode.removeChild(element);
-        var nextTab = editor.removeModelWithId(tab);
-        module.exports.displayCurrentlyOpenedFileName(nextTab);
+        var filePath = this.id.split('_')[0];
+        module.exports.closeTab(filePath);
     });
 }
 
@@ -104,10 +101,21 @@ displayCurrentlyOpenedFileName = function(filePath) {
     currentlyOpenedFile.append(`${filePath.split(Path.sep).pop()}`);
 }
 
+// closes the tab with ID: filePath
+closeTab = function(filePath) {
+    var tab = document.getElementById('OFcontainer_' + filePath);
+    if(tab) {
+        tab.parentNode.removeChild(tab);
+        var nextTab = editor.removeModelWithId(editor.getCurrentModel());
+        module.exports.displayCurrentlyOpenedFileName(nextTab);
+    }
+}
+
 module.exports = {
     addOpenEditors,
     addOpenedFile,
     notifyIsSaved,
     notifyNeedsSave,
-    displayCurrentlyOpenedFileName
+    displayCurrentlyOpenedFileName,
+    closeTab
 }
