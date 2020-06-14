@@ -72,7 +72,7 @@
 	});
 </script>
 <script>
-	ipcRenderer.on('save-file', function (event, arg) {
+	ipcRenderer.on('request-save-file', function (event, arg) {
 		editor.saveFile();
 	});
 
@@ -85,13 +85,65 @@
 	});
 
 	ipcRenderer.on('request-horizontal-move-cursor', function(event, args) {
-		editor.incrementCursor(args);
+		editor.moveCursorHorizontally(args);
 	});
 
 	ipcRenderer.on('get-file-content', function(event, args) {
 		event.sender.send('file-content', editor.getCurrentModel());
 	});
 
+	ipcRenderer.on('request-next-tab', function(event, args) {
+		editor.openNextTab();
+		openedFiles.displayCurrentlyOpenedFileName(editor.getCurrentModel());
+	});
+
+	ipcRenderer.on('request-close-tab', function(event, args) {
+		openedFiles.closeTab(editor.getCurrentModel());
+	});
+
+	ipcRenderer.on('request-zoom-in', function(event, args) {
+		editor.zoomInEditor();
+	});
+
+	ipcRenderer.on('request-zoom-out', function(event, args) {
+		editor.zoomOutEditor();
+	});
+
+	ipcRenderer.on('request-select-all-text', function(event, args) {
+		editor.selectAllText();
+	});
+
+	ipcRenderer.on('request-backspace', function(event, args) {
+		editor.backSpace();
+	});
+
+	ipcRenderer.on('request-undo', function(event, args) {
+		editor.undo();
+	});
+
+	ipcRenderer.on('request-redo', function(event, args) {
+		editor.redo();
+	});
+
+	ipcRenderer.on('request-comment-line', function(event, args) {
+		editor.commentLine();
+	});
+
+	ipcRenderer.on('request-copy', function(event, args) {
+		editor.copy();
+	});
+
+	ipcRenderer.on('request-cut', function(event, args) {
+		editor.cut();
+	});
+
+	ipcRenderer.on('request-paste', function(event, args) {
+		editor.paste();
+	});
+
+	ipcRenderer.on('request-delete-line', function(event, args) {
+		editor.deleteLine();
+	});
 </script>
 <script>
 	var Split = require('split-grid')
