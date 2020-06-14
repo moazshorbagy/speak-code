@@ -69,14 +69,6 @@ ipcMain.on('open-file', (event, args) => {
 	fileOptions.openFile(mainWindow, dialog, event);
 });
 
-app.whenReady().then(() => {
-	globalShortcut.register('CommandOrControl+S', () => {
-		mainWindow.webContents.send('save-file')
-	})
-}).catch((e) => {
-	console.log(e);
-});
-
 app.on('activate', function () {
 	if (mainWindow === null) {
 		createWindow()

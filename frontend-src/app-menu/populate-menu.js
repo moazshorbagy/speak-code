@@ -33,6 +33,13 @@ const template = [
                     ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
                 },
                 accelerator: process.platform === 'darwin' ? 'Cmd+O' : 'Ctrl+O',
+            },
+            {
+                label: 'save file',
+                click: function () {
+                    editor.saveFile();
+                },
+                accelerator: process.platform === 'darwin' ? 'Cmd+S' : 'Ctrl+S',
             }
         ]
     }
