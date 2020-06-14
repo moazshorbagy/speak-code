@@ -38,6 +38,9 @@ const fileType = {
     'json': 'json'
 };
 
+
+// initializes a monaco editor instance (which is the only one).
+// and binds 
 initEditor = function (doc, filePath, type) {
 
     // workaround monaco-css not understanding the environment
@@ -63,22 +66,16 @@ initEditor = function (doc, filePath, type) {
             editor.layout();
         });
 
-        editor.getModel().updateOptions({insertSpaces: true});
+        editor.getModel().updateOptions({ insertSpaces: true });
 
         currentFilePath = filePath;
 
-        var myBinding = editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.US_DOT, function() {
-            console.log(editor.getOptions()._values[36]);
-            editor.updateOptions({
-                fontSize: editor.getOptions()._values[36] + 2
-            });
+        var myBinding = editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.US_DOT, function () {
+            module.exports.zoomInEditor();
         });
 
-        var anotherBinding = editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.US_COMMA, function() {
-            console.log(editor.getOptions()._values[36]);
-            editor.updateOptions({
-                fontSize: editor.getOptions()._values[36] - 2
-            });
+        var anotherBinding = editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.US_COMMA, function () {
+            module.exports.zoomOutEditor();
         });
 
         //track position of cursor
@@ -86,9 +83,8 @@ initEditor = function (doc, filePath, type) {
             cursorPositions[currentFilePath] = position.position;
         });
 
-
-        editor.onDidChangeModelContent(function(e) {
-            if(savedModelsValues[currentFilePath] !== models[currentFilePath].getValue()) {
+        editor.onDidChangeModelContent(function (e) {
+            if (savedModelsValues[currentFilePath] !== models[currentFilePath].getValue()) {
                 modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath);
             } else {
                 emitModelIsSaved(currentFilePath);
@@ -106,6 +102,21 @@ initEditor = function (doc, filePath, type) {
     });
 }
 
+// increases text size of editor
+zoomInEditor = function () {
+    editor.updateOptions({
+        fontSize: editor.getOptions()._values[36] + 2
+    });
+}
+
+// decreases text size of editor
+zoomOutEditor = function () {
+    editor.updateOptions({
+        fontSize: editor.getOptions()._values[36] - 2
+    });
+}
+
+// opens a document with file path = filePath
 openDoc = function (doc, filePath) {
     type = getFileType(filePath);
     if (!editor) {
@@ -115,23 +126,25 @@ openDoc = function (doc, filePath) {
         models[filePath] = model;
         savedModelsValues[filePath] = model.getValue();
         editor.setModel(model);
-        editor.getModel().updateOptions({insertSpaces: true});
+        editor.getModel().updateOptions({ insertSpaces: true });
         currentFilePath = filePath;
         getFileType(filePath);
     }
     modelsEventEmitters.addModelEventEmitter(filePath);
 }
 
-// generally, fileId is the filePath
-setModelWithId = function (fileId) {
-    if (editor.getModel() == models[fileId]) {
+// sets the current model to models[filePath] if available
+setModelWithId = function (filePath) {
+    if (editor.getModel() == models[filePath]) {
         return;
     }
-    editor.setModel(models[fileId]);
-    editor.getModel().updateOptions({insertSpaces: true});
-    currentFilePath = fileId;
+    editor.setModel(models[filePath]);
+    editor.getModel().updateOptions({ insertSpaces: true });
+    currentFilePath = filePath;
 }
 
+// returns true if the model is in the currently opened models
+// and false otherwise
 modelIsAlreadyOpen = function (filePath) {
     for (var key in models) {
         if (key == filePath) {
@@ -141,6 +154,7 @@ modelIsAlreadyOpen = function (filePath) {
     return false;
 }
 
+// saves the cursor position 
 retrieveCursorPosition = function (filePath) {
     if (!(filePath in cursorPositions)) {
         return;
@@ -151,9 +165,11 @@ retrieveCursorPosition = function (filePath) {
     editor.focus();
 }
 
+// inserts text at the current position of the cursor
+// if position argument is not specified.
 insertText = function (text, position) {
 
-    if (!editor) {
+    if (!editor || !editor.getModel()) {
         return;
     }
 
@@ -184,38 +200,45 @@ insertText = function (text, position) {
 
 }
 
-incrementCursor = function(value) {
+// move cursor horizontally with the value specified
+moveCursorHorizontally = function (value) {
     position = editor.getPosition();
-    console.log(position)
     position.column += value;
-    console.log(position)
     editor.setPosition(position)
 }
 
-getCurrentLine = function() {
+// returns the line at the current cursor position
+// in the current opened model
+getCurrentLine = function () {
     return editor.getModel().getLineContent(editor.getPosition().lineNumber);
 }
 
+// sets the editor model and rerieves the 
+// model's cursor position
 focusModel = function (filePath) {
     module.exports.setModelWithId(filePath);
     module.exports.retrieveCursorPosition(filePath);
 }
 
+// returns file type according to its extention
 function getFileType(filePath) {
     var type = filePath.split('.').pop();
     return fileType[type];
 }
 
+// returns current cursor position
 getCursorPosition = function () {
     return editor.getPosition();
 }
 
+// sets the cursor to the position specified
 setCursorPosition = function (position) {
     editor.setPosition(position);
 }
 
+// saves the current focused model
 saveFile = function () {
-    if(!editor || !currentFilePath) {
+    if (!editor || !currentFilePath) {
         return;
     }
     fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
@@ -223,29 +246,147 @@ saveFile = function () {
     modelsEventEmitters.emitModelIsSaved(currentFilePath);
 }
 
-removeModelWithId = function(filePath) {
+// effectively closes the tab with ID = filePath
+// and shows other opened tabs if available.
+removeModelWithId = function (filePath) {
     if (models.hasOwnProperty(filePath)) {
         delete models[filePath];
         delete savedModelsValues[filePath];
         delete cursorPositions[filePath];
         var keys = Object.keys(models);
-        if(keys.length == 0) {
+        if (keys.length == 0) {
             editor.setModel(null);
             return null;
         }
-        var nextModel = keys[keys.length - 1];
+        var nextModel = keys[(keys.indexOf(currentFilePath) + 1) % keys.length];
         module.exports.focusModel(nextModel);
         return nextModel;
     }
 }
 
-getCurrentModel = function() {
+// returns the current model ID (the file path)
+getCurrentModel = function () {
     var keys = Object.keys(models);
-    if(keys.length == 0) {
+    if (keys.length == 0) {
         return null;
     }
 
     return currentFilePath;
+}
+
+// closes the current tab
+closeCurrentTab = function () {
+    module.exports.removeModelWithId(currentFilePath);
+}
+
+// selects all text
+backSpace = function () {
+
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+
+    currentCursorPosition = editor.getPosition();
+
+    if (currentCursorPosition.lineNumber == 0 && currentCursorPosition.column == 0) {
+        return;
+    }
+
+    if (currentCursorPosition.column == 0) {
+
+        editor.trigger('source', 'editor.action.joinLines')
+    } else {
+        op = {
+            identifier: 'id',
+            text: '',
+            range: new monaco.Range(currentCursorPosition.lineNumber,
+                currentCursorPosition.column - 1,
+                currentCursorPosition.lineNumber,
+                currentCursorPosition.column)
+        }
+
+        // executeEdits can take an id to track edits
+        editor.executeEdits(
+            "what", [op]
+        );
+    }
+}
+
+// scrolls to the cursor position
+revealCursor = function () {
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+
+    editor.revealCursor();
+}
+
+// undo
+undo = function () {
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+    editor.getModel().undo();
+    console.log(editor.getActions().map(a => a.id));
+}
+
+// redo
+redo = function () {
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+    editor.getModel().redo();
+}
+
+commentLine = function () {
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+    editor.trigger('source', 'editor.action.commentLine');
+    console.log(editor.getActions().map(a => a.id));
+}
+
+deleteLine = function () {
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+    editor.trigger('source', 'editor.action.deleteLines');
+    console.log(editor.getActions().map(a => a.id));
+}
+
+copy = function() {
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+    editor.trigger('source', 'editor.action.clipboardCopyAction');
+    console.log(editor.getActions().map(a => a.id));
+}
+
+cut = function() {
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+    editor.trigger('source', 'editor.action.clipboardCutAction');
+    console.log(editor.getActions().map(a => a.id));
+}
+
+paste = function() {
+    if (!editor || !editor.getModel()) {
+        return;
+    }
+    editor.trigger('source', 'editor.action.clipboardPasteAction');
+    console.log(editor.getActions().map(a => a.id));
+}
+
+// opens the next tab if available 
+// from the currently opened tabs
+openNextTab = function () {
+    var keys = Object.keys(models);
+
+    if (keys.length > 1) {
+        index = (keys.indexOf(currentFilePath) + 1) % keys.length;
+        module.exports.focusModel(keys[index]);
+    }
 }
 
 module.exports = {
@@ -260,6 +401,18 @@ module.exports = {
     saveFile,
     getCurrentLine,
     removeModelWithId,
-    incrementCursor,
-    getCurrentModel
+    moveCursorHorizontally,
+    getCurrentModel,
+    zoomInEditor,
+    zoomOutEditor,
+    closeCurrentTab,
+    openNextTab,
+    backSpace,
+    undo,
+    redo,
+    commentLine,
+    deleteLine,
+    copy,
+    cut,
+    paste
 }
