@@ -11,6 +11,8 @@ char2idx = {u:i for i, u in enumerate(c.alphabet)}
 idx2char = np.array(c.alphabet)
 
 def encode(text):
+    if(type(text) not in [str]):
+        raise TypeError('The type of text to be encoded should be str')
     return np.array([char2idx[c] for c in text])
 
 def decode(label_vector):
