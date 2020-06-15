@@ -88,8 +88,8 @@
 		editor.moveCursorHorizontally(args);
 	});
 
-	ipcRenderer.on('get-file-content', function(event, args) {
-		event.sender.send('file-content', editor.getCurrentModel());
+	ipcRenderer.on('request-file-path', function(event, args) {
+		event.sender.send('file-path', editor.getCurrentModel());
 	});
 
 	ipcRenderer.on('request-next-tab', function(event, args) {
