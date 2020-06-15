@@ -240,6 +240,8 @@ module.exports = {
                 words = formNumbers(words);
             }
 
+            codeInserter = langInserters[fileType];
+
             for (i = 0; i < words.length; i++) {
 
                 cmd = words[i];
