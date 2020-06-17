@@ -127,7 +127,5 @@
         "exit-scope": "exit-scope",
         "delete": "del ",
         "right-arrow": " -> "
-    },
-    "indirect": {
     }
 }
