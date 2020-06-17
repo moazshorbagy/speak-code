@@ -23,10 +23,8 @@
     },
     "indirect": {
         "open-file": "open-file-from-directory",
-        "expand": "expand-folder",
+        "expand-folder": "expand-folder",
         "go-tab": "navgiate-to-tab",
-        "vertical": "scroll-to-line",
-        "horizontal": "scroll-to-column",
         "go-line": "set-cursor-to-line",
         "go-column": "set-cursor-to-column",
         "focus-folder": "focus-folder"
