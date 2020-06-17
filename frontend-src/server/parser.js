@@ -14,19 +14,8 @@ let langInserters = {};
 // a boolean to detect whether the last word was a command or not.
 let constructingEditorCommand;
 
-// a boolean to track if a current command or code block
-// is being formed
-let commandIsBeingConstructed;
-
-function cancelCommandOrCodeBlockCreation(word) {
-    if (word in editorCommandsLang['cancel-executing-indirects']) {
-        codeParser.cancelConstructingCodeblock();
-        commandParser.cancelCostructingCommand();
-    }
-}
-
 function isWordNotInGrammar(word, lang) {
-    if (word in editorCommandsLang['cancel-executing-indirects'] || word in editorCommandsLang['direct'] || word in editorCommandsLang['indirect'] || word in lang['direct'] || word in lang['indirect']) {
+    if (word in editorCommandsLang['direct'] || word in editorCommandsLang['indirect'] || word in lang['direct']) {
         return false;
     }
     return true;
@@ -38,14 +27,6 @@ function isDirectWordInsertion(word, lang) {
     }
 }
 
-function isIndirectCodeInsertion(word, lang) {
-    if (word in lang['indirect']) {
-        commandIsBeingConstructed = true;
-        constructingEditorCommand = false;
-        return lang['indirect'][word];
-    }
-}
-
 function isDirectCommand(word) {
     if (word in editorCommandsLang['direct']) {
         return editorCommandsLang['direct'][word];
@@ -54,8 +35,6 @@ function isDirectCommand(word) {
 
 function isIndirectCommand(word) {
     if (word in editorCommandsLang['indirect']) {
-        commandIsBeingConstructed = true;
-        constructingEditorCommand = true;
         return editorCommandsLang['indirect'][word];
     }
 }
@@ -65,7 +44,6 @@ function processSentence(words, lang) {
     processedWords = [];
 
     directCodeInsertionDict = lang['direct'];
-    indirectCodeInsertionDict = lang['indirect'];
     direcEditorCommandsDict = editorCommandsLang['direct'];
     indirectEditorCommandsDict = editorCommandsLang['indirect'];
 
@@ -74,7 +52,7 @@ function processSentence(words, lang) {
     } else {
         for (i = 0; i < words.length - 1; i++) {
             var concatenatedWords = words[i] + '-' + words[i + 1];
-            if (Object.keys(directCodeInsertionDict).includes(concatenatedWords) || Object.keys(indirectCodeInsertionDict).includes(concatenatedWords) ||
+            if (Object.keys(directCodeInsertionDict).includes(concatenatedWords) ||
                 Object.keys(direcEditorCommandsDict).includes(concatenatedWords) || Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
                 processedWords.push(concatenatedWords);
                 i++;
@@ -122,7 +100,6 @@ function formNumbers(words) {
             }
         }
         else {
-            console.log(words[i]);
             processedWords.push(words[i]);
         }
     }
@@ -196,82 +173,78 @@ function buildVariableName(words) {
 }
 
 
+let lang;
+
+let codeInserter;
+
+// sets the lang and codeInserter variables to the appropriate
+// values
+function configureLang(filePath) {
+
+    // assume file type based on its extension.
+    fileType = filePath.split('.').pop();
+
+    switch (fileType) {
+        case 'py': {
+            lang = pythonLang;
+            if (!Object.keys(langInserters).includes(fileType)) {
+                langInserters[fileType] = new PythonCodeInserter();
+            }
+            break;
+        }
+        case 'js': {
+            lang = javascriptLang;
+            if (!Object.keys(langInserters).includes(fileType)) {
+                langInserters[fileType] = new JavascriptCodeInserter();
+            }
+            break;
+        }
+    }
+
+    codeInserter = langInserters[fileType];
+}
+
+// performs the necessary preprocessing
+function preprocessing(words) {
+
+    //preprocessing the sentence
+    if (typeof words === 'string') {
+        words = words.split(' ');
+        // building variable name
+        if (words.includes('variable')) {
+            words = buildVariableName(words);
+        }
+        words = processSentence(words, lang);
+        words = formNumbers(words);
+    }
+
+    return words;
+}
+
 module.exports = {
     parseCommand: function (mainWindow, words) {
 
         mainWindow.webContents.send('request-file-path');
 
-        ipcMain.once('file-path', function (event, arg) {
+        ipcMain.once('file-path', function (event, filePath) {
 
-            filePath = arg;
+            configureLang(filePath);
 
-            let lang;
-
-            let codeInserter;
-
-            // assume file type based on its extension.
-            fileType = filePath.split('.').pop();
-
-            switch (fileType) {
-                case 'py': {
-                    lang = pythonLang;
-                    if(!Object.keys(langInserters).includes(fileType)) {
-                        langInserters[fileType] = new PythonCodeInserter();
-                    }
-                    break;
-                }
-                case 'js': {
-                    lang = javascriptLang;
-                    if(!Object.keys(langInserters).includes(fileType)) {
-                        langInserters[fileType] = new JavascriptCodeInserter();
-                    }
-                    break;
-                }
-            }
-
-            //preprocessing the sentence
-            if (typeof words === 'string') {
-                words = words.split(' ');
-                // building variable name
-                if (words.includes('variable')) {
-                    words = buildVariableName(words);
-                }
-                words = processSentence(words, lang);
-                words = formNumbers(words);
-            }
-
-            codeInserter = langInserters[fileType];
+            words = preprocessing(words);
 
             for (i = 0; i < words.length; i++) {
 
                 cmd = words[i];
-                // if the user says cancel, the buffer of creating commands
-                // or code blocks is flushed.
-                if (cancelCommandOrCodeBlockCreation(cmd)) {
-                    continue;
-                }
 
                 wordNotInGrammar = isWordNotInGrammar(cmd, lang);
                 directCode = isDirectWordInsertion(cmd, lang);
-                indicrectCode = isIndirectCodeInsertion(cmd, lang);
 
-                if (commandIsBeingConstructed) {
-                    if (constructingEditorCommand) {
-                        if (wordNotInGrammar) {
-                            commandParser.constructIndicrectCommand(mainWindow, cmd);
-                        }
-                    } else {
-                        if (wordNotInGrammar) {
-                            codeParser.constructIndicrectCodeBlock(mainWindow, cmd);
-                        } else {
-                            if (directCode) {
-                                codeParser.constructIndicrectCodeBlock(mainWindow, directCode, codeInserter);
-                            } else if (indicrectCode) {
-                                codeParser.constructIndicrectCodeBlock(mainWindow, indicrectCode, codeInserter);
-                            }
-                        }
+                if (constructingEditorCommand) {
+                    if (wordNotInGrammar) {
+                        commandParser.constructIndicrectCommand(mainWindow, cmd);
                     }
-                } else {
+                }
+                else {
                     directCommand = isDirectCommand(cmd);
                     indirectCommand = isIndirectCommand(cmd);
 
@@ -279,15 +252,12 @@ module.exports = {
                         codeParser.directCodeInsertion(mainWindow, cmd);
                     } else if (directCode) {
                         codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
-                    } else if (indicrectCode) {
-                        if (codeParser.constructIndicrectCodeBlock(mainWindow, indicrectCode, codeInserter)) {
-                            commandIsBeingConstructed = false;
-                        }
                     } else if (directCommand) {
                         commandParser.executeCommand(mainWindow, directCommand);
                     } else if (indirectCommand) {
+                        constructingEditorCommand = true;
                         if (commandParser.constructIndicrectCommand(mainWindow, directCommand)) {
-                            commandIsBeingConstructed = false;
+                            constructingEditorCommand = false;
                         }
                     }
                 }

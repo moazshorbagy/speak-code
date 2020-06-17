@@ -26,15 +26,6 @@ let availableCommands = [
     'parameters-insertion'
 ];
 
-// cancel any code block being constructed that haven't been terminated yet
-cancelConstructingCodeblock = function () {
-
-    // TODO 1.1: handle any misplacement of cursor in the code
-
-    cmdStack = [];
-    cmdStage = [];
-}
-
 endCommandString = 'finish';
 
 // moving the cursor horizontally
@@ -380,7 +371,6 @@ function getFileVariables(mainWindow) {
 }
 
 module.exports = {
-    cancelConstructingCodeblock,
     constructIndicrectCodeBlock,
     directCodeInsertion
 }

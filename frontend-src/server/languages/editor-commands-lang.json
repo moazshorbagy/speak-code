@@ -30,8 +30,5 @@
         "go-line": "set-cursor-to-line",
         "go-column": "set-cursor-to-column",
         "focus-folder": "focus-folder"
-    },
-    "cancel-executing-indirects": {
-        "cancel": "cancel-constructing-commands"
     }
 }
