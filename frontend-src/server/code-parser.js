@@ -1,5 +1,5 @@
 const electron = require('electron');
-const fs = require('fs')
+const fs = require('fs');
 
 const ipcMain = electron.ipcMain;
 
@@ -25,15 +25,6 @@ let availableCommands = [
     'define-class',
     'parameters-insertion'
 ];
-
-// cancel any code block being constructed that haven't been terminated yet
-cancelConstructingCodeblock = function () {
-
-    // TODO 1.1: handle any misplacement of cursor in the code
-
-    cmdStack = [];
-    cmdStage = [];
-}
 
 endCommandString = 'finish';
 
@@ -101,7 +92,7 @@ let directCodeInsertionCmds = [
 
 // returns false if commmand is not completed yet
 // return true if command is successfully executed.
-constructIndicrectCodeBlock = function (mainWindow, parameter) {
+constructIndicrectCodeBlock = function (mainWindow, parameter, codeInserter) {
     mainWindow.webContents.send('get-current-line');
 
     ipcMain.once('current-line', function (event, line) {
@@ -217,7 +208,7 @@ function insertPlainCode(mainnWindow, code) {
 }
 
 // insert code directly
-directCodeInsertion = function (mainWindow, keyword) {
+directCodeInsertion = function (mainWindow, keyword, codeInserter) {
     if (directCodeInsertionCmds.includes(keyword)) {
         switch (keyword) {
             case 'brackets': {
@@ -257,13 +248,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
 
-                    code = ":\n";
-
-                    newScope = 4 * (getScope(line) + 1);
-
-                    code += (" ").repeat(newScope);
-
-                    insertPlainCode(mainWindow, code);
+                    insertPlainCode(mainWindow, codeInserter.newScope(line));
                 });
                 break;
             }
@@ -274,13 +259,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
 
-                    code = "\n";
-
-                    newScope = Math.max(4 * (getScope(line) - 1), 0);
-
-                    code += (" ").repeat(newScope);
-
-                    insertPlainCode(mainWindow, code);
+                    insertPlainCode(mainWindow, codeInserter.exitScope(line));
                 });
                 break;
             }
@@ -291,11 +270,7 @@ directCodeInsertion = function (mainWindow, keyword) {
 
                     mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
 
-                    code = "\n";
-
-                    code += (" ").repeat(getScope(line) * 4);
-
-                    insertPlainCode(mainWindow, code);
+                    insertPlainCode(mainWindow, codeInserter.enter(line));
                 });
                 break;
             }
@@ -326,9 +301,9 @@ let modelsVariables = {};
 
 // This function is programming language specific.
 function getFileVariables(mainWindow) {
-    mainWindow.webContents.send('get-file-content');
+    mainWindow.webContents.send('request-file-path');
 
-    ipcMain.once('file-content', function (event, args) {
+    ipcMain.once('file-path', function (event, args) {
 
         var keys = Object.keys(modelsVariables);
         if (keys.includes(args)) {
@@ -396,7 +371,6 @@ function getFileVariables(mainWindow) {
 }
 
 module.exports = {
-    cancelConstructingCodeblock,
     constructIndicrectCodeBlock,
     directCodeInsertion
 }

@@ -1,0 +1,34 @@
+{
+    "direct": {
+        "change-folder": "change-directory",
+        "save": "save-file",
+        "exit": "close-all-tabs",
+        "new-file": "new-file",
+        "reveal-cursor": "reveal-cursor",
+        "zoom-in": "zoom-in",
+        "zoom-out": "zoom-out",
+        "undo": "undo",
+        "redo": "redo",
+        "close": "close-tab",
+        "next-tab": "next-tab",
+        "move-right": "increment-cursor",
+        "move-left": "decrement-cursor",
+        "select-all": "select-all-text",
+        "cut": "cut",
+        "copy": "copy",
+        "paste": "paste",
+        "backspace": "backspace",
+        "comment-line": "comment-line",
+        "delete-line": "delete-line"
+    },
+    "indirect": {
+        "open-file": "open-file-from-directory",
+        "expand": "expand-folder",
+        "go-tab": "navgiate-to-tab",
+        "vertical": "scroll-to-line",
+        "horizontal": "scroll-to-column",
+        "go-line": "set-cursor-to-line",
+        "go-column": "set-cursor-to-column",
+        "focus-folder": "focus-folder"
+    }
+}
