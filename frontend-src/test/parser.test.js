@@ -50,11 +50,18 @@ describe('Function: Build Variable Name', function () {
 
     it('Should convert two variable names', function () {
         input = ['variable', 'my', 'new', 'variable', 'pascal', 'case', 'variable', 'my', 'new', 'variable', 'camel', 'case'];
-        expectedOutput = 'MyNewVariable myNewVariable';
+        expectedOutput = ['MyNewVariable' ,'myNewVariable'];
 
         actualOutput = parser.buildVariableName(input);
 
-        assert.equal(actualOutput, expectedOutput, `Variable names are different: expected ${expectedOutput} but got ${actualOutput}.`);
+        assert.equal(actualOutput.length, expectedOutput.length, 
+            `Arrays lengths are different: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
+        
+        for(var i = 0; i < expectedOutput.length; i++) {
+            assert.equal(actualOutput[i], expectedOutput[i], 
+                `Variable names are different: expected ${expectedOutput[i]} but got ${actualOutput[i]}.`);
+        }
+
     });
 
     it('Should throw error if input is not an array', function () {
