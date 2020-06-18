@@ -40,6 +40,12 @@ function isIndirectCommand(word) {
 }
 
 function processSentence(words, lang) {
+    if(!lang || !words || !words.length) {
+        throw new Error('Missing parameters.')
+    }
+    if (!Array.isArray(words)) {
+        throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
+    }
 
     processedWords = [];
 
@@ -83,6 +89,10 @@ numbersDict = {
 };
 
 function formNumbers(words) {
+    if (!Array.isArray(words)) {
+        throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
+    }
+
     var numbers = Object.keys(numbersDict);
 
     var processedWords = [];
@@ -109,6 +119,9 @@ function formNumbers(words) {
 
 
 function buildVariableName(words) {
+    if (!Array.isArray(words)) {
+        throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
+    }
 
     wordsAfterCombiningVarName = [];
 
@@ -148,6 +161,9 @@ function buildVariableName(words) {
                     break;
                 }
                 case 'pascal': {
+
+                    varName = "";
+
                     for (k = j; k < i - 1; k++) {
                         varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
                     }
@@ -221,48 +237,52 @@ function preprocessing(words) {
     return words;
 }
 
-module.exports = {
-    parseCommand: function (mainWindow, words) {
+function parseCommand(mainWindow, words) {
 
-        mainWindow.webContents.send('request-file-path');
+    mainWindow.webContents.send('request-file-path');
 
-        ipcMain.once('file-path', function (event, filePath) {
+    ipcMain.once('file-path', function (event, filePath) {
 
-            configureLang(filePath);
+        configureLang(filePath);
 
-            words = preprocessing(words);
+        words = preprocessing(words);
 
-            for (i = 0; i < words.length; i++) {
+        for (i = 0; i < words.length; i++) {
 
-                cmd = words[i];
+            cmd = words[i];
 
-                wordNotInGrammar = isWordNotInGrammar(cmd, lang);
-                directCode = isDirectWordInsertion(cmd, lang);
+            wordNotInGrammar = isWordNotInGrammar(cmd, lang);
+            directCode = isDirectWordInsertion(cmd, lang);
 
-                if (constructingEditorCommand) {
-                    if (wordNotInGrammar) {
-                        commandParser.constructIndicrectCommand(mainWindow, cmd);
-                    }
+            if (constructingEditorCommand) {
+                if (wordNotInGrammar) {
+                    commandParser.constructIndicrectCommand(mainWindow, cmd);
                 }
-                else {
-                    directCommand = isDirectCommand(cmd);
-                    indirectCommand = isIndirectCommand(cmd);
+            }
+            else {
+                directCommand = isDirectCommand(cmd);
+                indirectCommand = isIndirectCommand(cmd);
 
-                    if (wordNotInGrammar) {
-                        codeParser.directCodeInsertion(mainWindow, cmd);
-                    } else if (directCode) {
-                        codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
-                    } else if (directCommand) {
-                        commandParser.executeCommand(mainWindow, directCommand);
-                    } else if (indirectCommand) {
-                        constructingEditorCommand = true;
-                        if (commandParser.constructIndicrectCommand(mainWindow, directCommand)) {
-                            constructingEditorCommand = false;
-                        }
+                if (wordNotInGrammar) {
+                    codeParser.directCodeInsertion(mainWindow, cmd);
+                } else if (directCode) {
+                    codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
+                } else if (directCommand) {
+                    commandParser.executeCommand(mainWindow, directCommand);
+                } else if (indirectCommand) {
+                    constructingEditorCommand = true;
+                    if (commandParser.constructIndicrectCommand(mainWindow, directCommand)) {
+                        constructingEditorCommand = false;
                     }
                 }
             }
-        });
-    }
+        }
+    });
 }
 
+module.exports = {
+    processSentence,
+    formNumbers,
+    buildVariableName,
+    parseCommand
+}
