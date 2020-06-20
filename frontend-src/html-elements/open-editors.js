@@ -104,10 +104,14 @@ displayCurrentlyOpenedFileName = function(filePath) {
 // closes the tab with ID: filePath
 closeTab = function(filePath) {
     var tab = document.getElementById('OFcontainer_' + filePath);
+    console.log(filePath);
     if(tab) {
         tab.parentNode.removeChild(tab);
-        var nextTab = editor.removeModelWithId(editor.getCurrentModel());
-        module.exports.displayCurrentlyOpenedFileName(nextTab);
+        var nextTab = editor.removeModelWithId(filePath);
+        if(editor.getCurrentModel() == filePath) {
+            editor.focusModel(nextTab);
+            module.exports.displayCurrentlyOpenedFileName(nextTab);
+        }
     }
 }
 
