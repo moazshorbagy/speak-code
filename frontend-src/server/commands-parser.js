@@ -134,24 +134,24 @@ function expandFolder(mainWindow, folderName) {
     }
 }
 
-function gotoTab(tabNumber) {
+function gotoTab(mainWindow, tabNumber) {
     if (!isNaN(lineNumber)) {
-        number = parseInt(lineNumber, 10);
-        mainWindow.webContents.send('request-tab-number', tabNumber);
+        number = parseInt(tabNumber, 10);
+        mainWindow.webContents.send('request-tab-number', number);
     }
 }
 
-function gotoLine(lineNumber) {
+function gotoLine(mainWindow, lineNumber) {
     if (!isNaN(lineNumber)) {
         number = parseInt(lineNumber, 10);
-        mainWindow.webContents.send('request-line-number', lineNumber);
+        mainWindow.webContents.send('request-line-number', number);
     }
 }
 
 function gotoColumn(mainWindow, columnNumber) {
     if (!isNaN(columnNumber)) {
         number = parseInt(lineNumber, 10);
-        mainWindow.webContents.send('request-column-number', columnNumber);
+        mainWindow.webContents.send('request-column-number', number);
     }
 }
 
@@ -189,11 +189,11 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
                 expandFolder(mainWindow, keyword);
                 break;
             }
-            case 'go-Column': {
+            case 'set-cursor-to-column': {
                 gotoColumn(mainWindow, keyword);
                 break;
             }
-            case 'go-line': {
+            case 'set-cursor-to-line': {
                 gotoLine(mainWindow, keyword);
                 break;
             }
@@ -229,7 +229,6 @@ executeCommand = function (mainWindow, command) {
             break;
         }
         case 'unfocus-folder': {
-            console.log('not here');
             unfocusFolder(mainWindow);
             break;
         }

@@ -273,6 +273,26 @@ getCurrentModel = function () {
     return currentFilePath;
 }
 
+gotoColumn = function(columnNumber) {
+    if(!editor || !editor.getModel()) {
+        return;
+    }
+    position = editor.getPosition();
+    position.lineNumber = columnNumber;
+    editor.setPosition(position);
+    editor.focus();
+}
+
+gotoLine = function(lineNumber) {
+    if(!editor || !editor.getModel()) {
+        return;
+    }
+    position = editor.getPosition();
+    position.lineNumber = lineNumber;
+    editor.setPosition(position);
+    editor.focus();
+}
+
 // closes the current tab
 closeCurrentTab = function () {
     module.exports.removeModelWithId(currentFilePath);
@@ -413,5 +433,7 @@ module.exports = {
     deleteLine,
     copy,
     cut,
-    paste
+    paste,
+    gotoLine,
+    gotoColumn
 }

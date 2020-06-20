@@ -62,25 +62,29 @@ function processSentence(words, lang) {
         directCodeInsertionDict = lang['direct'];
     }
 
-    direcEditorCommandsDict = editorCommandsLang['direct'];
+    directEditorCommandsDict = editorCommandsLang['direct'];
     indirectEditorCommandsDict = editorCommandsLang['indirect'];
 
     if (words.length == 1) {
         processedWords.push(words[0]);
     } else {
         for (i = 0; i < words.length - 1; i++) {
+
             var concatenatedWords = words[i] + '-' + words[i + 1];
-            if (lang) {
-                if (Object.keys(directCodeInsertionDict).includes(concatenatedWords)) {
-                    processedWords.push(concatenatedWords);
-                    i++;
-                }
-            } else if (Object.keys(direcEditorCommandsDict).includes(concatenatedWords) ||
+
+            if (Object.keys(directEditorCommandsDict).includes(concatenatedWords) ||
                 Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
                 processedWords.push(concatenatedWords);
                 i++;
             } else {
-                processedWords.push(words[i]);
+                if (lang) {
+                    if (Object.keys(directCodeInsertionDict).includes(concatenatedWords)) {
+                        processedWords.push(concatenatedWords);
+                        i++;
+                    } else {
+                        processedWords.push(words[i]);
+                    }
+                }
             }
 
             if (i == words.length - 2) {
