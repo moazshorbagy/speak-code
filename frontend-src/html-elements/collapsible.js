@@ -3,7 +3,6 @@ let _class = ' fileNameSpan';
 
 const fs = require('fs');
 const Path = require('path');
-const openEditors = require('../html-elements/open-editors');
 
 const closedFolderIcon = "<img src='icons/folder-24px.svg' class='float-left'> </img>";
 
@@ -43,12 +42,8 @@ addCollapsible = function (container, path, name, content, isRootDir) {
     }
 
     folderDescriptor.on('click', function () {
-        var content = this.nextElementSibling;
-        if (content.style.display === "block") {
-            content.style.display = "none";
-        } else {
-            content.style.display = "block";
-        }
+        var folderPath = this.id.substring(1);
+        expandFolder(folderPath);
     });
 }
 
@@ -59,6 +54,26 @@ populateFiles = function (files, path, contentContainer) {
         c = $('#' + $.escapeSelector(contentId));
         c.on('click', fileEventHandlers);
     }
+}
+
+expandFolder = function(folderPath) {
+    folderDescriptor = document.getElementById('b' + folderPath);
+    var content = folderDescriptor.nextElementSibling;
+    if (content.style.display === "block") {
+        content.style.display = "none";
+    } else {
+        content.style.display = "block";
+    }
+}
+
+focusFolder = function(folderPath) {
+    element = document.getElementById('b' + folderPath);
+    element.style.background = '#000000';
+}
+
+unfocusFolder = function(folderPath) {
+    element = document.getElementById('b' + folderPath);
+    element.style.background = 'unset';
 }
 
 function smallScript(e) {
@@ -84,15 +99,7 @@ function fileEventHandlers(event) {
     }
 
     pendingClick = setTimeout(function () {
-        var doc = fs.readFileSync(elementId, "utf8");
-        const monacoEditor = require('../editor/editor');
-        if (!monacoEditor.modelIsAlreadyOpen(elementId)) {
-            monacoEditor.openDoc(doc, elementId);
-            openEditors.addOpenedFile(elementId);
-        } else {
-            monacoEditor.focusModel(elementId);
-            openEditors.displayCurrentlyOpenedFileName(elementId.split(Path.sep).pop());
-        }
+        module.exports.openFile(elementId);
     }, 300);
 }
 
@@ -115,7 +122,16 @@ populateFolders = function (folders, path, explorerContainer) {
         module.exports.addCollapsible(explorerContainer, folderPath, folderName, fs.readdirSync(folderPath, { withFileTypes: true }));
     }
 }
-
+openFile = function (filePath) {
+    var doc = fs.readFileSync(filePath, "utf8");
+    if (!editor.modelIsAlreadyOpen(filePath)) {
+        editor.openDoc(doc, filePath);
+        openedFiles.addOpenedFile(filePath);
+    } else {
+        editor.focusModel(filePath);
+        openedFiles.displayCurrentlyOpenedFileName(filePath.split(Path.sep).pop());
+    }
+}
 
 populateOtherTypes = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
@@ -124,4 +140,10 @@ populateOtherTypes = function (files, path, contentContainer) {
     }
 }
 
-module.exports = { addCollapsible }
+module.exports = {
+    addCollapsible,
+    openFile,
+    expandFolder,
+    focusFolder,
+    unfocusFolder
+}
