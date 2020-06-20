@@ -15,35 +15,53 @@ let langInserters = {};
 let constructingEditorCommand;
 
 function isWordNotInGrammar(word, lang) {
-    if (word in editorCommandsLang['direct'] || word in editorCommandsLang['indirect'] || word in lang['direct']) {
+    if (lang) {
+        if (word in lang['direct']) {
+            return false;
+        }
+    }
+
+    if (word in editorCommandsLang['direct'] || word in editorCommandsLang['indirect']) {
         return false;
     }
+
     return true;
 }
 
 function isDirectWordInsertion(word, lang) {
-    if (word in lang['direct']) {
-        return lang['direct'][word];
+    if (lang) {
+        if (word in lang['direct']) {
+            return lang['direct'][word];
+        }
     }
+
+    return undefined;
 }
 
 function isDirectCommand(word) {
     if (word in editorCommandsLang['direct']) {
         return editorCommandsLang['direct'][word];
     }
+
+    return undefined;
 }
 
 function isIndirectCommand(word) {
     if (word in editorCommandsLang['indirect']) {
         return editorCommandsLang['indirect'][word];
     }
+
+    return undefined;
 }
 
 function processSentence(words, lang) {
 
     processedWords = [];
 
-    directCodeInsertionDict = lang['direct'];
+    if (lang) {
+        directCodeInsertionDict = lang['direct'];
+    }
+
     direcEditorCommandsDict = editorCommandsLang['direct'];
     indirectEditorCommandsDict = editorCommandsLang['indirect'];
 
@@ -52,8 +70,13 @@ function processSentence(words, lang) {
     } else {
         for (i = 0; i < words.length - 1; i++) {
             var concatenatedWords = words[i] + '-' + words[i + 1];
-            if (Object.keys(directCodeInsertionDict).includes(concatenatedWords) ||
-                Object.keys(direcEditorCommandsDict).includes(concatenatedWords) || Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
+            if (lang) {
+                if (Object.keys(directCodeInsertionDict).includes(concatenatedWords)) {
+                    processedWords.push(concatenatedWords);
+                    i++;
+                }
+            } else if (Object.keys(direcEditorCommandsDict).includes(concatenatedWords) ||
+                Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
                 processedWords.push(concatenatedWords);
                 i++;
             } else {
@@ -228,7 +251,9 @@ module.exports = {
 
         ipcMain.once('file-path', function (event, filePath) {
 
-            configureLang(filePath);
+            if (filePath) {
+                configureLang(filePath);
+            }
 
             words = preprocessing(words);
 
@@ -240,9 +265,8 @@ module.exports = {
                 directCode = isDirectWordInsertion(cmd, lang);
 
                 if (constructingEditorCommand) {
-                    if (wordNotInGrammar) {
-                        commandParser.constructIndicrectCommand(mainWindow, cmd);
-                    }
+                    commandParser.constructIndicrectCommand(mainWindow, cmd, true);
+                    constructingEditorCommand = false;
                 }
                 else {
                     directCommand = isDirectCommand(cmd);
@@ -250,15 +274,13 @@ module.exports = {
 
                     if (wordNotInGrammar) {
                         codeParser.directCodeInsertion(mainWindow, cmd);
-                    } else if (directCode) {
+                    } else if (directCode !== undefined) {
                         codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
-                    } else if (directCommand) {
+                    } else if (directCommand !== undefined) {
                         commandParser.executeCommand(mainWindow, directCommand);
-                    } else if (indirectCommand) {
+                    } else if (indirectCommand !== undefined) {
                         constructingEditorCommand = true;
-                        if (commandParser.constructIndicrectCommand(mainWindow, directCommand)) {
-                            constructingEditorCommand = false;
-                        }
+                        commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
                     }
                 }
             }
