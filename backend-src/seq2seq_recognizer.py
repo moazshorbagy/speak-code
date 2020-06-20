@@ -44,7 +44,7 @@ with microphone as source:
             # predicting the words using our model
             X = pad_sequences(X, padding='post', value=c.masking_value, dtype=np.float32, maxlen=c.max_X_seq_len)
 
-            prediction = predict(encoder_model, decoder_model, X, beam_search=True)[0]
+            prediction = predict(encoder_model, decoder_model, X, beam_search=True)[0][0]
 
             print('pred:', prediction)
             print()

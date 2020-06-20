@@ -77,11 +77,13 @@ def create_model(max_input_seq_length, max_ouput_seq_length):
 
 def predict(encoder_model,decoder_model,data,beam_search=False):
     predictions=[]
+    attention_weights = []
     for sample in data:
         encoder_out,encoder_fwd_state,encoder_back_state = encoder_model.predict(sample.reshape((1,sample.shape[0],sample.shape[1])))
         dec_init    = np.concatenate([encoder_fwd_state,encoder_back_state],axis=-1)
         decoder_out = np.zeros((1,1,c.n_output))
         decoder_out[0,0,-2]=1
+        att_weights = []
 
         if not beam_search: # greedy search
             output=''
@@ -92,10 +94,13 @@ def predict(encoder_model,decoder_model,data,beam_search=False):
 
                 if output[-1]==c.end_token:
                     break
+                
+                att_weights.append((chindex, attention))
 
                 decoder_out = np.zeros((1,1,c.n_output))
                 decoder_out[0,0,chindex]=1
-            predictions.append(output)
+            predictions.append(output[:-1])
+            attention_weights.append(att_weights)
 
         else: # beam search
             decoder_out,attention,dec_init=decoder_model.predict([encoder_out,dec_init,decoder_out])
@@ -114,8 +119,8 @@ def predict(encoder_model,decoder_model,data,beam_search=False):
 
                 if paths[0][0][-1]==c.end_token:
                     break
-            predictions.append(paths[0][0])
-    return predictions
+            predictions.append(paths[0][0][:-1])
+    return predictions, attention_weights
 
 
 def create_optimizer():
