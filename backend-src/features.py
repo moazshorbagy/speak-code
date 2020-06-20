@@ -10,6 +10,8 @@ def get_features(signal):
 
     :return mfcc       : mfcc features
     """
+    if(type(signal) in [str, int, float, dict]):
+        raise TypeError('The input type is incorrect')
 
     emphasized_signal   = pre_emphasis(signal)
     frames              = framing(signal,c.sample_rate,c.frame_duration,c.frame_overlap,np.hamming)

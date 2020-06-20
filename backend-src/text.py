@@ -13,9 +13,13 @@ idx2char = np.array(c.alphabet)
 def encode(text):
     if(type(text) not in [str]):
         raise TypeError('The type of text to be encoded should be str')
+
     return np.array([char2idx[c] for c in text])
 
 def decode(label_vector):
+    if(type(label_vector) in [str, int, float, dict]):
+        raise TypeError('The input type is incorrect')
+
     return ''.join([idx2char[idx] for idx in label_vector])
 
 def encode_to_one_hot(char):

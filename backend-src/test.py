@@ -8,8 +8,11 @@ def suite():
 
     suite.addTest(TextTestCase('test_encode_decode'))
     suite.addTest(TextTestCase('test_encode_input_type'))
+    suite.addTest(TextTestCase('test_decode_input_type'))
     
-    suite.addTest(FeaturesTestCase('test_get_features'))
+    suite.addTest(FeaturesTestCase('test_get_features_1'))
+    suite.addTest(FeaturesTestCase('test_get_features_2'))
+    suite.addTest(FeaturesTestCase('test_get_features_input_type'))
     
     return suite
 
