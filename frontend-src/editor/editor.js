@@ -259,7 +259,6 @@ removeModelWithId = function (filePath) {
             return null;
         }
         var nextModel = keys[(keys.indexOf(currentFilePath) + 1) % keys.length];
-        module.exports.focusModel(nextModel);
         return nextModel;
     }
 }
