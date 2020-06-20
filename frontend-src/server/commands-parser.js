@@ -1,4 +1,7 @@
-// all available commands (keywords).
+const fs = require('fs');
+const Path = require('path');
+
+// all available direct commands.
 directCommands = [
     'change-directory',
     'save-file',
@@ -19,10 +22,66 @@ directCommands = [
     'paste',
     'backspace',
     'comment-line',
-    'delete-line'
+    'delete-line',
+    'unfocus-folder'
 ];
 
-currentConstructedCommand = [];
+indirectCommands = [
+    "open-file-from-directory",
+    "expand-folder",
+    "navgiate-to-tab",
+    "set-cursor-to-line",
+    "set-cursor-to-column",
+    "focus-folder"
+];
+
+let cmd;
+
+let rootDir;
+
+let currentlyFocusedFolderPath;
+
+let currentFolders;
+
+let currentFiles;
+
+// empties all arrays that store data about
+// the focused folder and its content.
+function deleteContent() {
+    currentFiles = [];
+    currentFolders = [];
+}
+
+setRootDirectory = function (mainWindow, directoryPath) {
+
+    // set rootDir global var
+    rootDir = directoryPath;
+
+    currentlyFocusedFolderPath = directoryPath;
+
+    content = fs.readdirSync(directoryPath, { withFileTypes: true });
+
+    setCurrentFilesAndFolders(content);
+
+    mainWindow.webContents.send('request-focus-folder', directoryPath);
+}
+
+function setCurrentFilesAndFolders(content) {
+
+    deleteContent();
+
+    for (i = 0; i < content.length; i++) {
+
+        if (content[i].isDirectory()) {
+
+            currentFolders.push(content[i].name);
+
+        } else if (content[i].isFile()) {
+
+            currentFiles.push(content[i].name);
+        }
+    }
+}
 
 function checkDirectCommand(command) {
     if (!directCommands.includes(command)) {
@@ -31,8 +90,124 @@ function checkDirectCommand(command) {
     return true;
 }
 
-constructIndicrectCommand = function (mainWindow, keyword) {
-    currentConstructedCommand.push(keyword);
+function focusFolder(mainWindow, folderName) {
+    // this means that the folder request to be focused
+    // does not exist in the currently focused folder.
+    for (var i = 0; i < currentFolders.length; i++) {
+
+        if (currentFolders[i] === folderName) {
+
+            mainWindow.webContents.send('request-unfocus-folder', currentlyFocusedFolderPath);
+
+            // set currentlyFocusedFolderPath
+            currentlyFocusedFolderPath = Path.join(currentlyFocusedFolderPath, folderName);
+
+            // set current files and current folders
+            content = fs.readdirSync(currentlyFocusedFolderPath, { withFileTypes: true });
+
+            setCurrentFilesAndFolders(content);
+
+            mainWindow.webContents.send('request-focus-folder', currentlyFocusedFolderPath);
+
+            break;
+        }
+    }
+}
+
+function openFile(mainWindow, filename) {
+    for (var i = 0; i < currentFiles.length; i++) {
+        if (currentFiles[i] === filename) {
+            filePath = Path.join(currentlyFocusedFolderPath, filename);
+            mainWindow.webContents.send('request-open-filename', filePath);
+            break;
+        }
+    }
+}
+
+function expandFolder(mainWindow, folderName) {
+    for (var i = 0; i < currentFolders.length; i++) {
+        if (currentFolders[i] === folderName) {
+            folderPath = Path.join(currentlyFocusedFolderPath, folderName);
+            mainWindow.webContents.send('request-expand-foldername', folderPath);
+            break;
+        }
+    }
+}
+
+function gotoTab(tabNumber) {
+    if (!isNaN(lineNumber)) {
+        number = parseInt(lineNumber, 10);
+        mainWindow.webContents.send('request-tab-number', tabNumber);
+    }
+}
+
+function gotoLine(lineNumber) {
+    if (!isNaN(lineNumber)) {
+        number = parseInt(lineNumber, 10);
+        mainWindow.webContents.send('request-line-number', lineNumber);
+    }
+}
+
+function gotoColumn(mainWindow, columnNumber) {
+    if (!isNaN(columnNumber)) {
+        number = parseInt(lineNumber, 10);
+        mainWindow.webContents.send('request-column-number', columnNumber);
+    }
+}
+
+function unfocusFolder(mainWindow) {
+
+    if (currentlyFocusedFolderPath !== rootDir) {
+
+        mainWindow.webContents.send('request-unfocus-folder', currentlyFocusedFolderPath);
+
+        // move in the directory path one element back
+        pathArray = currentlyFocusedFolderPath.split(Path.sep);
+        currentFolder = pathArray.pop();
+        currentlyFocusedFolderPath = pathArray.join(Path.sep);
+
+        content = fs.readdirSync(currentlyFocusedFolderPath, { withFileTypes: true });
+
+        setCurrentFilesAndFolders(content);
+
+        mainWindow.webContents.send('request-focus-folder', currentlyFocusedFolderPath);
+    }
+}
+
+constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
+    if (isParameter) {
+        switch (cmd) {
+            case 'open-file-from-directory': {
+                openFile(mainWindow, keyword);
+                break;
+            }
+            case 'focus-folder': {
+                focusFolder(mainWindow, keyword);
+                break;
+            }
+            case 'expand-folder': {
+                expandFolder(mainWindow, keyword);
+                break;
+            }
+            case 'go-Column': {
+                gotoColumn(mainWindow, keyword);
+                break;
+            }
+            case 'go-line': {
+                gotoLine(mainWindow, keyword);
+                break;
+            }
+            case 'go-tab': {
+                gotoTab(mainWindow, keyword);
+                break;
+            }
+        }
+        return true;
+    } else {
+        if (indirectCommands.includes(keyword)) {
+            cmd = keyword;
+        }
+    }
 }
 
 // returns false if the command doesn't exist
@@ -53,6 +228,11 @@ executeCommand = function (mainWindow, command) {
             mainWindow.webContents.send('request-horizontal-move-cursor', -1);
             break;
         }
+        case 'unfocus-folder': {
+            console.log('not here');
+            unfocusFolder(mainWindow);
+            break;
+        }
         default: {
             mainWindow.webContents.send('request-' + command);
             break;
@@ -62,5 +242,6 @@ executeCommand = function (mainWindow, command) {
 
 module.exports = {
     executeCommand,
-    constructIndicrectCommand
+    constructIndicrectCommand,
+    setRootDirectory
 };
