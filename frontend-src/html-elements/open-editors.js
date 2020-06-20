@@ -14,12 +14,18 @@ const editor = require('../editor/editor');
 const modelsEventEmitters = require('../editor/model-did-change-event');
 
 // for new tabs 
-tabsCount = 0;
+let tabsCount = 0;
+
+// a boolean array, if entry = true, then index
+// is an available id to opened tab
+let tabIdOptimizer = [];
+
+let tabIdMap = {};
 
 addOpenEditors = function () {
 
     var doesExist = $("#" + openEditorsId).length;
-    if(doesExist) {
+    if (doesExist) {
         return;
     }
 
@@ -43,6 +49,18 @@ addOpenEditors = function () {
             content.style.display = "block";
         }
     });
+}
+
+function getLeastAvailableId() {
+    for (var i = 0; i < tabIdOptimizer.length; i++) {
+        if (tabIdOptimizer[i] === true) {
+            tabIdOptimizer[i] = false;
+            return i;
+        }
+    }
+
+    tabIdOptimizer.push(false);
+    return tabIdOptimizer.length - 1;
 }
 
 
@@ -72,43 +90,61 @@ addOpenedFile = function (filePath) {
 
     var closeTabIcon = "<img id='" + tabId + "' src='icons/close-24px.svg' class='float-left'> </img>";
 
-    openEditorsContentContainer.append("<div id='OFcontainer_" + filePath + "' class='fileNameSpan'> <div class='folder-descriptor'>" + closeTabIcon + "<p id='" + filePath + "' class='float-left'>" + fileName + " </p> </div> </div>");
+    tabNumber = getLeastAvailableId();
+
+    var tabNumberIdDiv = `<div class='float-left' style='padding: 0 5px;'> ${tabNumber} </div>`;
+    tabIdMap[tabNumber] = filePath;
+
+    openEditorsContentContainer.append("<div id='OFcontainer_" + filePath +
+        "' class='fileNameSpan'> <div id='OFDescriptor_" + filePath + "' class='folder-descriptor'>" + tabNumberIdDiv +
+        closeTabIcon + "<p id='" + filePath + "' class='float-left'>" + fileName + " </p> </div> </div>");
 
     document.getElementById(filePath).addEventListener('click', function () {
         module.exports.displayCurrentlyOpenedFileName(this.id);
         editor.focusModel(this.id);
     });
 
-    document.getElementById(tabId).addEventListener('click', function() {
+    document.getElementById(tabId).addEventListener('click', function () {
         var filePath = this.id.split('_')[0];
         module.exports.closeTab(filePath);
     });
 }
 
-notifyIsSaved = function(filePath) {
+notifyIsSaved = function (filePath) {
     document.getElementById(filePath + '_t').src = 'icons/close-24px.svg';
 }
 
-notifyNeedsSave = function(filePath) {
+notifyNeedsSave = function (filePath) {
     document.getElementById(filePath + '_t').src = 'icons/modified.svg';
 }
 
-displayCurrentlyOpenedFileName = function(filePath) {
+displayCurrentlyOpenedFileName = function (filePath) {
     var currentlyOpenedFile = $("#editor-top-panel").empty();
-    if(!filePath) {
+    if (!filePath) {
         return;
     }
     currentlyOpenedFile.append(`${filePath.split(Path.sep).pop()}`);
 }
 
+gotoTab = function(tabNumber) {
+    tabId = tabIdMap[tabNumber];
+    editor.focusModel(tabId);
+    module.exports.displayCurrentlyOpenedFileName(tabId);
+}
+
 // closes the tab with ID: filePath
-closeTab = function(filePath) {
+closeTab = function (filePath) {
+
+    var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;
+    tabIdOptimizer[parseInt(tabNumber)] = true;
+    delete tabIdMap[filePath];
+
     var tab = document.getElementById('OFcontainer_' + filePath);
-    console.log(filePath);
-    if(tab) {
+    
+    if (tab) {
         tab.parentNode.removeChild(tab);
         var nextTab = editor.removeModelWithId(filePath);
-        if(editor.getCurrentModel() == filePath) {
+        if (editor.getCurrentModel() == filePath) {
             editor.focusModel(nextTab);
             module.exports.displayCurrentlyOpenedFileName(nextTab);
         }
@@ -121,5 +157,6 @@ module.exports = {
     notifyIsSaved,
     notifyNeedsSave,
     displayCurrentlyOpenedFileName,
-    closeTab
+    closeTab,
+    gotoTab
 }

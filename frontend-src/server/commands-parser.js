@@ -135,7 +135,7 @@ function expandFolder(mainWindow, folderName) {
 }
 
 function gotoTab(mainWindow, tabNumber) {
-    if (!isNaN(lineNumber)) {
+    if (!isNaN(tabNumber)) {
         number = parseInt(tabNumber, 10);
         mainWindow.webContents.send('request-tab-number', number);
     }
@@ -197,7 +197,7 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
                 gotoLine(mainWindow, keyword);
                 break;
             }
-            case 'go-tab': {
+            case 'navgiate-to-tab': {
                 gotoTab(mainWindow, keyword);
                 break;
             }
