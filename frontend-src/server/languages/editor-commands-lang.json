@@ -19,7 +19,8 @@
         "paste": "paste",
         "backspace": "backspace",
         "comment-line": "comment-line",
-        "delete-line": "delete-line"
+        "delete-line": "delete-line",
+        "unfocus-folder": "unfocus-folder"
     },
     "indirect": {
         "open-file": "open-file-from-directory",
