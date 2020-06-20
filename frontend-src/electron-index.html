@@ -146,6 +146,35 @@
 	});
 </script>
 <script>
+	ipcRenderer.on('request-open-filename', function(event, filePath) {
+		collapsible.openFile(filePath);
+	});
+
+	ipcRenderer.on('request-focus-folder', function(event, folderPath) {
+		collapsible.focusFolder(folderPath);
+	});
+
+	ipcRenderer.on('request-unfocus-folder', function(event, folderPath) {
+		collapsible.unfocusFolder(folderPath);
+	});
+
+	ipcRenderer.on('request-expand-foldername', function(event, folderPath) {
+		collapsible.expandFolder(folderPath);
+	});
+
+	ipcRenderer.on('request-line-number', function(event, lineNumber) {
+		editor.gotoLine(lineNumber);
+	});
+
+	ipcRenderer.on('request-column-number', function(event, columnNumber) {
+		editor.gotoColumn(lineNumber);
+	});
+
+	ipcRenderer.on('request-tab-number', function(event, tabNumber) {
+		editor.gotoTab(lineNumber);
+	});
+</script>
+<script>
 	var Split = require('split-grid')
 	Split({
 		columnGutters: [{
