@@ -81,6 +81,7 @@ initEditor = function (doc, filePath, type) {
         //track position of cursor
         editor.onDidChangeCursorPosition(function (position) {
             cursorPositions[currentFilePath] = position.position;
+            editor.revealPosition(editor.getPosition());
         });
 
         editor.onDidChangeModelContent(function (e) {
@@ -131,6 +132,10 @@ openDoc = function (doc, filePath) {
         getFileType(filePath);
     }
     modelsEventEmitters.addModelEventEmitter(filePath);
+}
+
+select = function() {
+
 }
 
 // sets the current model to models[filePath] if available
@@ -273,8 +278,8 @@ getCurrentModel = function () {
     return currentFilePath;
 }
 
-gotoColumn = function(columnNumber) {
-    if(!editor || !editor.getModel()) {
+gotoColumn = function (columnNumber) {
+    if (!editor || !editor.getModel()) {
         return;
     }
     position = editor.getPosition();
@@ -283,8 +288,8 @@ gotoColumn = function(columnNumber) {
     editor.focus();
 }
 
-gotoLine = function(lineNumber) {
-    if(!editor || !editor.getModel()) {
+gotoLine = function (lineNumber) {
+    if (!editor || !editor.getModel()) {
         return;
     }
     position = editor.getPosition();
@@ -331,13 +336,17 @@ backSpace = function () {
     }
 }
 
+selectAllText = function() {
+    editor.setSelection(models[currentFilePath].getFullModelRange());
+}
+
 // scrolls to the cursor position
 revealCursor = function () {
     if (!editor || !editor.getModel()) {
         return;
     }
 
-    editor.revealCursor();
+    editor.revealPosition(editor.getPosition());
 }
 
 // undo
@@ -373,7 +382,7 @@ deleteLine = function () {
     console.log(editor.getActions().map(a => a.id));
 }
 
-copy = function() {
+copy = function () {
     if (!editor || !editor.getModel()) {
         return;
     }
@@ -381,7 +390,7 @@ copy = function() {
     console.log(editor.getActions().map(a => a.id));
 }
 
-cut = function() {
+cut = function () {
     if (!editor || !editor.getModel()) {
         return;
     }
@@ -389,7 +398,7 @@ cut = function() {
     console.log(editor.getActions().map(a => a.id));
 }
 
-paste = function() {
+paste = function () {
     if (!editor || !editor.getModel()) {
         return;
     }
@@ -435,5 +444,6 @@ module.exports = {
     cut,
     paste,
     gotoLine,
-    gotoColumn
+    gotoColumn,
+    selectAllText
 }
