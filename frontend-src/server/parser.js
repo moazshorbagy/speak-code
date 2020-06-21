@@ -15,6 +15,13 @@ let langInserters = {};
 let constructingEditorCommand;
 
 function isWordNotInGrammar(word, lang) {
+    if (!lang || !word) {
+        throw new Error('Missing parameters.')
+    }
+    if (typeof (word) != "string") {
+        throw TypeError(`Expected word to be string but instead got ${typeof (words)}`);
+    }
+
     if (word in editorCommandsLang['direct'] || word in editorCommandsLang['indirect'] || word in lang['direct']) {
         return false;
     }
@@ -40,11 +47,11 @@ function isIndirectCommand(word) {
 }
 
 function processSentence(words, lang) {
-    if(!lang || !words || !words.length) {
+    if (!lang || !words || !words.length) {
         throw new Error('Missing parameters.')
     }
     if (!Array.isArray(words)) {
-        throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
+        throw TypeError(`Expected words to be array but instead got ${typeof (words)}`);
     }
 
     processedWords = [];
@@ -89,6 +96,9 @@ numbersDict = {
 };
 
 function formNumbers(words) {
+    if (!words || !words.length) {
+        throw new Error('Missing parameters.')
+    }
     if (!Array.isArray(words)) {
         throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
     }
@@ -119,6 +129,9 @@ function formNumbers(words) {
 
 
 function buildVariableName(words) {
+    if (!words || !words.length) {
+        throw new Error('Missing parameters.')
+    }
     if (!Array.isArray(words)) {
         throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
     }
@@ -189,13 +202,10 @@ function buildVariableName(words) {
 }
 
 
-let lang;
-
-let codeInserter;
-
 // sets the lang and codeInserter variables to the appropriate
 // values
 function configureLang(filePath) {
+    let lang, codeInserter;
 
     // assume file type based on its extension.
     fileType = filePath.split('.').pop();
@@ -218,10 +228,12 @@ function configureLang(filePath) {
     }
 
     codeInserter = langInserters[fileType];
+
+    return { lang, codeInserter };
 }
 
 // performs the necessary preprocessing
-function preprocessing(words) {
+function preprocessing(words, lang) {
 
     //preprocessing the sentence
     if (typeof words === 'string') {
@@ -243,9 +255,11 @@ function parseCommand(mainWindow, words) {
 
     ipcMain.once('file-path', function (event, filePath) {
 
-        configureLang(filePath);
+        config = configureLang(filePath);
+        lang = config['lang']
+        codeInserter = config['codeInserter']
 
-        words = preprocessing(words);
+        words = preprocessing(words, lang);
 
         for (i = 0; i < words.length; i++) {
 
@@ -281,8 +295,11 @@ function parseCommand(mainWindow, words) {
 }
 
 module.exports = {
+    isWordNotInGrammar,
     processSentence,
     formNumbers,
     buildVariableName,
+    preprocessing,
+    configureLang,
     parseCommand
 }
