@@ -9,7 +9,7 @@ getMaxfunction = [
     'variable max value snake case to be minus 1 enter',
     'for i in range', 'brackets', 'length brackets array one', 'new scope',
     'if array one of i move right at least variable max value snake case new scope',
-    'variable max value snake case to be array one of i', 'exit scope',
+    'variable max value snake case to be array one of i', 'exit scope', 'exit scope',
     'return variable max value snake case',
     'exit scope'
 ]
