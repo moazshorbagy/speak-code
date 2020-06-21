@@ -127,9 +127,12 @@ displayCurrentlyOpenedFileName = function (filePath) {
 }
 
 gotoTab = function(tabNumber) {
-    tabId = tabIdMap[tabNumber];
-    editor.focusModel(tabId);
-    module.exports.displayCurrentlyOpenedFileName(tabId);
+    var ids = Object.keys(tabIdMap);
+    if(ids.includes(tabNumber)) {
+        tabId = tabIdMap[tabNumber];
+        editor.focusModel(tabId);
+        module.exports.displayCurrentlyOpenedFileName(tabId);
+    }
 }
 
 // closes the tab with ID: filePath
