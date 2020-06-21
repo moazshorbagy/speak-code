@@ -14,7 +14,7 @@ const models = {};
 
 const savedModelsValues = {};
 
-const cursorPositions = {};
+const viewStates = {};
 
 const amdLoader = require('monaco-editor/min/vs/loader');
 const amdRequire = amdLoader.require;
@@ -80,11 +80,17 @@ initEditor = function (doc, filePath, type) {
 
         //track position of cursor
         editor.onDidChangeCursorPosition(function (position) {
-            cursorPositions[currentFilePath] = position.position;
+            viewStates[currentFilePath] = editor.saveViewState();
             editor.revealPosition(editor.getPosition());
         });
 
+        editor.onDidScrollChange(function(scroll) {
+            viewStates[currentFilePath] = editor.saveViewState();
+        })
+
+
         editor.onDidChangeModelContent(function (e) {
+            console.log(e);
             if (savedModelsValues[currentFilePath] !== models[currentFilePath].getValue()) {
                 modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath);
             } else {
@@ -160,12 +166,12 @@ modelIsAlreadyOpen = function (filePath) {
 }
 
 // saves the cursor position 
-retrieveCursorPosition = function (filePath) {
-    if (!(filePath in cursorPositions)) {
+retrieveViewState = function (filePath) {
+    if (!(filePath in viewStates)) {
         return;
     }
-    editor.setPosition(
-        cursorPositions[filePath]
+    editor.restoreViewState(
+        viewStates[filePath]
     );
     editor.focus();
 }
@@ -222,7 +228,7 @@ getCurrentLine = function () {
 // model's cursor position
 focusModel = function (filePath) {
     module.exports.setModelWithId(filePath);
-    module.exports.retrieveCursorPosition(filePath);
+    module.exports.retrieveViewState(filePath);
 }
 
 // returns file type according to its extention
@@ -257,7 +263,7 @@ removeModelWithId = function (filePath) {
     if (models.hasOwnProperty(filePath)) {
         delete models[filePath];
         delete savedModelsValues[filePath];
-        delete cursorPositions[filePath];
+        delete viewStates[filePath];
         var keys = Object.keys(models);
         if (keys.length == 0) {
             editor.setModel(null);
@@ -283,7 +289,7 @@ gotoColumn = function (columnNumber) {
         return;
     }
     position = editor.getPosition();
-    position.lineNumber = columnNumber;
+    position.column = columnNumber;
     editor.setPosition(position);
     editor.focus();
 }
@@ -312,28 +318,44 @@ backSpace = function () {
 
     currentCursorPosition = editor.getPosition();
 
-    if (currentCursorPosition.lineNumber == 0 && currentCursorPosition.column == 0) {
+    if (currentCursorPosition.lineNumber == 1 && currentCursorPosition.column == 1) {
         return;
     }
 
-    if (currentCursorPosition.column == 0) {
-
-        editor.trigger('source', 'editor.action.joinLines')
-    } else {
-        op = {
-            identifier: 'id',
-            text: '',
-            range: new monaco.Range(currentCursorPosition.lineNumber,
-                currentCursorPosition.column - 1,
-                currentCursorPosition.lineNumber,
-                currentCursorPosition.column)
-        }
-
-        // executeEdits can take an id to track edits
+    if (currentCursorPosition.column == 1) {
+        prevLineLength = editor.getModel().getLineContent(editor.getPosition().lineNumber - 1).length;
         editor.executeEdits(
-            "what", [op]
+            'what', [
+                {
+                    identifier: 'id',
+                    text: '',
+                    range: new monaco.Range(
+                        currentCursorPosition.lineNumber - 1,
+                        prevLineLength + 1,
+                        currentCursorPosition.lineNumber,
+                        1
+                    )
+                }
+            ]
         );
+    } else {
+        removeLeftCharacter(currentCursorPosition);
     }
+}
+
+function removeLeftCharacter(position) {
+    op = {
+        identifier: 'id',
+        text: '',
+        range: new monaco.Range(position.lineNumber,
+            position.column - 1,
+            position.lineNumber,
+            position.column)
+    }
+    // executeEdits can take an id to track edits
+    editor.executeEdits(
+        "what", [op]
+    );
 }
 
 selectAllText = function() {
@@ -421,7 +443,7 @@ module.exports = {
     openDoc,
     setModelWithId,
     modelIsAlreadyOpen,
-    retrieveCursorPosition,
+    retrieveViewState,
     insertText,
     focusModel,
     getCursorPosition,
