@@ -5,7 +5,6 @@ const Path = require('path');
 directCommands = [
     'change-directory',
     'save-file',
-    'new-file',
     'reveal-cursor',
     'zoom-in',
     'zoom-out',
