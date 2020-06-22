@@ -2,7 +2,6 @@
     "direct": {
         "change-folder": "change-directory",
         "save": "save-file",
-        "exit": "close-all-tabs",
         "new-file": "new-file",
         "reveal-cursor": "reveal-cursor",
         "zoom-in": "zoom-in",
