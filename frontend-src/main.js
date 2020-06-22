@@ -1,12 +1,13 @@
 const electron = require('electron');
 const app = electron.app;
-const globalShortcut = electron.globalShortcut;
 const BrowserWindow = electron.BrowserWindow;
 const { spawn } = require('child_process');
 
 const ipcMain = electron.ipcMain;
 
 const dialog = electron.dialog;
+
+const msgBox = require('./files-handling/message-box')
 
 let mainWindow;
 
@@ -67,6 +68,10 @@ const fileOptions = require('./files-handling/open-file')
 
 ipcMain.on('open-file', (event, args) => {
 	fileOptions.openFile(mainWindow, dialog, event);
+});
+
+ipcMain.on('open-file-save-check-message-box', (event, filePath) => {
+	msgBox.checkSaveStateBeforeClosingFile(mainWindow, dialog, filePath);
 });
 
 app.on('activate', function () {

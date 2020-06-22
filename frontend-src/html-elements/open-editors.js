@@ -12,9 +12,11 @@ const Path = require('path');
 const editor = require('../editor/editor');
 
 const modelsEventEmitters = require('../editor/model-did-change-event');
+const { unsavedModels } = require('../editor/model-did-change-event');
+const { ipcRenderer } = require('electron');
 
 // for new tabs 
-let tabsCount = 0;
+let tabsCount = 1;
 
 // a boolean array, if entry = true, then index
 // is an available id to opened tab
@@ -109,7 +111,7 @@ addOpenedFile = function (filePath) {
         var filePath = this.id.split('_');
         filePath.pop();
         filePath = filePath.join('_')
-        module.exports.closeTab(filePath);
+        module.exports.closeTab(filePath, false);
     });
 }
 
@@ -129,29 +131,50 @@ displayCurrentlyOpenedFileName = function (filePath) {
     currentlyOpenedFile.append(`${filePath.split(Path.sep).pop()}`);
 }
 
-gotoTab = function(tabNumber) {
+gotoTab = function (tabNumber) {
     var ids = Object.keys(tabIdMap);
-    if(ids.includes(tabNumber)) {
+    if (ids.includes(tabNumber)) {
         tabId = tabIdMap[tabNumber];
         editor.focusModel(tabId);
         module.exports.displayCurrentlyOpenedFileName(tabId);
     }
 }
 
-// closes the tab with ID: filePath
-closeTab = function (filePath) {
-    var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;
-    tabIdOptimizer[parseInt(tabNumber)] = true;
-    delete tabIdMap[filePath];
+openNewFile = function () {
+    try {
+        editor.openNewModel(modelName);
+        fileName = ['Untitled_' + tabsCount++];
+        module.exports.addOpenedFile()
+    } catch (e) {
 
-    var tab = document.getElementById('OFcontainer_' + filePath);
-    
-    if (tab) {
-        tab.parentNode.removeChild(tab);
-        var nextTab = editor.removeModelWithId(filePath);
-        if (editor.getCurrentModel() == filePath) {
-            editor.focusModel(nextTab);
-            module.exports.displayCurrentlyOpenedFileName(nextTab);
+    }
+}
+
+// closes the tab with ID: filePath
+closeTab = function (filePath, forceClose) {
+
+    console.log(modelsEventEmitters)
+    // TODO: check if file is not saved before closing
+    var unsavedModels = modelsEventEmitters.unsavedModels;
+
+    if (unsavedModels.includes(filePath) && forceClose === false) {
+        filename = filePath.split(Path.sep).pop();
+        ipcRenderer.send('open-file-save-check-message-box', filePath);
+    } else {
+
+        var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;
+        tabIdOptimizer[parseInt(tabNumber)] = true;
+        delete tabIdMap[filePath];
+
+        var tab = document.getElementById('OFcontainer_' + filePath);
+
+        if (tab) {
+            tab.parentNode.removeChild(tab);
+            var nextTab = editor.removeModelWithId(filePath);
+            if (editor.getCurrentModel() == filePath) {
+                editor.focusModel(nextTab);
+                module.exports.displayCurrentlyOpenedFileName(nextTab);
+            }
         }
     }
 }

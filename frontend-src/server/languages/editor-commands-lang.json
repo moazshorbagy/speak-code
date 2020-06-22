@@ -18,7 +18,8 @@
         "backspace": "backspace",
         "comment-line": "comment-line",
         "delete-line": "delete-line",
-        "unfocus-folder": "unfocus-folder"
+        "unfocus-folder": "unfocus-folder",
+        "browse-file": "browse-file"
     },
     "indirect": {
         "open-file": "open-file-from-directory",

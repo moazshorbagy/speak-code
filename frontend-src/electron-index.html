@@ -98,7 +98,11 @@
 	});
 
 	ipcRenderer.on('request-close-tab', function(event, args) {
-		openedFiles.closeTab(editor.getCurrentModel());
+		if(args == 'force-close') {
+			openedFiles.closeTab(editor.getCurrentModel(), true);
+		} else {
+			openedFiles.closeTab(editor.getCurrentModel(), false);
+		}
 	});
 
 	ipcRenderer.on('request-zoom-in', function(event, args) {
@@ -143,6 +147,14 @@
 
 	ipcRenderer.on('request-delete-line', function(event, args) {
 		editor.deleteLine();
+	});
+
+	ipcRenderer.on('request-browse-file', function(event, args) {
+		event.sender.send('open-file')
+	});
+
+	ipcRenderer.on('request-new-file', function(event, args) {
+		openedFiles.openNewFile();
 	});
 </script>
 <script>

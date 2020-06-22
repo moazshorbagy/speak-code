@@ -1,11 +1,13 @@
 const fs = require('fs');
 const Path = require('path');
 
+
 // all available direct commands.
 directCommands = [
     'change-directory',
     'save-file',
     'reveal-cursor',
+    'new-file',
     'zoom-in',
     'zoom-out',
     'undo',
@@ -21,7 +23,8 @@ directCommands = [
     'backspace',
     'comment-line',
     'delete-line',
-    'unfocus-folder'
+    'unfocus-folder',
+    'browse-file'
 ];
 
 indirectCommands = [
@@ -228,6 +231,10 @@ executeCommand = function (mainWindow, command) {
         }
         case 'unfocus-folder': {
             unfocusFolder(mainWindow);
+            break;
+        }
+        case 'browse-file': {
+            mainWindow.webContents.send('request-open-file');
             break;
         }
         default: {
