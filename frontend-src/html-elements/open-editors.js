@@ -105,7 +105,10 @@ addOpenedFile = function (filePath) {
     });
 
     document.getElementById(tabId).addEventListener('click', function () {
-        var filePath = this.id.split('_')[0];
+        console.log(this.id)
+        var filePath = this.id.split('_');
+        filePath.pop();
+        filePath = filePath.join('_')
         module.exports.closeTab(filePath);
     });
 }
@@ -137,7 +140,6 @@ gotoTab = function(tabNumber) {
 
 // closes the tab with ID: filePath
 closeTab = function (filePath) {
-
     var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;
     tabIdOptimizer[parseInt(tabNumber)] = true;
     delete tabIdMap[filePath];
