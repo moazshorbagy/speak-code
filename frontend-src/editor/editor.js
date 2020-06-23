@@ -344,7 +344,7 @@ removeModelWithId = function (filePath) {
 getCurrentModel = function () {
     var modelsKeys = Object.keys(models);
     var unregisteredModelsKeys = Object.keys(unregisteredModels);
-    if (modelsKeys.length === 0 || unregisteredModelsKeys.length === 0) {
+    if (modelsKeys.length === 0 && unregisteredModelsKeys.length === 0) {
         return null;
     }
 
@@ -444,7 +444,6 @@ undo = function () {
         return;
     }
     editor.getModel().undo();
-    console.log(editor.getActions().map(a => a.id));
 }
 
 // redo
@@ -460,7 +459,6 @@ commentLine = function () {
         return;
     }
     editor.trigger('source', 'editor.action.commentLine');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 deleteLine = function () {
@@ -468,7 +466,6 @@ deleteLine = function () {
         return;
     }
     editor.trigger('source', 'editor.action.deleteLines');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 copy = function () {
@@ -476,7 +473,6 @@ copy = function () {
         return;
     }
     editor.trigger('source', 'editor.action.clipboardCopyAction');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 cut = function () {
@@ -484,7 +480,6 @@ cut = function () {
         return;
     }
     editor.trigger('source', 'editor.action.clipboardCutAction');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 paste = function () {
