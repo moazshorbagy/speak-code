@@ -12,15 +12,16 @@ const Path = require('path');
 const editor = require('../editor/editor');
 
 const modelsEventEmitters = require('../editor/model-did-change-event');
-const { unsavedModels } = require('../editor/model-did-change-event');
 const { ipcRenderer } = require('electron');
-
-// for new tabs 
-let tabsCount = 1;
-
 // a boolean array, if entry = true, then index
 // is an available id to opened tab
 let tabIdOptimizer = [];
+
+// same as tabIdOptimizer but for naming newly opened tabs,
+// that are not saved on the computer.
+unregisteredTabNumberOptimizer = [];
+
+let unregisteredTabIdMap = {};
 
 let tabIdMap = {};
 
@@ -53,22 +54,27 @@ addOpenEditors = function () {
     });
 }
 
-function getLeastAvailableId() {
-    for (var i = 0; i < tabIdOptimizer.length; i++) {
-        if (tabIdOptimizer[i] === true) {
-            tabIdOptimizer[i] = false;
+function getLeastAvailableId(tabIdArray) {
+    for (var i = 0; i < tabIdArray.length; i++) {
+        if (tabIdArray[i] === true) {
+            tabIdArray[i] = false;
             return i;
         }
     }
 
-    tabIdOptimizer.push(false);
-    return tabIdOptimizer.length - 1;
+    tabIdArray.push(false);
+    return tabIdArray.length - 1;
 }
 
 
-addOpenedFile = function (filePath) {
+addOpenedFile = function (filePath, isUnregistered) {
+    module.exports.addOpenEditors();
+
     var openEditorsContentContainer = $("#" + openEditorsContentContainerId);
-    var fileName = filePath.split(Path.sep).pop();
+    var fileName = filePath;
+    if (isUnregistered !== true) {
+        fileName = filePath.split(Path.sep).pop();
+    }
 
     var children = openEditorsContentContainer.children();
     for (let i = 0; i < children.length; i++) {
@@ -79,23 +85,36 @@ addOpenedFile = function (filePath) {
 
     module.exports.displayCurrentlyOpenedFileName(filePath);
 
-    modelsDidChangedEvents = modelsEventEmitters.modelsEventEmitters;
-    modelsDidChangedEvents[filePath].on('needs-save', (filePath) => {
-        module.exports.notifyNeedsSave(filePath);
-    });
+    var tabNumber = getLeastAvailableId(tabIdOptimizer);
 
-    modelsDidChangedEvents[filePath].on('saved', (filePath) => {
-        module.exports.notifyIsSaved(filePath);
-    });
+    if (isUnregistered) {
+        unregisteredModelsDidChangeEvents = modelsEventEmitters.getUnregisteredModelsEventEmitters();
+        unregisteredModelsDidChangeEvents[filePath].on('needs-save-as', (filePath) => {
+            module.exports.notifyNeedsSave(filePath);
+        });
+
+        unregisteredModelsDidChangeEvents[filePath].on('saved-as', (filePath) => {
+            module.exports.notifyIsSaved(filePath);
+        });
+        unregisteredTabIdMap[tabNumber] = filePath;
+    } else {
+
+        modelsDidChangedEvents = modelsEventEmitters.getModelsEventEmitters();
+        modelsDidChangedEvents[filePath].on('needs-save', (filePath) => {
+            module.exports.notifyNeedsSave(filePath);
+        });
+
+        modelsDidChangedEvents[filePath].on('saved', (filePath) => {
+            module.exports.notifyIsSaved(filePath);
+        });
+        tabIdMap[tabNumber] = filePath;
+    }
 
     var tabId = filePath + "_t";
 
     var closeTabIcon = "<img id='" + tabId + "' src='icons/close-24px.svg' class='float-left'> </img>";
 
-    tabNumber = getLeastAvailableId();
-
     var tabNumberIdDiv = `<div class='float-left' style='padding: 0 5px;'> ${tabNumber} </div>`;
-    tabIdMap[tabNumber] = filePath;
 
     openEditorsContentContainer.append("<div id='OFcontainer_" + filePath +
         "' class='fileNameSpan'> <div id='OFDescriptor_" + filePath + "' class='folder-descriptor'>" + tabNumberIdDiv +
@@ -107,7 +126,6 @@ addOpenedFile = function (filePath) {
     });
 
     document.getElementById(tabId).addEventListener('click', function () {
-        console.log(this.id)
         var filePath = this.id.split('_');
         filePath.pop();
         filePath = filePath.join('_')
@@ -142,26 +160,25 @@ gotoTab = function (tabNumber) {
 
 openNewFile = function () {
     try {
+        modelName = 'Untitled_' + getLeastAvailableId(unregisteredTabNumberOptimizer);
         editor.openNewModel(modelName);
-        fileName = ['Untitled_' + tabsCount++];
-        module.exports.addOpenedFile()
+        module.exports.addOpenedFile(modelName, true);
     } catch (e) {
-
+        console.log(e);
     }
 }
 
 // closes the tab with ID: filePath
 closeTab = function (filePath, forceClose) {
-
-    console.log(modelsEventEmitters)
-    // TODO: check if file is not saved before closing
-    var unsavedModels = modelsEventEmitters.unsavedModels;
-
+    var unsavedUnregisteredModels = modelsEventEmitters.getUnsavedUnregisteredModels();
+    if(unsavedUnregisteredModels.includes(filePath)) {
+        console.log(filePath);
+        ipcRenderer.send('open-save-dialog', filePath);
+    }
+    var unsavedModels = modelsEventEmitters.getUnsavedModels();
     if (unsavedModels.includes(filePath) && forceClose === false) {
-        filename = filePath.split(Path.sep).pop();
         ipcRenderer.send('open-file-save-check-message-box', filePath);
     } else {
-
         var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;
         tabIdOptimizer[parseInt(tabNumber)] = true;
         delete tabIdMap[filePath];
@@ -186,5 +203,6 @@ module.exports = {
     notifyNeedsSave,
     displayCurrentlyOpenedFileName,
     closeTab,
-    gotoTab
+    gotoTab,
+    openNewFile
 }

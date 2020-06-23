@@ -14,9 +14,14 @@ const models = {};
 
 const savedModelsValues = {};
 
+const unregisteredModels = {};
+const unregisteredSavedModelsValues = {};
+const unregisteredModelsViewStates = {};
+
 const viewStates = {};
 
 const amdLoader = require('monaco-editor/min/vs/loader');
+const { ipcRenderer } = require('electron');
 const amdRequire = amdLoader.require;
 
 //workaround because we changed the editor.js path
@@ -41,7 +46,7 @@ const fileType = {
 
 // initializes a monaco editor instance (which is the only one).
 // and binds 
-initEditor = function (doc, filePath, type) {
+initEditor = function (doc, filePath, type, isUnregistered) {
 
     // workaround monaco-css not understanding the environment
     self.module = undefined;
@@ -54,11 +59,20 @@ initEditor = function (doc, filePath, type) {
             language: type,
             theme: "vs-dark",
         });
-        const monokai = require('monaco-themes/themes/Monokai.json');
+
         var model = monaco.editor.createModel(doc, type);
         editor.setModel(model);
-        models[filePath] = model;
-        savedModelsValues[filePath] = model.getValue();
+
+        if(isUnregistered === true) {
+            unregisteredModels[filePath] = model;
+            unregisteredSavedModelsValues[filePath] = '';
+        } else {
+            models[filePath] = model;
+            savedModelsValues[filePath] = model.getValue();
+        }
+
+
+        const monokai = require('monaco-themes/themes/Monokai.json');
         monaco.editor.defineTheme('monokai', monokai);
         monaco.editor.setTheme('monokai')
         let currentWindow = remote.getCurrentWindow();
@@ -90,11 +104,18 @@ initEditor = function (doc, filePath, type) {
 
 
         editor.onDidChangeModelContent(function (e) {
-            console.log(e);
-            if (savedModelsValues[currentFilePath] !== models[currentFilePath].getValue()) {
-                modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath);
+            if(Object.keys(savedModelsValues).includes(currentFilePath)) {
+                if (savedModelsValues[currentFilePath] !== models[currentFilePath].getValue()) {
+                    modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath);
+                } else {
+                    modelsEventEmitters.emitModelIsSaved(currentFilePath);
+                }
             } else {
-                emitModelIsSaved(currentFilePath);
+                if (unregisteredSavedModelsValues[currentFilePath] !== unregisteredModels[currentFilePath].getValue()) {
+                    modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath, true);
+                } else {
+                    modelsEventEmitters.emitModelIsSaved(currentFilePath, true);
+                }
             }
         });
 
@@ -107,6 +128,20 @@ initEditor = function (doc, filePath, type) {
             })
         });
     });
+}
+
+openNewModel = function(modelName) {
+    if(!editor) {
+        initEditor('', modelName, null, true);
+    } else {
+        var model = monaco.editor.createModel('');
+        unregisteredModels[modelName] = model;
+        unregisteredSavedModelsValues[modelName] = '';
+        editor.setModel(model);
+        editor.getModel().updateOptions({ insertSpaces: true });
+        currentFilePath = modelName;
+    }
+    modelsEventEmitters.addModelEventEmitter(modelName, true);
 }
 
 // increases text size of editor
@@ -135,7 +170,6 @@ openDoc = function (doc, filePath) {
         editor.setModel(model);
         editor.getModel().updateOptions({ insertSpaces: true });
         currentFilePath = filePath;
-        getFileType(filePath);
     }
     modelsEventEmitters.addModelEventEmitter(filePath);
 }
@@ -146,10 +180,20 @@ select = function() {
 
 // sets the current model to models[filePath] if available
 setModelWithId = function (filePath) {
-    if (editor.getModel() == models[filePath]) {
+    if(!editor) {
         return;
     }
-    editor.setModel(models[filePath]);
+    currentModel = editor.getModel();
+    if (currentModel == models[filePath] || currentModel == unregisteredModels[filePath]) {
+        return;
+    }
+    if(Object.keys(models).includes(filePath)) {
+        editor.setModel(models[filePath]);
+    } else if (Object.keys(unregisteredModels).includes(filePath)) {
+        editor.setModel(unregisteredModels[filePath]);
+    } else {
+        return;
+    }
     editor.getModel().updateOptions({ insertSpaces: true });
     currentFilePath = filePath;
 }
@@ -167,12 +211,17 @@ modelIsAlreadyOpen = function (filePath) {
 
 // saves the cursor position 
 retrieveViewState = function (filePath) {
-    if (!(filePath in viewStates)) {
+    if (Object.keys(viewStates).includes(filePath)) {
+        editor.restoreViewState(
+            viewStates[filePath]
+        );
+    } else if (Object.keys(unregisteredModelsViewStates).includes(filePath)) {
+        editor.restoreViewState(
+            unregisteredModelsViewStates[filePath]
+        );  
+    } else {
         return;
     }
-    editor.restoreViewState(
-        viewStates[filePath]
-    );
     editor.focus();
 }
 
@@ -215,7 +264,7 @@ insertText = function (text, position) {
 moveCursorHorizontally = function (value) {
     position = editor.getPosition();
     position.column += value;
-    editor.setPosition(position)
+    editor.setPosition(position);
 }
 
 // returns the line at the current cursor position
@@ -234,7 +283,10 @@ focusModel = function (filePath) {
 // returns file type according to its extention
 function getFileType(filePath) {
     var type = filePath.split('.').pop();
-    return fileType[type];
+    if(Object.keys(fileType).includes(type)) {
+        return fileType[type];
+    }
+    return null;
 }
 
 // returns current cursor position
@@ -252,9 +304,23 @@ saveFile = function () {
     if (!editor || !currentFilePath) {
         return;
     }
-    fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
-    savedModelsValues[currentFilePath] = editor.getValue();
-    modelsEventEmitters.emitModelIsSaved(currentFilePath);
+    if(Object.keys(unregisteredSavedModelsValues).includes(currentFilePath)) {
+        ipcRenderer.send('open-save-dialog', currentFilePath);
+    } else {
+        fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
+        savedModelsValues[currentFilePath] = editor.getValue();
+        modelsEventEmitters.emitModelIsSaved(currentFilePath);
+    }
+}
+
+// moves the file from unregistered file to registered file
+// and updates the model langauge type
+confirmSavedAs = function(oldName, newFilePath) {
+    if(Object.keys(unregisteredModels).includes(oldName)) {
+        return;
+    }
+
+    
 }
 
 // effectively closes the tab with ID = filePath
@@ -276,8 +342,9 @@ removeModelWithId = function (filePath) {
 
 // returns the current model ID (the file path)
 getCurrentModel = function () {
-    var keys = Object.keys(models);
-    if (keys.length == 0) {
+    var modelsKeys = Object.keys(models);
+    var unregisteredModelsKeys = Object.keys(unregisteredModels);
+    if (modelsKeys.length === 0 || unregisteredModelsKeys.length === 0) {
         return null;
     }
 
@@ -467,5 +534,6 @@ module.exports = {
     paste,
     gotoLine,
     gotoColumn,
-    selectAllText
+    selectAllText,
+    openNewModel
 }
