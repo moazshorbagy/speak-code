@@ -9,6 +9,8 @@ const dialog = electron.dialog;
 
 const msgBox = require('./files-handling/message-box')
 
+const saveFileDialog = require('./files-handling/save-file-dialog')
+
 let mainWindow;
 
 function createWindow() {
@@ -72,6 +74,10 @@ ipcMain.on('open-file', (event, args) => {
 
 ipcMain.on('open-file-save-check-message-box', (event, filePath) => {
 	msgBox.checkSaveStateBeforeClosingFile(mainWindow, dialog, filePath);
+});
+
+ipcMain.on('open-save-dialog', (event, filePath) => {
+	saveFileDialog.showSaveDialog(mainWindow, dialog, filePath);
 });
 
 app.on('activate', function () {
