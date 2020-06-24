@@ -551,6 +551,13 @@ openNextTab = function () {
     }
 }
 
+unregisteredModelExists = function(modelName) {
+    if(Object.keys(unregisteredModels).includes(modelName)) {
+        return true;
+    }
+    return false;
+}
+
 module.exports = {
     openDoc,
     setModelWithId,
@@ -583,5 +590,6 @@ module.exports = {
     openNewModel,
     getModelContent,
     registerModel,
-    modelIsRegistered
+    modelIsRegistered,
+    unregisteredModelExists
 }

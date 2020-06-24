@@ -197,7 +197,10 @@
 	});
 
 	ipcRenderer.on('request-register-file', function(event, args) {
-		openedFiles.registerModel(args['oldName'], args['newPath']);
+		oldName = args['oldName'];
+		if(unregisteredModelExists(oldName)) {
+			openedFiles.registerModel(oldName, args['newPath']);
+		}
 	});
 </script>
 <script>
