@@ -55,7 +55,24 @@ emitModelIsSaved = function(filePath, isUnregistered) {
     } else {
         unsavedModels = unsavedModels.filter(entry => entry !== filePath);
         modelsEventEmitters[filePath].emit('saved', filePath);
-        console.log(unsavedModels);
+    }
+}
+
+registerModel = function(oldName, newPath) {
+    if(Object.keys(unregisteredModelsEventEmitters).includes(oldName)) {
+        delete unregisteredModelsEventEmitters[oldName];
+        module.exports.addModelEventEmitter(newPath, false);
+        unsavedUnregisteredModels = unsavedUnregisteredModels.filter(entry => entry !== oldName);
+    }
+}
+
+removeModelDidChangeEvent = function(filePath) {
+    if(Object.keys(unregisteredModelsEventEmitters).includes(filePath)) {
+        delete unregisteredModelsEventEmitters[filePath];
+        unsavedUnregisteredModels = unsavedUnregisteredModels.filter(entry => entry !== filePath);
+    } else if (Object.keys(modelsEventEmitters).includes(filePath)) {
+        delete modelsEventEmitters[filePath];
+        unsavedModels = unsavedModels.filter(entry => entry !== filePath);
     }
 }
 
@@ -66,5 +83,7 @@ module.exports = {
     emitModelNeedsToBeSaved,
     getUnsavedModels,
     getUnregisteredModelsEventEmitters,
-    getUnsavedUnregisteredModels
+    getUnsavedUnregisteredModels,
+    registerModel,
+    removeModelDidChangeEvent
 }

@@ -1,6 +1,8 @@
 Path = require('path')
 
-checkSaveStateBeforeClosingFile = function (mainWindow, dialog, filePath) {
+checkSaveStateBeforeClosingFile = function (mainWindow, dialog, args) {
+        filePath = args['filePath'];
+        type = args['type'];
         buttons = ["Save", "Don't Save", "Return"]
         onCloseUnsavedFileOptions = {
                 type: 'warning',
@@ -12,8 +14,14 @@ checkSaveStateBeforeClosingFile = function (mainWindow, dialog, filePath) {
                 decision = buttons[response];
                 switch (decision) {
                         case 'Save': {
-                                mainWindow.webContents.send('request-save-file');
-                                mainWindow.webContents.send('request-close-tab', 'force-close');
+                                if (type === 'unregistered') {
+                                        var isRegistered = false;
+                                        mainWindow.webContents.send('request-save-as', {filePath, isRegistered});
+                                        mainWindow.webContents.send('request-close-tab', 'force-close');
+                                } else {
+                                        mainWindow.webContents.send('request-save-file');
+                                        mainWindow.webContents.send('request-close-tab', 'force-close');
+                                }
                                 break;
                         }
                         case "Don't Save": {

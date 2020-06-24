@@ -57,7 +57,11 @@ const template = [
             {
                 label: 'Save File As',
                 click: function() {
-                    ipcRenderer.send('open-save-dialog', editor.getCurrentModel());
+                    var filePath = editor.getCurrentModel();
+                    if(filePath != undefined) {
+                        var isRegistered = editor.modelIsRegistered(filePath);
+                        ipcRenderer.send('open-save-dialog', {filePath, isRegistered});
+                    }
                 },
                 accelerator: process.platform === 'darwin' ? 'Cmd+Shift+S' : 'Ctrl+Shift+S',
             }

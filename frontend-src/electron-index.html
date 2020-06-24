@@ -76,6 +76,11 @@
 		editor.saveFile();
 	});
 
+	ipcRenderer.on('request-save-as', function (event, filePath) {
+		var isRegistered = editor.modelIsRegistered(filePath);
+		ipcRenderer.send('open-save-dialog', {filePath, isRegistered});
+	});
+
 	ipcRenderer.on('insert-plain-code', function (event, arg) {
 		editor.insertText(arg);
 	});
@@ -184,6 +189,15 @@
 
 	ipcRenderer.on('request-tab-number', function(event, tabNumber) {
 		openedFiles.gotoTab(tabNumber);
+	});
+</script>
+<script>
+	ipcRenderer.on('request-file-content', function(event, filePath) {
+		event.sender.send('file-content', editor.getModelContent(filePath));
+	});
+
+	ipcRenderer.on('request-register-file', function(event, args) {
+		openedFiles.registerModel(args['oldName'], args['newPath']);
 	});
 </script>
 <script>

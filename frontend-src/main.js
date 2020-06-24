@@ -44,6 +44,10 @@ app.on('ready', function () {
 
 });
 
+app.on('renderer-process-crashed', function() {
+	createWindow();
+});
+
 app.on('window-all-closed', function () {
 	if (process.platform !== 'darwin') {
 		app.quit()
@@ -76,8 +80,8 @@ ipcMain.on('open-file-save-check-message-box', (event, filePath) => {
 	msgBox.checkSaveStateBeforeClosingFile(mainWindow, dialog, filePath);
 });
 
-ipcMain.on('open-save-dialog', (event, filePath) => {
-	saveFileDialog.showSaveDialog(mainWindow, dialog, filePath);
+ipcMain.on('open-save-dialog', (event, args) => {
+	saveFileDialog.showSaveDialog(mainWindow, dialog, args);
 });
 
 app.on('activate', function () {
