@@ -10,37 +10,6 @@ client.connect("tcp://127.0.0.1:4242")
 import os
 import os.path as path
 
-# direct editor commands
-directCommands = {
-    "change-folder": "change-directory",
-    "save": "save-file",
-    "zoom-in": "zoom-in",
-    "zoom-out": "zoom-out",
-    "undo": "undo",
-    "redo": "redo",
-    "close-tab": "close",
-    "next-tab": "next-tab",
-    "increment-cursor": "move-right",
-    "decrement-cursor": "move-left" ,
-    "select-all-text": "select-all",
-    "cut": "cut",
-    "copy": "copy",
-    "paste": "paste",
-    "backspace": "backspace",
-    "comment-line": "comment-line",
-    "delete-line": "delete-line",
-    "unfocus-folder": "unfocus-folder"
-}
-
-indirectCommands = {
-    "open-file-from-directory": "open-file",
-    "expand-folder": "expand-folder",
-    "navgiate-to-tab": "go-tab",
-    "set-cursor-to-line": "go-line",
-    "set-cursor-to-column": "go-column",
-    "focus-folder": "focus-folder"
-}
-
 def sendTestVector(testVector):
     for i in range(len(testVector)):
         client.sendData(testVector[i])
@@ -51,9 +20,9 @@ def getFileContentAsLines(filePath):
         return f.readlines()
 
 def deleteFileContent(filePath):
-    file = open(filePath,"r+")
-    file. truncate(0)
-    file. close()
+    file = open(filePath, "r+")
+    file.truncate(0)
+    file.close()
 
 class TestScenarios(unittest.TestCase):
     # This scenario simulates the following flow:
@@ -102,7 +71,7 @@ class TestScenarios(unittest.TestCase):
         modifiedFileLines = getFileContentAsLines(SourceFilePath)
 
         # the line that is expected to be inserted when sending testVectorPart1
-        expectedCIResult = 'myVariable = 1' +  originalFileLines[0];
+        expectedCIResult = 'myVariable = 1' +  originalFileLines[0]
 
         self.assertEqual(modifiedFileLines[0], expectedCIResult)
 
@@ -114,10 +83,10 @@ class TestScenarios(unittest.TestCase):
 
         length = min(len(destinationFileLines), len(originalFileLines))
 
+        deleteFileContent(DestinationFilePath)
+
         for i in range(length):
             self.assertEqual(destinationFileLines[i], originalFileLines[i])
-
-        deleteFileContent(DestinationFilePath)
 
         time.sleep(1)
 
@@ -132,7 +101,7 @@ class TestScenarios(unittest.TestCase):
     # 8. comment line.
     # 9. undo.
     # 10. navigate to next tab.
-    def test_scenario2():
+    def test_scenario2(self):
         pass
 
 
@@ -144,7 +113,7 @@ class TestScenarios(unittest.TestCase):
     # 5. save current file.
     # 6. open other file.
     # 7. paste content.
-    def test_scenario3():
+    def test_scenario3(self):
         pass
 
 if __name__ == '__main__':
