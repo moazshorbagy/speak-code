@@ -212,10 +212,6 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
     }
 }
 
-exitApp = function(mainWindow) {
-
-}
-
 // returns false if the command doesn't exist
 executeCommand = function (mainWindow, command) {
     if (!checkDirectCommand(command)) {
@@ -240,10 +236,6 @@ executeCommand = function (mainWindow, command) {
         }
         case 'browse-file': {
             mainWindow.webContents.send('request-open-file');
-            break;
-        }
-        case 'exit-app': {
-
             break;
         }
         default: {
