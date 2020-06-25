@@ -84,6 +84,17 @@ ipcMain.on('open-save-dialog', (event, args) => {
 	saveFileDialog.showSaveDialog(mainWindow, dialog, args);
 });
 
+ipcMain.on('close-app', function(event, args) {
+	mainWindow.close();
+	if (process.platform !== 'darwin') {
+		app.quit()
+	}
+});
+
+ipcMain.on('show-close-app-save-check', function(event, fileNames) {
+	msgBox.closeAppSaveCheck(mainWindow, dialog, fileNames);
+});
+
 app.on('activate', function () {
 	if (mainWindow === null) {
 		createWindow()

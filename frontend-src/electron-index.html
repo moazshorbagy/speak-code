@@ -161,6 +161,14 @@
 	ipcRenderer.on('request-new-file', function(event, args) {
 		openedFiles.openNewFile();
 	});
+
+	ipcRenderer.on('request-exit-app', function(event, args) {
+		closeApp.closeApp();
+	});
+
+	ipcRenderer.on('request-reveal-cursor', function(event, args) {
+		editor.revealCursor();
+	});
 </script>
 <script>
 	ipcRenderer.on('request-open-filename', function(event, filePath) {
