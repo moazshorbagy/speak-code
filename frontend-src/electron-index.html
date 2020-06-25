@@ -76,6 +76,11 @@
 		editor.saveFile();
 	});
 
+	ipcRenderer.on('request-save-as', function (event, filePath) {
+		var isRegistered = editor.modelIsRegistered(filePath);
+		ipcRenderer.send('open-save-dialog', {filePath, isRegistered});
+	});
+
 	ipcRenderer.on('insert-plain-code', function (event, arg) {
 		editor.insertText(arg);
 	});
@@ -98,7 +103,11 @@
 	});
 
 	ipcRenderer.on('request-close-tab', function(event, args) {
-		openedFiles.closeTab(editor.getCurrentModel());
+		if(args == 'force-close') {
+			openedFiles.closeTab(editor.getCurrentModel(), true);
+		} else {
+			openedFiles.closeTab(editor.getCurrentModel(), false);
+		}
 	});
 
 	ipcRenderer.on('request-zoom-in', function(event, args) {
@@ -144,6 +153,22 @@
 	ipcRenderer.on('request-delete-line', function(event, args) {
 		editor.deleteLine();
 	});
+
+	ipcRenderer.on('request-browse-file', function(event, args) {
+		event.sender.send('open-file')
+	});
+
+	ipcRenderer.on('request-new-file', function(event, args) {
+		openedFiles.openNewFile();
+	});
+
+	ipcRenderer.on('request-exit-app', function(event, args) {
+		closeApp.closeApp();
+	});
+
+	ipcRenderer.on('request-reveal-cursor', function(event, args) {
+		editor.revealCursor();
+	});
 </script>
 <script>
 	ipcRenderer.on('request-open-filename', function(event, filePath) {
@@ -172,6 +197,18 @@
 
 	ipcRenderer.on('request-tab-number', function(event, tabNumber) {
 		openedFiles.gotoTab(tabNumber);
+	});
+</script>
+<script>
+	ipcRenderer.on('request-file-content', function(event, filePath) {
+		event.sender.send('file-content', editor.getModelContent(filePath));
+	});
+
+	ipcRenderer.on('request-register-file', function(event, args) {
+		oldName = args['oldName'];
+		if(unregisteredModelExists(oldName)) {
+			openedFiles.registerModel(oldName, args['newPath']);
+		}
 	});
 </script>
 <script>

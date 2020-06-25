@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs');
-const modelsEventEmitters = require('./model-did-change-event');
 
 function uriFromPath(_path) {
     var pathName = path.resolve(_path).replace(/\\/g, '/');
@@ -14,9 +13,14 @@ const models = {};
 
 const savedModelsValues = {};
 
+const unregisteredModels = {};
+const unregisteredSavedModelsValues = {};
+const unregisteredModelsViewStates = {};
+
 const viewStates = {};
 
 const amdLoader = require('monaco-editor/min/vs/loader');
+const { ipcRenderer } = require('electron');
 const amdRequire = amdLoader.require;
 
 //workaround because we changed the editor.js path
@@ -41,7 +45,7 @@ const fileType = {
 
 // initializes a monaco editor instance (which is the only one).
 // and binds 
-initEditor = function (doc, filePath, type) {
+initEditor = function (doc, filePath, type, isUnregistered) {
 
     // workaround monaco-css not understanding the environment
     self.module = undefined;
@@ -54,17 +58,22 @@ initEditor = function (doc, filePath, type) {
             language: type,
             theme: "vs-dark",
         });
-        const monokai = require('monaco-themes/themes/Monokai.json');
+
         var model = monaco.editor.createModel(doc, type);
         editor.setModel(model);
-        models[filePath] = model;
-        savedModelsValues[filePath] = model.getValue();
+
+        if (isUnregistered === true) {
+            unregisteredModels[filePath] = model;
+            unregisteredSavedModelsValues[filePath] = '';
+        } else {
+            models[filePath] = model;
+            savedModelsValues[filePath] = model.getValue();
+        }
+
+
+        const monokai = require('monaco-themes/themes/Monokai.json');
         monaco.editor.defineTheme('monokai', monokai);
-        monaco.editor.setTheme('monokai')
-        let currentWindow = remote.getCurrentWindow();
-        currentWindow.on('resize', function () {
-            editor.layout();
-        });
+        monaco.editor.setTheme('monokai');
 
         editor.getModel().updateOptions({ insertSpaces: true });
 
@@ -84,17 +93,24 @@ initEditor = function (doc, filePath, type) {
             editor.revealPosition(editor.getPosition());
         });
 
-        editor.onDidScrollChange(function(scroll) {
+        editor.onDidScrollChange(function (scroll) {
             viewStates[currentFilePath] = editor.saveViewState();
-        })
+        });
 
 
         editor.onDidChangeModelContent(function (e) {
-            console.log(e);
-            if (savedModelsValues[currentFilePath] !== models[currentFilePath].getValue()) {
-                modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath);
+            if (Object.keys(savedModelsValues).includes(currentFilePath)) {
+                if (savedModelsValues[currentFilePath] !== models[currentFilePath].getValue()) {
+                    modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath);
+                } else {
+                    modelsEventEmitters.emitModelIsSaved(currentFilePath);
+                }
             } else {
-                emitModelIsSaved(currentFilePath);
+                if (unregisteredSavedModelsValues[currentFilePath] !== unregisteredModels[currentFilePath].getValue()) {
+                    modelsEventEmitters.emitModelNeedsToBeSaved(currentFilePath, true);
+                } else {
+                    modelsEventEmitters.emitModelIsSaved(currentFilePath, true);
+                }
             }
         });
 
@@ -107,6 +123,20 @@ initEditor = function (doc, filePath, type) {
             })
         });
     });
+}
+
+openNewModel = function (modelName) {
+    if (!editor) {
+        initEditor('', modelName, null, true);
+    } else {
+        var model = monaco.editor.createModel('');
+        unregisteredModels[modelName] = model;
+        unregisteredSavedModelsValues[modelName] = '';
+        editor.setModel(model);
+        editor.getModel().updateOptions({ insertSpaces: true });
+        currentFilePath = modelName;
+    }
+    modelsEventEmitters.addModelEventEmitter(modelName, true);
 }
 
 // increases text size of editor
@@ -135,21 +165,30 @@ openDoc = function (doc, filePath) {
         editor.setModel(model);
         editor.getModel().updateOptions({ insertSpaces: true });
         currentFilePath = filePath;
-        getFileType(filePath);
     }
     modelsEventEmitters.addModelEventEmitter(filePath);
 }
 
-select = function() {
+select = function () {
 
 }
 
 // sets the current model to models[filePath] if available
 setModelWithId = function (filePath) {
-    if (editor.getModel() == models[filePath]) {
+    if (!editor) {
         return;
     }
-    editor.setModel(models[filePath]);
+    currentModel = editor.getModel();
+    if (currentModel == models[filePath] || currentModel == unregisteredModels[filePath]) {
+        return;
+    }
+    if (Object.keys(models).includes(filePath)) {
+        editor.setModel(models[filePath]);
+    } else if (Object.keys(unregisteredModels).includes(filePath)) {
+        editor.setModel(unregisteredModels[filePath]);
+    } else {
+        return;
+    }
     editor.getModel().updateOptions({ insertSpaces: true });
     currentFilePath = filePath;
 }
@@ -167,12 +206,17 @@ modelIsAlreadyOpen = function (filePath) {
 
 // saves the cursor position 
 retrieveViewState = function (filePath) {
-    if (!(filePath in viewStates)) {
+    if (Object.keys(viewStates).includes(filePath)) {
+        editor.restoreViewState(
+            viewStates[filePath]
+        );
+    } else if (Object.keys(unregisteredModelsViewStates).includes(filePath)) {
+        editor.restoreViewState(
+            unregisteredModelsViewStates[filePath]
+        );
+    } else {
         return;
     }
-    editor.restoreViewState(
-        viewStates[filePath]
-    );
     editor.focus();
 }
 
@@ -215,7 +259,7 @@ insertText = function (text, position) {
 moveCursorHorizontally = function (value) {
     position = editor.getPosition();
     position.column += value;
-    editor.setPosition(position)
+    editor.setPosition(position);
 }
 
 // returns the line at the current cursor position
@@ -234,7 +278,10 @@ focusModel = function (filePath) {
 // returns file type according to its extention
 function getFileType(filePath) {
     var type = filePath.split('.').pop();
-    return fileType[type];
+    if (Object.keys(fileType).includes(type)) {
+        return fileType[type];
+    }
+    return null;
 }
 
 // returns current cursor position
@@ -252,9 +299,57 @@ saveFile = function () {
     if (!editor || !currentFilePath) {
         return;
     }
-    fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
-    savedModelsValues[currentFilePath] = editor.getValue();
-    modelsEventEmitters.emitModelIsSaved(currentFilePath);
+    if (Object.keys(unregisteredSavedModelsValues).includes(currentFilePath)) {
+        isRegistered = module.exports.modelIsRegistered(currentFilePath);
+        filePath = currentFilePath;
+        ipcRenderer.send('open-save-dialog', {filePath, isRegistered});
+    } else {
+        fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
+        savedModelsValues[currentFilePath] = editor.getValue();
+        modelsEventEmitters.emitModelIsSaved(currentFilePath);
+    }
+}
+
+// returns true if the model is registered and false otherwise
+modelIsRegistered = function(filePath) {
+    if(Object.keys(models).includes(filePath)) {
+        return true;
+    } else if (Object.keys(unregisteredModels).includes(filePath)) {
+        return false;
+    } else {
+        return undefined;
+    }
+}
+
+// moves the file from unregistered file to registered file
+// and updates the model langauge type
+registerModel = function (oldName, filePath) {
+    if (Object.keys(unregisteredModels).includes(oldName) && editor) {
+        
+        var model = unregisteredModels[oldName];
+        var modelViewState = unregisteredModelsViewStates[oldName];
+        var modelValue = unregisteredSavedModelsValues[oldName];
+
+        delete unregisteredModels[oldName];   
+        delete unregisteredModelsViewStates[oldName];
+        delete unregisteredSavedModelsValues[oldName];
+
+        models[filePath] = model;
+        savedModelsValues[filePath] = modelValue;
+        if(modelViewState) {
+            viewStates[filePath] = modelViewState;
+        }
+
+        var fileName = filePath.split(path.sep).pop();
+        var type = fileName.split('.').pop();
+        monaco.editor.setModelLanguage(model, fileType[type]);
+
+        modelsEventEmitters.emitModelIsSaved(oldName, true);
+
+        if(currentFilePath == oldName) {
+            currentFilePath = filePath;
+        }
+    }
 }
 
 // effectively closes the tab with ID = filePath
@@ -264,20 +359,42 @@ removeModelWithId = function (filePath) {
         delete models[filePath];
         delete savedModelsValues[filePath];
         delete viewStates[filePath];
-        var keys = Object.keys(models);
-        if (keys.length == 0) {
-            editor.setModel(null);
+    } else if (unregisteredModels.hasOwnProperty(filePath)) {
+        delete unregisteredModels[filePath];
+        delete unregisteredSavedModelsValues[filePath];
+        delete unregisteredModelsViewStates[filePath];
+    } else {
+        return;
+    }
+    var keys = Object.keys(models);
+    var unregisteredKeys = Object.keys(unregisteredModels);
+    var totalKeys = keys.concat(unregisteredKeys);
+    if (totalKeys.length == 0) {
+        editor.setModel(null);
+        return null;
+    }
+    var nextModel = totalKeys[(totalKeys.indexOf(currentFilePath) + 1) % totalKeys.length];
+    return nextModel;
+}
+
+getModelContent = function(filePath) {
+    if(editor) {
+        if(Object.keys(models).includes(filePath)) {
+            return models[filePath].getValue();
+        } else if (Object.keys(unregisteredModels).includes(filePath)) {
+            return unregisteredModels[filePath].getValue();
+        } else  {
             return null;
         }
-        var nextModel = keys[(keys.indexOf(currentFilePath) + 1) % keys.length];
-        return nextModel;
     }
 }
 
+
 // returns the current model ID (the file path)
 getCurrentModel = function () {
-    var keys = Object.keys(models);
-    if (keys.length == 0) {
+    var modelsKeys = Object.keys(models);
+    var unregisteredModelsKeys = Object.keys(unregisteredModels);
+    if (modelsKeys.length === 0 && unregisteredModelsKeys.length === 0) {
         return null;
     }
 
@@ -326,17 +443,17 @@ backSpace = function () {
         prevLineLength = editor.getModel().getLineContent(editor.getPosition().lineNumber - 1).length;
         editor.executeEdits(
             'what', [
-                {
-                    identifier: 'id',
-                    text: '',
-                    range: new monaco.Range(
-                        currentCursorPosition.lineNumber - 1,
-                        prevLineLength + 1,
-                        currentCursorPosition.lineNumber,
-                        1
-                    )
-                }
-            ]
+            {
+                identifier: 'id',
+                text: '',
+                range: new monaco.Range(
+                    currentCursorPosition.lineNumber - 1,
+                    prevLineLength + 1,
+                    currentCursorPosition.lineNumber,
+                    1
+                )
+            }
+        ]
         );
     } else {
         removeLeftCharacter(currentCursorPosition);
@@ -358,7 +475,7 @@ function removeLeftCharacter(position) {
     );
 }
 
-selectAllText = function() {
+selectAllText = function () {
     editor.setSelection(models[currentFilePath].getFullModelRange());
 }
 
@@ -377,7 +494,6 @@ undo = function () {
         return;
     }
     editor.getModel().undo();
-    console.log(editor.getActions().map(a => a.id));
 }
 
 // redo
@@ -393,7 +509,6 @@ commentLine = function () {
         return;
     }
     editor.trigger('source', 'editor.action.commentLine');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 deleteLine = function () {
@@ -401,7 +516,6 @@ deleteLine = function () {
         return;
     }
     editor.trigger('source', 'editor.action.deleteLines');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 copy = function () {
@@ -409,7 +523,6 @@ copy = function () {
         return;
     }
     editor.trigger('source', 'editor.action.clipboardCopyAction');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 cut = function () {
@@ -417,7 +530,6 @@ cut = function () {
         return;
     }
     editor.trigger('source', 'editor.action.clipboardCutAction');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 paste = function () {
@@ -437,6 +549,13 @@ openNextTab = function () {
         index = (keys.indexOf(currentFilePath) + 1) % keys.length;
         module.exports.focusModel(keys[index]);
     }
+}
+
+unregisteredModelExists = function(modelName) {
+    if(Object.keys(unregisteredModels).includes(modelName)) {
+        return true;
+    }
+    return false;
 }
 
 module.exports = {
@@ -467,5 +586,10 @@ module.exports = {
     paste,
     gotoLine,
     gotoColumn,
-    selectAllText
+    selectAllText,
+    openNewModel,
+    getModelContent,
+    registerModel,
+    modelIsRegistered,
+    unregisteredModelExists
 }
