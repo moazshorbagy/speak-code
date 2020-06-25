@@ -124,6 +124,7 @@ function openFile(mainWindow, filename) {
             break;
         }
     }
+    console.log(`File ${filename} does not exist.`);
 }
 
 function expandFolder(mainWindow, folderName) {
@@ -134,6 +135,7 @@ function expandFolder(mainWindow, folderName) {
             break;
         }
     }
+    console.log(`Folder ${folderName} does not exist.`);
 }
 
 function gotoTab(mainWindow, tabNumber) {
@@ -152,7 +154,7 @@ function gotoLine(mainWindow, lineNumber) {
 
 function gotoColumn(mainWindow, columnNumber) {
     if (!isNaN(columnNumber)) {
-        number = parseInt(lineNumber, 10);
+        number = parseInt(columnNumber, 10);
         mainWindow.webContents.send('request-column-number', number);
     }
 }

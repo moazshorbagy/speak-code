@@ -192,7 +192,7 @@
 	});
 
 	ipcRenderer.on('request-column-number', function(event, columnNumber) {
-		editor.gotoColumn(lineNumber);
+		editor.gotoColumn(columnNumber);
 	});
 
 	ipcRenderer.on('request-tab-number', function(event, tabNumber) {
