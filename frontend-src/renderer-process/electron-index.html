@@ -173,6 +173,10 @@
 	ipcRenderer.on('request-reveal-cursor', function(event, args) {
 		editor.revealCursor();
 	});
+
+	ipcRenderer.on('request-select-line', function(event, args) {
+		editor.selectLine();
+	});
 </script>
 <script>
 	ipcRenderer.on('request-open-filename', function(event, filePath) {
@@ -199,8 +203,20 @@
 		editor.gotoColumn(columnNumber);
 	});
 
-	ipcRenderer.on('request-tab-number', function(event, tabNumber) {
-		openedFiles.gotoTab(tabNumber);
+	ipcRenderer.on('request-select-left', function(event, numColumns) {
+		editor.selectLeft(numColumns);
+	});
+
+	ipcRenderer.on('request-select-right', function(event, numColumns) {
+		editor.selectRight(numColumns);
+	});
+
+	ipcRenderer.on('request-select-up', function(event, numRows) {
+		editor.selectUp(numRows);
+	});
+
+	ipcRenderer.on('request-select-down', function(event, numRows) {
+		editor.selectDown(numRows);
 	});
 </script>
 <script>

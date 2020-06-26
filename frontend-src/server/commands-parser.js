@@ -25,7 +25,8 @@ directCommands = [
     'delete-line',
     'unfocus-folder',
     'browse-file',
-    'exit-app'
+    'exit-app',
+    'select-line'
 ];
 
 indirectCommands = [
@@ -34,7 +35,11 @@ indirectCommands = [
     "navgiate-to-tab",
     "set-cursor-to-line",
     "set-cursor-to-column",
-    "focus-folder"
+    "focus-folder",
+    "select-up",
+    "select-down",
+    "select-right",
+    "select-left"
 ];
 
 let cmd;
@@ -178,6 +183,31 @@ function unfocusFolder(mainWindow) {
     }
 }
 
+
+function selectLeft(mainWindow, numCols) {
+    if (!isNaN(numCols)) {
+        mainWindow.webContents.send('request-select-left', numCols);
+    }
+}
+
+function selectRight(mainWindow, numCols) {
+    if (!isNaN(numCols)) {
+        mainWindow.webContents.send('request-select-right', numCols);
+    }
+}
+
+function selectUp(mainWindow, numRows) {
+    if (!isNaN(numRows)) {
+        mainWindow.webContents.send('request-select-up', numRows);
+    }
+}
+
+function selectDown(mainWindow, numRows) {
+    if (!isNaN(numRows)) {
+        mainWindow.webContents.send('request-select-down', numRows);
+    }
+}
+
 constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
     if (isParameter) {
         switch (cmd) {
@@ -205,6 +235,22 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
                 gotoTab(mainWindow, keyword);
                 break;
             }
+            case 'select-left': {
+                selectLeft(mainWindow, keyword);
+                break;
+            }
+            case 'select-right': {
+                selectRight(mainWindow, keyword);
+                break;
+            }
+            case 'select-up': {
+                selectUp(mainWindow, keyword);
+                break;
+            }
+            case 'select-down': {
+                selectDown(mainWindow, keyword);
+                break;
+            }
         }
         return true;
     } else {
@@ -213,6 +259,7 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
         }
     }
 }
+
 
 // returns false if the command doesn't exist
 executeCommand = function (mainWindow, command) {

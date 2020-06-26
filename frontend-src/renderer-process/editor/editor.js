@@ -559,6 +559,60 @@ paste = function () {
     editor.trigger('source', 'editor.action.clipboardPasteAction');
 }
 
+selectRange = function(startLine, startColumn, endLine, endColumn) {
+    try {
+        editor.setSelection(startLine, startColumn, endLine, endColumn);
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+selectLine = function() {
+    let currentLineLength = module.exports.getCurrentLine().length;
+    let position = editor.getPosition(); 
+    editor.setSelection(position.lineNumber, 1, position.lineNumber, currentLineLength);
+}
+
+// selects the current column till + the passed number
+selectLeft = function(numColumns) {
+    try {
+        let position = editor.getPosition();
+        editor.setSelection(position.lineNumber, position.columnNumber, position.lineNumber, position.columnNumber - numColumns - 1);
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+selectRight = function(numColumns) {
+    try {
+        let position = editor.getPosition();
+        editor.setSelection(position.lineNumber, position.columnNumber, position.lineNumber, position.columnNumber + numColumns - 1);
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+selectUp = function(numRows) {
+    try {
+        let position = editor.getPosition();
+        let targetLineLength = editor.getLineContent(position.lineNumber - numRows - 1).length;
+        let currentLineLength = editor.getLineContent(position.lineNumber).length;
+        editor.setSelection(position.lineNumber, currentLineLength, position.lineNumber - numRows - 1, targetLineLength);
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+selectDown = function(numRows) {
+    try {
+        let position = editor.getPosition();
+        let targetLineLength = editor.getLineContent(position.lineNumber - numRows - 1).length;
+        editor.setSelection(position.lineNumber, 1, position.lineNumber + numRows - 1, targetLineLength);
+    } catch(e) {
+        console.log(e);
+    }
+}
+
 // opens the next tab if available 
 // from the currently opened tabs
 openNextTab = function () {
@@ -612,5 +666,11 @@ module.exports = {
     modelIsRegistered,
     unregisteredModelExists,
     getContentInRange,
-    getPreviousLines
+    getPreviousLines,
+    selectLine,
+    selectRange,
+    selectLeft,
+    selectRight,
+    selectUp,
+    selectDown
 }
