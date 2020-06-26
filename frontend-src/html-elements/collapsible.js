@@ -56,7 +56,7 @@ populateFiles = function (files, path, contentContainer) {
     }
 }
 
-expandFolder = function(folderPath) {
+expandFolder = function (folderPath) {
     folderDescriptor = document.getElementById('b' + folderPath);
     var content = folderDescriptor.nextElementSibling;
     if (content.style.display === "block") {
@@ -66,12 +66,12 @@ expandFolder = function(folderPath) {
     }
 }
 
-focusFolder = function(folderPath) {
+focusFolder = function (folderPath) {
     element = document.getElementById('b' + folderPath);
     element.style.background = '#000000';
 }
 
-unfocusFolder = function(folderPath) {
+unfocusFolder = function (folderPath) {
     element = document.getElementById('b' + folderPath);
     element.style.background = 'unset';
 }
@@ -123,13 +123,21 @@ populateFolders = function (folders, path, explorerContainer) {
     }
 }
 openFile = function (filePath) {
-    var doc = fs.readFileSync(filePath, "utf8");
-    if (!editor.modelIsAlreadyOpen(filePath)) {
-        editor.openDoc(doc, filePath);
-        openedFiles.addOpenedFile(filePath);
-    } else {
-        editor.focusModel(filePath);
-        openedFiles.displayCurrentlyOpenedFileName(filePath.split(Path.sep).pop());
+    try {
+        let doc = fs.readFileSync(filePath, "utf8");
+        if (!editor.modelIsAlreadyOpen(filePath)) {
+            editor.openDoc(doc, filePath);
+            openedFiles.addOpenedFile(filePath);
+        } else {
+            editor.focusModel(filePath);
+            openedFiles.displayCurrentlyOpenedFileName(filePath.split(Path.sep).pop());
+        }
+    } catch (error) {
+        // TODO: Remove from list of opened editors
+        // TODO: Remove from list of opened tabs
+        // TODO: Remove from list of files in directory or refresh working directory
+        console.log(`Error: File ${filePath} does not exist`)
+        return;
     }
 }
 
