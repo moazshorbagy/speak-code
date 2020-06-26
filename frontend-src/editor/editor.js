@@ -220,6 +220,26 @@ retrieveViewState = function (filePath) {
     editor.focus();
 }
 
+getContentInRange = function (filePath, startLine, startColumn, endLine, endColumn) {
+    try {
+        let range = new monaco.Range(startLine, startColumn, endLine, endColumn);
+        if (Object.keys(savedModelsValues).includes(filePath)) {
+            return savedModelsValues[filePath].getValueInRange(range);
+        } else if (Object.keys(unregisteredSavedModelsValues).includes(filePath)) {
+            return unregisteredSavedModelsValues[filePath].getValueInRange(range);
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+getPreviousLines = function() {
+    let currentPosition = editor.getPosition();
+    let line = currentPosition.lineNumber;
+    currentLineLength = module.exports.getCurrentLine().length;
+    return module.exports.getContentInRange(editor.getModel(), 1, 1, line, currentLineLength);
+}
+
 // inserts text at the current position of the cursor
 // if position argument is not specified.
 insertText = function (text, position) {
@@ -302,7 +322,7 @@ saveFile = function () {
     if (Object.keys(unregisteredSavedModelsValues).includes(currentFilePath)) {
         isRegistered = module.exports.modelIsRegistered(currentFilePath);
         filePath = currentFilePath;
-        ipcRenderer.send('open-save-dialog', {filePath, isRegistered});
+        ipcRenderer.send('open-save-dialog', { filePath, isRegistered });
     } else {
         fs.writeFileSync(currentFilePath, editor.getValue(), { encoding: 'utf-8' });
         savedModelsValues[currentFilePath] = editor.getValue();
@@ -311,8 +331,8 @@ saveFile = function () {
 }
 
 // returns true if the model is registered and false otherwise
-modelIsRegistered = function(filePath) {
-    if(Object.keys(models).includes(filePath)) {
+modelIsRegistered = function (filePath) {
+    if (Object.keys(models).includes(filePath)) {
         return true;
     } else if (Object.keys(unregisteredModels).includes(filePath)) {
         return false;
@@ -325,18 +345,18 @@ modelIsRegistered = function(filePath) {
 // and updates the model langauge type
 registerModel = function (oldName, filePath) {
     if (Object.keys(unregisteredModels).includes(oldName) && editor) {
-        
+
         var model = unregisteredModels[oldName];
         var modelViewState = unregisteredModelsViewStates[oldName];
         var modelValue = unregisteredSavedModelsValues[oldName];
 
-        delete unregisteredModels[oldName];   
+        delete unregisteredModels[oldName];
         delete unregisteredModelsViewStates[oldName];
         delete unregisteredSavedModelsValues[oldName];
 
         models[filePath] = model;
         savedModelsValues[filePath] = modelValue;
-        if(modelViewState) {
+        if (modelViewState) {
             viewStates[filePath] = modelViewState;
         }
 
@@ -346,7 +366,7 @@ registerModel = function (oldName, filePath) {
 
         modelsEventEmitters.emitModelIsSaved(oldName, true);
 
-        if(currentFilePath == oldName) {
+        if (currentFilePath == oldName) {
             currentFilePath = filePath;
         }
     }
@@ -377,13 +397,13 @@ removeModelWithId = function (filePath) {
     return nextModel;
 }
 
-getModelContent = function(filePath) {
-    if(editor) {
-        if(Object.keys(models).includes(filePath)) {
+getModelContent = function (filePath) {
+    if (editor) {
+        if (Object.keys(models).includes(filePath)) {
             return models[filePath].getValue();
         } else if (Object.keys(unregisteredModels).includes(filePath)) {
             return unregisteredModels[filePath].getValue();
-        } else  {
+        } else {
             return null;
         }
     }
@@ -550,8 +570,8 @@ openNextTab = function () {
     }
 }
 
-unregisteredModelExists = function(modelName) {
-    if(Object.keys(unregisteredModels).includes(modelName)) {
+unregisteredModelExists = function (modelName) {
+    if (Object.keys(unregisteredModels).includes(modelName)) {
         return true;
     }
     return false;
@@ -590,5 +610,7 @@ module.exports = {
     getModelContent,
     registerModel,
     modelIsRegistered,
-    unregisteredModelExists
+    unregisteredModelExists,
+    getContentInRange,
+    getPreviousLines
 }
