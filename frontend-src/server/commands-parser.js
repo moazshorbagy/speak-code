@@ -121,7 +121,7 @@ function openFile(mainWindow, filename) {
         if (currentFiles[i] === filename) {
             filePath = Path.join(currentlyFocusedFolderPath, filename);
             mainWindow.webContents.send('request-open-filename', filePath);
-            break;
+            return;
         }
     }
     console.log(`File ${filename} does not exist.`);
@@ -132,7 +132,7 @@ function expandFolder(mainWindow, folderName) {
         if (currentFolders[i] === folderName) {
             folderPath = Path.join(currentlyFocusedFolderPath, folderName);
             mainWindow.webContents.send('request-expand-foldername', folderPath);
-            break;
+            return;
         }
     }
     console.log(`Folder ${folderName} does not exist.`);
