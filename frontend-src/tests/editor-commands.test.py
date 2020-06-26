@@ -127,51 +127,26 @@ class TestScenarios(unittest.TestCase):
         # step 1: set current working directory
         scenario_dir = setWorkingDirectory('scenario2')
 
-        client.sendData('expand folder subdir1')
+        part1 = ['expand folder subdir1', 'focus folder subdir1', 'expand folder subdir2', 'open file use-me.py',
+        'comment line', 'save']
 
-        time.sleep(1)
-        
-        client.sendData('focus folder subdir1')
-
-        time.sleep(1)
-
-        client.sendData('expand folder subdir2')
-
-        time.sleep(1)
 
         initial_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
-        client.sendData('open file use-me.py')
 
-        time.sleep(0.5)
-
-        client.sendData('comment line')
-
-        time.sleep(0.5)
-
-        client.sendData('save')
+        sendTestVector(part1)
 
         current_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
         self.assertEqual('# ' + initial_file_content[0], current_file_content[0])
 
-        time.sleep(0.5)
+        part2 = ['delete line', 'save', 'unfocus folder']
 
-        client.sendData('delete line')
-
-        time.sleep(0.5)
-
-        client.sendData('save')
+        sendTestVector(part2)
 
         current_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
 
         self.assertEqual(len(current_file_content), 0)
 
-        client.sendData('unfocus folder')
-
-        time.sleep(0.5)
-
         client.sendData('undo undo save close')
-
-        time.sleep(0.5)
 
         
 
