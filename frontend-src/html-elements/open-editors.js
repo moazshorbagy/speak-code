@@ -150,7 +150,6 @@ function handleModelDidChangeEvent(filePath, isUnregistered, tabNumber) {
     } else {
 
         modelsDidChangedEvents = modelsEventEmitters.getModelsEventEmitters();
-        console.log(modelsDidChangedEvents);
         modelsDidChangedEvents[filePath].on('needs-save', (filePath) => {
             module.exports.notifyNeedsSave(filePath);
         });
@@ -255,7 +254,6 @@ function updateId(oldId, newId) {
 }
 
 focusTabClickEventHandler = function() {
-    console.log(this.id);
     module.exports.displayCurrentlyOpenedFileName(this.id);
     editor.focusModel(this.id);
 }

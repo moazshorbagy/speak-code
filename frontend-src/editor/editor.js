@@ -537,7 +537,6 @@ paste = function () {
         return;
     }
     editor.trigger('source', 'editor.action.clipboardPasteAction');
-    console.log(editor.getActions().map(a => a.id));
 }
 
 // opens the next tab if available 
