@@ -26,7 +26,7 @@ const amdRequire = amdLoader.require;
 //workaround because we changed the editor.js path
 var dirname = __dirname + "/../"
 amdRequire.config({
-    baseUrl: uriFromPath(path.join(dirname, './node_modules/monaco-editor/min'))
+    baseUrl: uriFromPath(path.join(dirname, './../node_modules/monaco-editor/min'))
 });
 
 let editor;

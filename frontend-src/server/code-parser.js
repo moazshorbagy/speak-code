@@ -9,6 +9,19 @@ function insertPlainCode(mainnWindow, code) {
     mainnWindow.webContents.send('insert-plain-code', code);
 }
 
+let directCodeInsertionCmds = [
+    'brackets',
+    'braces',
+    'square-brackets',
+    'single-quote',
+    'double-quote',
+    'enter',
+    'new-scope',
+    'exit-scope',
+    'enter',
+    'grave'
+];
+
 // insert code directly
 directCodeInsertion = function (mainWindow, keyword, codeInserter) {
     if (directCodeInsertionCmds.includes(keyword)) {

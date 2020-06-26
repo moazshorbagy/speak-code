@@ -1,5 +1,5 @@
 const { ipcRenderer } = require('electron');
-const wd = require('./files-handling/working-directory');
+const wd = require('./working-directory');
 const editor = require('./editor/editor');
 const openedFiles = require('./html-elements/open-editors');
 const collapsible = require('./html-elements/collapsible');

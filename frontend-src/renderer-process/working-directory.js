@@ -17,15 +17,12 @@ module.exports = {
 
     displayWorkingDirectory: function () {
         explorerContainer.empty();
-        const openEditors = require('./../html-elements/open-editors');
-        openEditors.addOpenEditors();
+        openedFiles.addOpenEditors();
         this.openSubDir(currentWorkingDirectory, explorerContainer);
     },
 
     openSubDir: function (path, explorerContainer) {
         files = fs.readdirSync(path, { withFileTypes: true });
-
-        const collapsible = require('./../html-elements/collapsible')
 
         folderName = path.split(Path.sep).pop();
 

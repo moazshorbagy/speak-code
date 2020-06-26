@@ -123,6 +123,7 @@ populateFolders = function (folders, path, explorerContainer) {
     }
 }
 openFile = function (filePath) {
+    console.log(filePath);
     try {
         let doc = fs.readFileSync(filePath, "utf8");
         if (!editor.modelIsAlreadyOpen(filePath)) {

@@ -22,7 +22,7 @@ function createWindow() {
 			nodeIntegration: true
 		},
 	});
-	mainWindow.loadURL(`file://${__dirname}/electron-index.html`)
+	mainWindow.loadURL(`file://${__dirname}/renderer-process/electron-index.html`)
 	mainWindow.webContents.openDevTools()
 	mainWindow.on('closed', function () {
 		mainWindow = null
