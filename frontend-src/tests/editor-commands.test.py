@@ -108,16 +108,72 @@ class TestScenarios(unittest.TestCase):
         This scenario simulates the following user flow:
             1. open directory.
             2. focus a directory.
-            3. open file.
+            3. expand folder.
             4. unfocus directory.
             5. open file.
-            6. delete line.
-            7. move cursor to specific line.
-            8. comment line.
-            9. undo.
-            10. navigate to next tab.
+            6. comment line.
+            7. save file.
+            8. delete line.
+            9. save file
+
+            This scenario tests correct operation for editor commands:
+            focus-folder
+            expand-folder
+            open-file
+            unfocus-folder
+            comment-line
+            delete-line
         """
-        pass
+        # step 1: set current working directory
+        scenario_dir = setWorkingDirectory('scenario2')
+
+        client.sendData('expand folder subdir1')
+
+        time.sleep(1)
+        
+        client.sendData('focus folder subdir1')
+
+        time.sleep(1)
+
+        client.sendData('expand folder subdir2')
+
+        time.sleep(1)
+
+        initial_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
+        client.sendData('open file use-me.py')
+
+        time.sleep(0.5)
+
+        client.sendData('comment line')
+
+        time.sleep(0.5)
+
+        client.sendData('save')
+
+        current_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
+        self.assertEqual('# ' + initial_file_content[0], current_file_content[0])
+
+        time.sleep(0.5)
+
+        client.sendData('delete line')
+
+        time.sleep(0.5)
+
+        client.sendData('save')
+
+        current_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
+
+        self.assertEqual(len(current_file_content), 0)
+
+        client.sendData('unfocus folder')
+
+        time.sleep(0.5)
+
+        client.sendData('undo undo save close')
+
+        time.sleep(0.5)
+
+        
 
 
     def test_scenario3(self):
@@ -130,6 +186,8 @@ class TestScenarios(unittest.TestCase):
             5. save current file.
             6. open other file.
             7. paste content.
+
+
         """
         pass
 
