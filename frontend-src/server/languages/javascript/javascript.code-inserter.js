@@ -2,8 +2,11 @@ class JavascriptCodeInserter {
     getScope(previousLines) {
         let scope = 0;
 
-        previousLines.forEach(line => {
+        previousLines.forEach(line => {     
             for (let i = 0; i < line.length; i++) {
+                if (line[i] == '/' && i < line.length - 1 && line[i + 1] == '/') {
+                    break;
+                }
                 if (line[i] == '{') {
                     scope += 1;
                 } else if (line[i] == '}') {
@@ -55,7 +58,7 @@ previousLines = [
     'line1 = function() {\n',
     '   console.log("Hello World!")\n',
     '}\n',
-    'function anotherFunction(params) {\n',
+    'function anotherFunction(params) { // {\n',
     '    console.log("hey");\n',
     '    if(params === "world") {\n',
     '        console.log("params")\n',
