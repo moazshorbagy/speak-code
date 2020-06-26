@@ -242,35 +242,35 @@ directCodeInsertion = function (mainWindow, keyword, codeInserter) {
                 break;
             }
             case 'new-scope': {
-                mainWindow.webContents.send('get-current-line');
+                mainWindow.webContents.send('get-previous-lines');
 
-                ipcMain.once('current-line', function (event, line) {
+                ipcMain.once('previous-lines', function (event, lines) {
 
-                    mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
+                    mainWindow.webContents.send('request-horizontal-move-cursor', lines[lines.length - 1].length);
 
-                    insertPlainCode(mainWindow, codeInserter.newScope(line));
+                    insertPlainCode(mainWindow, codeInserter.newScope(lines));
                 });
                 break;
             }
             case 'exit-scope': {
-                mainWindow.webContents.send('get-current-line');
+                mainWindow.webContents.send('get-previous-lines');
 
-                ipcMain.once('current-line', function (event, line) {
+                ipcMain.once('previous-lines', function (event, lines) {
 
-                    mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
+                    mainWindow.webContents.send('request-horizontal-move-cursor', lines[lines.length - 1].length);
 
-                    insertPlainCode(mainWindow, codeInserter.exitScope(line));
+                    insertPlainCode(mainWindow, codeInserter.exitScope(lines));
                 });
                 break;
             }
             case 'enter': {
-                mainWindow.webContents.send('get-current-line');
+                mainWindow.webContents.send('get-previous-lines');
 
-                ipcMain.once('current-line', function (event, line) {
+                ipcMain.once('previous-lines', function (event, lines) {
 
-                    mainWindow.webContents.send('request-horizontal-move-cursor', line.length);
+                    mainWindow.webContents.send('request-horizontal-move-cursor', lines[lines.length - 1].length);
 
-                    insertPlainCode(mainWindow, codeInserter.enter(line));
+                    insertPlainCode(mainWindow, codeInserter.enter(lines));
                 });
                 break;
             }

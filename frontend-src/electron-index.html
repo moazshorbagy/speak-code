@@ -89,6 +89,10 @@
 		event.sender.send('current-line', editor.getCurrentLine());
 	});
 
+	ipcRenderer.on('get-previous-lines', function(event, args) {
+		event.sender.send('previous-lines', editor.getPreviousLines())
+	});
+
 	ipcRenderer.on('request-horizontal-move-cursor', function(event, args) {
 		editor.moveCursorHorizontally(args);
 	});
