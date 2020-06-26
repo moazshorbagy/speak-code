@@ -561,7 +561,8 @@ paste = function () {
 
 selectRange = function(startLine, startColumn, endLine, endColumn) {
     try {
-        editor.setSelection(startLine, startColumn, endLine, endColumn);
+        let range = new monaco.Range(startLine, startColumn, endLine, endColumn);
+        editor.setSelection(range);
     } catch(e) {
         console.log(e);
     }
@@ -570,14 +571,18 @@ selectRange = function(startLine, startColumn, endLine, endColumn) {
 selectLine = function() {
     let currentLineLength = module.exports.getCurrentLine().length;
     let position = editor.getPosition(); 
-    editor.setSelection(position.lineNumber, 1, position.lineNumber, currentLineLength);
+    let range = new monaco.Range(position.lineNumber, 1, position.lineNumber, currentLineLength + 1);
+    editor.setSelection(range);
 }
 
 // selects the current column till + the passed number
 selectLeft = function(numColumns) {
     try {
+        numColumns = parseInt(numColumns);
         let position = editor.getPosition();
-        editor.setSelection(position.lineNumber, position.columnNumber, position.lineNumber, position.columnNumber - numColumns - 1);
+        let endColumn = Math.max(1, position.column - numColumns);
+        let range = new monaco.Range(position.lineNumber, position.columnNumber, position.lineNumber, endColumn);
+        editor.setSelection(range);
     } catch(e) {
         console.log(e);
     }
@@ -585,8 +590,12 @@ selectLeft = function(numColumns) {
 
 selectRight = function(numColumns) {
     try {
+        numColumns = parseFloat(numColumns);
         let position = editor.getPosition();
-        editor.setSelection(position.lineNumber, position.columnNumber, position.lineNumber, position.columnNumber + numColumns - 1);
+        let currentLineLength = module.exports.getCurrentLine().length;
+        let endColumn = Math.min(position.column + numColumns, currentLineLength + 1);
+        let range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, endColumn);
+        editor.setSelection(range);
     } catch(e) {
         console.log(e);
     }
@@ -594,10 +603,12 @@ selectRight = function(numColumns) {
 
 selectUp = function(numRows) {
     try {
+        numRows = parseInt(numRows);
         let position = editor.getPosition();
-        let targetLineLength = editor.getLineContent(position.lineNumber - numRows - 1).length;
-        let currentLineLength = editor.getLineContent(position.lineNumber).length;
-        editor.setSelection(position.lineNumber, currentLineLength, position.lineNumber - numRows - 1, targetLineLength);
+        let currentLineLength = editor.getModel().getLineContent(position.lineNumber).length;
+        let endRow = Math.max(position.lineNumber - (numRows - 1), 1);
+        let range = new monaco.Range(position.lineNumber, currentLineLength + 1, endRow, 1);
+        editor.setSelection(range);
     } catch(e) {
         console.log(e);
     }
@@ -605,9 +616,13 @@ selectUp = function(numRows) {
 
 selectDown = function(numRows) {
     try {
+        numRows = parseInt(numRows);
         let position = editor.getPosition();
-        let targetLineLength = editor.getLineContent(position.lineNumber - numRows - 1).length;
-        editor.setSelection(position.lineNumber, 1, position.lineNumber + numRows - 1, targetLineLength);
+        let targetLineLength = editor.getModel().getLineContent(position.lineNumber - numRows - 1).length;
+        let fullModelRange = editor.getModel().getFullModelRange();
+        let endRow = Math.min(fullModelRange, position.lineNumber + numRows - 1);
+        let range = new monaco.Range(position.lineNumber, 1, endRow, targetLineLength);
+        editor.setSelection(range);
     } catch(e) {
         console.log(e);
     }
