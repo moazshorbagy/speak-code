@@ -205,6 +205,10 @@
 		collapsible.collapseFolder(folderPath);
 	});
 
+	ipcRenderer.on('request-tab-number', function(event, tabNumber) {
+		openedFiles.gotoTab(tabNumber);
+	});
+
 	ipcRenderer.on('request-line-number', function(event, lineNumber) {
 		editor.gotoLine(lineNumber);
 	});
