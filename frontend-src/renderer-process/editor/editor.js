@@ -618,9 +618,9 @@ selectDown = function(numRows) {
     try {
         numRows = parseInt(numRows);
         let position = editor.getPosition();
-        let targetLineLength = editor.getModel().getLineContent(position.lineNumber - numRows - 1).length;
         let fullModelRange = editor.getModel().getFullModelRange();
-        let endRow = Math.min(fullModelRange, position.lineNumber + numRows - 1);
+        let endRow = Math.min(fullModelRange.endLineNumber, position.lineNumber + numRows - 1);
+        let targetLineLength = editor.getModel().getLineContent(endRow).length + 1;
         let range = new monaco.Range(position.lineNumber, 1, endRow, targetLineLength);
         editor.setSelection(range);
     } catch(e) {
