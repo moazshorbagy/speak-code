@@ -687,5 +687,6 @@ module.exports = {
     selectLeft,
     selectRight,
     selectUp,
-    selectDown
+    selectDown,
+    revealCursor
 }
