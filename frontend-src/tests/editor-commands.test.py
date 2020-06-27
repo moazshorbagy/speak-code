@@ -116,9 +116,10 @@ class TestScenarios(unittest.TestCase):
             8. delete line.
             9. save file
 
-            This scenario tests correct operation for editor commands:
+        This scenario tests correct operation for editor commands:
             focus-folder
             expand-folder
+            collapse-folder
             open-file
             unfocus-folder
             comment-line
@@ -148,24 +149,72 @@ class TestScenarios(unittest.TestCase):
 
         client.sendData('undo undo save close')
 
-        
-
 
     def test_scenario3(self):
         """
         This scenario simulates the following user flow:
             1. open directory.
             2. open file.
-            3. select all text.
-            4. cut file content.
-            5. save current file.
-            6. open other file.
-            7. paste content.
+            3. open another file.
+            3. go to next tab (first opened file).
+            4. open new file.
+            5. go to tab 1 (second opened file).
+            6. select first line.
+            7. copy line.
+            8. backspace.
+            8. save current file.
+            9. undo.
+            10. save.
+            11. redo.
+            12. save.
 
-
+        This scenario tests correct operation for editor commands:
+            next-tab
+            go-tab
+            redo
+            backspace
         """
-        pass
+        
+        # step 1: set current working directory
+        scenario_dir = setWorkingDirectory('scenario3')
 
+        test_file1_path = os.path.join(scenario_dir, 'file1.py')
+        test_file2_path = os.path.join(scenario_dir, 'file2.py')
+
+        # opened in tab 0
+        file1_original_content = getFileContentAsLines(test_file1_path)
+        # opened in tab 1
+        file2_original_content = getFileContentAsLines(test_file2_path)
+
+        file2_line1_expected_content = ' ' * 4 + 'max_val = - 1\n'
+
+        part1 = ['open file file1.py', 'open file file2.py', 'next tab', 'select line', 'copy',
+         'backspace', 'save', 'go tab one', 'enter', 'indent', 'paste', 'save']
+        part2 = ['undo undo', 'save', 'close', 'undo', 'save']
+        part3 = ['redo', 'save']
+        cleanUp = ['undo', 'save', 'close']
+
+        sendTestVector(part1)
+        time.sleep(1)
+        file1_part1_content = getFileContentAsLines(test_file1_path)
+        file2_part1_content = getFileContentAsLines(test_file2_path)
+
+        # effect of backspace: remove only one character
+        self.assertEqual(file1_original_content[0], file1_part1_content[0] + file1_original_content[0][-1])
+        self.assertEqual(file2_part1_content[1], file2_line1_expected_content)
+
+        sendTestVector(part2)
+
+        file1_part2_content = getFileContentAsLines(test_file1_path)
+        self.assertEqual(file1_part2_content[0], file1_original_content[0])
+
+        sendTestVector(part3)
+
+        file1_part3_content = getFileContentAsLines(test_file1_path)
+
+        self.assertEqual(file1_part1_content[0], file1_part3_content[0])
+
+        sendTestVector(cleanUp)
 
 
     def test_scenario4(self):
@@ -208,6 +257,9 @@ class TestScenarios(unittest.TestCase):
         
         # POST-PROCESS: delete actual output file
         os.remove(actual_file_path)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
