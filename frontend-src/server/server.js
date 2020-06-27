@@ -1,7 +1,8 @@
 const zerorpc = require('zerorpc');
-const {BrowserWindow} = require('electron');
+const { BrowserWindow, ipcMain } = require('electron');
 // const commandsParser = require('./commands-parser');
 const parser = require('./parser');
+const commandsParser = require('./commands-parser');
 
 let server;
 
@@ -11,7 +12,7 @@ let shouldStartRecording;
 
 let mainWindow;
 
-initializeServer = function() {
+initializeServer = function () {
     server = new zerorpc.Server({
         shouldStartRecording: function () {
             return shouldStartRecording;
@@ -27,16 +28,32 @@ initializeServer = function() {
 
                 // if all is okay.
                 reply(null, 'ok');
-            } catch(e) {
+            } catch (e) {
                 console.log(e);
-                reply("error", "not ok");
+                reply("error", "failed to execute command");
             }
         },
+
+        setDirectory: function (directory, reply) {
+            try {
+                mainWindow = BrowserWindow.getAllWindows()[0];
+                mainWindow.webContents.send('chosen-directory', directory);
+
+                commandsParser.setRootDirectory(mainWindow, directory);
+
+                reply(null, 'ok');
+            } catch (e) {
+                console.log(e);
+                reply("error", "failed to set directory");
+            }
+        }
+
+        
     }, 30000);
 
     server.bind("tcp://0.0.0.0:" + port);
 
-    server.on("error", function(error) {
+    server.on("error", function (error) {
         console.error("RPC server error:", error);
     });
 }

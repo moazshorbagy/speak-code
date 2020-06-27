@@ -2,8 +2,7 @@
     "direct": {
         "change-folder": "change-directory",
         "save": "save-file",
-        "exit": "close-all-tabs",
-        "new-file": "new-file",
+        "save-as": "save-as",
         "reveal-cursor": "reveal-cursor",
         "zoom-in": "zoom-in",
         "zoom-out": "zoom-out",
@@ -19,16 +18,26 @@
         "paste": "paste",
         "backspace": "backspace",
         "comment-line": "comment-line",
-        "delete-line": "delete-line"
+        "delete-line": "delete-line",
+        "unfocus-folder": "unfocus-folder",
+        "browse-file": "browse-file",
+        "new-file": "new-file",
+        "exit-application": "exit-app",
+        "select-line": "select-line",
+        "delete-left": "delete-left",
+        "delete-right": "delete-right"
     },
     "indirect": {
         "open-file": "open-file-from-directory",
-        "expand": "expand-folder",
+        "expand-folder": "expand-folder",
+        "collapse-folder": "collapse-folder",
         "go-tab": "navgiate-to-tab",
-        "vertical": "scroll-to-line",
-        "horizontal": "scroll-to-column",
         "go-line": "set-cursor-to-line",
         "go-column": "set-cursor-to-column",
-        "focus-folder": "focus-folder"
+        "focus-folder": "focus-folder",
+        "select-up": "select-up",
+        "select-down": "select-down",
+        "select-left": "select-left",
+        "select-right": "select-right"
     }
 }

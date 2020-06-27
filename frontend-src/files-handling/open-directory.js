@@ -1,3 +1,5 @@
+const commandsParser = require('./../server/commands-parser');
+
 
 openDirectory = function(mainWindow, dialog, event, prevPath) {
     dialog.showOpenDialog(mainWindow, {
@@ -7,6 +9,7 @@ openDirectory = function(mainWindow, dialog, event, prevPath) {
             var filePath = result.filePaths[0];
             if(filePath !== prevPath) {
                 event.sender.send('chosen-directory', filePath);
+                commandsParser.setRootDirectory(mainWindow, filePath);
             } else {
                 console.log('same directory');
             }
