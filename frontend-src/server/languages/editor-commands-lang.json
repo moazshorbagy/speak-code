@@ -23,7 +23,10 @@
         "browse-file": "browse-file",
         "new-file": "new-file",
         "exit-application": "exit-app",
-        "select-line": "select-line"
+        "select-line": "select-line",
+        "delete-left": "delete-left",
+        "delete-right": "delete-right",
+        "delete-selection": "delete-selection"
     },
     "indirect": {
         "open-file": "open-file-from-directory",

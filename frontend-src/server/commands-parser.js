@@ -27,7 +27,10 @@ directCommands = [
     'unfocus-folder',
     'browse-file',
     'exit-app',
-    'select-line'
+    'select-line',
+    'delete-left',
+    'delete-right',
+    'delete-selection'
 ];
 
 indirectCommands = [

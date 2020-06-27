@@ -221,6 +221,18 @@
 		editor.selectLeft(numColumns);
 	});
 
+	ipcRenderer.on('request-delete-left', function(event, numColumns) {
+		editor.deleteLeft();
+	});
+
+	ipcRenderer.on('request-delete-right', function(event, numColumns) {
+		editor.deleteRight();
+	});
+
+	ipcRenderer.on('request-delete-selection', function(event, numColumns) {
+		editor.deleteSelection();
+	});
+
 	ipcRenderer.on('request-select-right', function(event, numColumns) {
 		editor.selectRight(numColumns);
 	});
