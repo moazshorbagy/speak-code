@@ -117,8 +117,8 @@ displayCurrentlyOpenedFileName = function (filePath) {
 
 gotoTab = function (tabNumber) {
     var ids = Object.keys(tabIdMap);
-    if (ids.includes(tabNumber)) {
-        tabId = tabIdMap[tabNumber];
+    if (ids.includes(tabNumber.toString())) {
+        tabId = tabIdMap[tabNumber.toString()];
         editor.focusModel(tabId);
         module.exports.displayCurrentlyOpenedFileName(tabId);
     }
