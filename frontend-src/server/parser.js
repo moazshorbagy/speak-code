@@ -290,24 +290,23 @@ function parseCommand(mainWindow, words) {
             wordNotInGrammar = isWordNotInGrammar(cmd, lang);
             directCode = isDirectWordInsertion(cmd, lang);
 
-                if (constructingEditorCommand) {
-                    commandParser.constructIndicrectCommand(mainWindow, cmd, true);
-                    constructingEditorCommand = false;
-                }
-                else {
-                    directCommand = isDirectCommand(cmd);
-                    indirectCommand = isIndirectCommand(cmd);
+            if (constructingEditorCommand) {
+                commandParser.constructIndicrectCommand(mainWindow, cmd, true);
+                constructingEditorCommand = false;
+            }
+            else {
+                directCommand = isDirectCommand(cmd);
+                indirectCommand = isIndirectCommand(cmd);
 
-                    if (wordNotInGrammar) {
-                        codeParser.directCodeInsertion(mainWindow, cmd);
-                    } else if (directCode !== undefined) {
-                        codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
-                    } else if (directCommand !== undefined) {
-                        commandParser.executeCommand(mainWindow, directCommand);
-                    } else if (indirectCommand !== undefined) {
-                        constructingEditorCommand = true;
-                        commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
-                    }
+                if (wordNotInGrammar) {
+                    codeParser.directCodeInsertion(mainWindow, cmd);
+                } else if (directCode !== undefined) {
+                    codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
+                } else if (directCommand !== undefined) {
+                    commandParser.executeCommand(mainWindow, directCommand);
+                } else if (indirectCommand !== undefined) {
+                    constructingEditorCommand = true;
+                    commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
                 }
             }
         }
