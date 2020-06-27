@@ -189,7 +189,7 @@ class TestScenarios(unittest.TestCase):
         file2_line1_expected_content = ' ' * 4 + 'max_val = - 1\n'
 
         part1 = ['open file file1.py', 'open file file2.py', 'next tab', 'select line', 'copy',
-         'backspace', 'save', 'go tab one', 'enter', 'indent', 'paste', 'save']
+         'move right', 'backspace', 'save', 'go tab one', 'enter', 'indent', 'paste', 'save']
         part2 = ['undo undo', 'save', 'close', 'undo', 'save']
         part3 = ['redo', 'save']
         cleanUp = ['undo', 'save', 'close']
@@ -295,7 +295,7 @@ class TestScenarios(unittest.TestCase):
         'next tab', 'go line 2 go column 2', 'move left', 'select right two zero', 'copy',
         'next tab', 'paste', 'enter', 'delete left',
         'next tab', 'go line 3', 'select down two', 'copy',
-        'next tab', 'paste', 'enter', 'select left one zero', 'delete selection',
+        'next tab', 'paste', 'enter', 'select left one zero', 'backspace',
         'next tab', 'go line 6', 'select up 2', 'copy',
         'next tab', 'paste', 'save',
         'close', 'close']
