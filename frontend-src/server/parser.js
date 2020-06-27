@@ -56,7 +56,7 @@ function isIndirectCommand(word) {
 }
 
 function processSentence(words, lang) {
-    if (!lang || !words || !words.length) {
+    if (!words || !words.length) {
         throw new Error('Missing parameters.')
     }
     if (!Array.isArray(words)) {
@@ -264,6 +264,7 @@ function preprocessing(words, lang) {
             words = buildVariableName(words);
         }
         words = processSentence(words, lang);
+
         words = formNumbers(words);
     }
 
@@ -276,19 +277,26 @@ function parseCommand(mainWindow, words) {
 
     ipcMain.once('file-path', function (event, filePath) {
 
+        let lang, codeInserter;
 
-        config = configureLang(filePath);
-        lang = config['lang']
-        codeInserter = config['codeInserter']
+        if (filePath) {
+            config = configureLang(filePath);
+            lang = config['lang'];
+            codeInserter = config['codeInserter'];
+        }
 
         words = preprocessing(words, lang);
+
+        let wordNotInGrammar, directCode;
 
         for (i = 0; i < words.length; i++) {
 
             cmd = words[i];
 
-            wordNotInGrammar = isWordNotInGrammar(cmd, lang);
-            directCode = isDirectWordInsertion(cmd, lang);
+            if (lang) {
+                wordNotInGrammar = isWordNotInGrammar(cmd, lang);
+                directCode = isDirectWordInsertion(cmd, lang);
+            }
 
             if (constructingEditorCommand) {
                 commandParser.constructIndicrectCommand(mainWindow, cmd, true);
