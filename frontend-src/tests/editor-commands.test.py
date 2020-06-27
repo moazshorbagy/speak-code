@@ -138,7 +138,7 @@ class TestScenarios(unittest.TestCase):
         current_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
         self.assertEqual('# ' + initial_file_content[0], current_file_content[0])
 
-        part2 = ['delete line', 'save', 'unfocus folder']
+        part2 = ['delete line', 'save', 'unfocus folder', 'collapse folder subdir1']
 
         sendTestVector(part2)
 
