@@ -191,8 +191,8 @@ function closeNormalTab(filePath, forceClose, type) {
             var nextTab = editor.removeModelWithId(filePath);
             if(editor.getCurrentModel() == filePath) {
                 editor.focusModel(nextTab);
-                module.exports.displayCurrentlyOpenedFileName(nextTab);
             }
+            module.exports.displayCurrentlyOpenedFileName(nextTab);
         }
     }
 }
@@ -218,8 +218,8 @@ function closeUnregisteredTab(filePath, forceClose) {
             var nextTab = editor.removeModelWithId(filePath);
             if(editor.getCurrentModel() == filePath) {
                 editor.focusModel(nextTab);
-                module.exports.displayCurrentlyOpenedFileName(nextTab);
             }
+            module.exports.displayCurrentlyOpenedFileName(nextTab);
         }        
     }
 }
