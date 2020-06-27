@@ -43,7 +43,7 @@ addCollapsible = function (container, path, name, content, isRootDir) {
 
     folderDescriptor.on('click', function () {
         var folderPath = this.id.substring(1);
-        expandFolder(folderPath);
+        toggleContentVisible(folderPath);
     });
 }
 
@@ -60,7 +60,21 @@ expandFolder = function (folderPath) {
     try {
         folderDescriptor = document.getElementById('b' + folderPath);
         var content = folderDescriptor.nextElementSibling;
-        if (content.style.display === "none") {
+        if (content.style.display !== "block") {
+            content.style.display = "block";
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+function toggleContentVisible(folderPath) {
+    try {
+        folderDescriptor = document.getElementById('b' + folderPath);
+        var content = folderDescriptor.nextElementSibling;
+        if (content.style.display === "block") {
+            content.style.display = "none";
+        } else {
             content.style.display = "block";
         }
     } catch (e) {
@@ -72,7 +86,7 @@ collapseFolder = function (folderPath) {
     try {
         folderDescriptor = document.getElementById('b' + folderPath);
         var content = folderDescriptor.nextElementSibling;
-        if (content.style.display === "block") {
+        if (content.style.display != "none") {
             content.style.display = "none";
         }
     } catch (e) {
@@ -137,7 +151,6 @@ populateFolders = function (folders, path, explorerContainer) {
     }
 }
 openFile = function (filePath) {
-    console.log(filePath);
     try {
         let doc = fs.readFileSync(filePath, "utf8");
         if (!editor.modelIsAlreadyOpen(filePath)) {
