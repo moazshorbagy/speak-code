@@ -195,6 +195,10 @@
 		collapsible.expandFolder(folderPath);
 	});
 
+	ipcRenderer.on('request-collapse-foldername', function(event, folderPath) {
+		collapsible.expandFolder(folderPath);
+	});
+
 	ipcRenderer.on('request-line-number', function(event, lineNumber) {
 		editor.gotoLine(lineNumber);
 	});

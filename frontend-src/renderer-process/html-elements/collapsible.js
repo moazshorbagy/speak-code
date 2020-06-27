@@ -57,12 +57,26 @@ populateFiles = function (files, path, contentContainer) {
 }
 
 expandFolder = function (folderPath) {
-    folderDescriptor = document.getElementById('b' + folderPath);
-    var content = folderDescriptor.nextElementSibling;
-    if (content.style.display === "block") {
-        content.style.display = "none";
-    } else {
-        content.style.display = "block";
+    try {
+        folderDescriptor = document.getElementById('b' + folderPath);
+        var content = folderDescriptor.nextElementSibling;
+        if (content.style.display === "none") {
+            content.style.display = "block";
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+collapseFolder = function (folderPath) {
+    try {
+        folderDescriptor = document.getElementById('b' + folderPath);
+        var content = folderDescriptor.nextElementSibling;
+        if (content.style.display === "block") {
+            content.style.display = "none";
+        }
+    } catch (e) {
+        console.log(e);
     }
 }
 
@@ -154,5 +168,6 @@ module.exports = {
     openFile,
     expandFolder,
     focusFolder,
-    unfocusFolder
+    unfocusFolder,
+    collapseFolder
 }

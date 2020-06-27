@@ -27,6 +27,7 @@
     "indirect": {
         "open-file": "open-file-from-directory",
         "expand-folder": "expand-folder",
+        "collapse-folder": "collapse-folder",
         "go-tab": "navgiate-to-tab",
         "go-line": "set-cursor-to-line",
         "go-column": "set-cursor-to-column",

@@ -32,6 +32,7 @@ directCommands = [
 indirectCommands = [
     "open-file-from-directory",
     "expand-folder",
+    "collapse-folder",
     "navgiate-to-tab",
     "set-cursor-to-line",
     "set-cursor-to-column",
@@ -133,13 +134,34 @@ function openFile(mainWindow, filename) {
 }
 
 function expandFolder(mainWindow, folderName) {
-    for (var i = 0; i < currentFolders.length; i++) {
-        if (currentFolders[i] === folderName) {
-            folderPath = Path.join(currentlyFocusedFolderPath, folderName);
-            mainWindow.webContents.send('request-expand-foldername', folderPath);
-            return;
+    folderPath = Path.join(currentlyFocusedFolderPath, folderName);
+    if(folderPath === currentlyFocusedFolderPath) {
+        mainWindow.webContents.send('request-expand-foldername', folderPath);
+    } else {
+        for (var i = 0; i < currentFolders.length; i++) {
+            if (currentFolders[i] === folderName) {
+                mainWindow.webContents.send('request-expand-foldername', folderPath);
+                return;
+            }
         }
     }
+
+    console.log(`Folder ${folderName} does not exist.`);
+}
+
+function collapseFolder(mainWindow, folderName) {
+    folderPath = Path.join(currentlyFocusedFolderPath, folderName);
+    if(folderPath === currentlyFocusedFolderPath) {
+        mainWindow.webContents.send('request-collapse-foldername', currentlyFocusedFolderPath);
+    } else {
+        for (var i = 0; i < currentFolders.length; i++) {
+            if (currentFolders[i] === folderName) {
+                mainWindow.webContents.send('request-expand-foldername', folderPath);
+                return;
+            }
+        }
+    }
+    
     console.log(`Folder ${folderName} does not exist.`);
 }
 
@@ -221,6 +243,10 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
             }
             case 'expand-folder': {
                 expandFolder(mainWindow, keyword);
+                break;
+            }
+            case 'collapse-folder': {
+                collapseFolder(mainWindow, keyword);
                 break;
             }
             case 'set-cursor-to-column': {
