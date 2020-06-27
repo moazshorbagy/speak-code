@@ -465,28 +465,46 @@ backSpace = function () {
 
     currentCursorPosition = editor.getPosition();
 
-    if (currentCursorPosition.lineNumber == 1 && currentCursorPosition.column == 1) {
-        return;
-    }
 
-    if (currentCursorPosition.column == 1) {
-        prevLineLength = editor.getModel().getLineContent(editor.getPosition().lineNumber - 1).length;
+    let selection = editor.getSelection();
+    if(selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
+        op = {
+            identifier: 'id',
+            text: '',
+            range: new monaco.Range(selection.startLineNumber,
+                selection.startColumn,
+                selection.endLineNumber,
+                selection.endColumn)
+        }
+        // executeEdits can take an id to track edits
         editor.executeEdits(
-            'what', [
-            {
-                identifier: 'id',
-                text: '',
-                range: new monaco.Range(
-                    currentCursorPosition.lineNumber - 1,
-                    prevLineLength + 1,
-                    currentCursorPosition.lineNumber,
-                    1
-                )
-            }
-        ]
+            "what", [op]
         );
+
     } else {
-        removeLeftCharacter(currentCursorPosition);
+        if (currentCursorPosition.lineNumber == 1 && currentCursorPosition.column == 1) {
+            return;
+        }
+    
+        if (currentCursorPosition.column == 1) {
+            prevLineLength = editor.getModel().getLineContent(editor.getPosition().lineNumber - 1).length;
+            editor.executeEdits(
+                'what', [
+                {
+                    identifier: 'id',
+                    text: '',
+                    range: new monaco.Range(
+                        currentCursorPosition.lineNumber - 1,
+                        prevLineLength + 1,
+                        currentCursorPosition.lineNumber,
+                        1
+                    )
+                }
+            ]
+            );
+        } else {
+            removeLeftCharacter(currentCursorPosition);
+        }
     }
 }
 
@@ -561,27 +579,6 @@ deleteRight = function () {
     }
 
     editor.trigger('soruce', 'deleteAllRight');
-}
-
-deleteSelection = function () {
-    if (!editor || !editor.getModel()) {
-        return;
-    }
-
-    let selection = editor.getSelection();
-
-    op = {
-        identifier: 'id',
-        text: '',
-        range: new monaco.Range(selection.startLineNumber,
-            selection.startColumn,
-            selection.endLineNumber,
-            selection.endColumn)
-    }
-    // executeEdits can take an id to track edits
-    editor.executeEdits(
-        "what", [op]
-    );
 }
 
 copy = function () {
@@ -736,6 +733,5 @@ module.exports = {
     selectDown,
     revealCursor,
     deleteLeft,
-    deleteRight,
-    deleteSelection
+    deleteRight
 }

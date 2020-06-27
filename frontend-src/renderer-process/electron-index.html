@@ -229,10 +229,6 @@
 		editor.deleteRight();
 	});
 
-	ipcRenderer.on('request-delete-selection', function(event, numColumns) {
-		editor.deleteSelection();
-	});
-
 	ipcRenderer.on('request-select-right', function(event, numColumns) {
 		editor.selectRight(numColumns);
 	});

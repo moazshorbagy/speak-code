@@ -29,8 +29,7 @@ directCommands = [
     'exit-app',
     'select-line',
     'delete-left',
-    'delete-right',
-    'delete-selection'
+    'delete-right'
 ];
 
 indirectCommands = [
