@@ -141,16 +141,20 @@ openNewModel = function (modelName) {
 
 // increases text size of editor
 zoomInEditor = function () {
-    editor.updateOptions({
-        fontSize: editor.getOptions()._values[36] + 2
-    });
+    if (editor) {
+        editor.updateOptions({
+            fontSize: editor.getOptions()._values[36] + 2
+        });
+    }
 }
 
 // decreases text size of editor
 zoomOutEditor = function () {
-    editor.updateOptions({
-        fontSize: editor.getOptions()._values[36] - 2
-    });
+    if (editor) {
+        editor.updateOptions({
+            fontSize: editor.getOptions()._values[36] - 2
+        });
+    }
 }
 
 // opens a document with file path = filePath
@@ -171,7 +175,7 @@ openDoc = function (doc, filePath) {
 
 // sets the current model to models[filePath] if available
 setModelWithId = function (filePath) {
-    if (!editor) {
+    if (!editor || !editor.getModel()) {
         return;
     }
     currentModel = editor.getModel();
@@ -229,18 +233,20 @@ getContentInRange = function (filePath, startLine, startColumn, endLine, endColu
     }
 }
 
-getPreviousLines = function() {
-    let currentPosition = editor.getPosition();
-    let line = currentPosition.lineNumber;
-    currentLineLength = module.exports.getCurrentLine().length + 1;
-    return module.exports.getContentInRange(currentFilePath, 1, 1, line, currentLineLength).split('\n');
+getPreviousLines = function () {
+    if (editor && editor.getModel()) {
+        let currentPosition = editor.getPosition();
+        let line = currentPosition.lineNumber;
+        currentLineLength = module.exports.getCurrentLine().length + 1;
+        return module.exports.getContentInRange(currentFilePath, 1, 1, line, currentLineLength).split('\n');
+    }
 }
 
 // inserts text at the current position of the cursor
 // if position argument is not specified.
 insertText = function (text, position) {
 
-    if (!editor || !editor.getModel()) {
+    if (!editor || !editor.getModel() || text === '' || text === undefined || text === null) {
         return;
     }
 
@@ -260,36 +266,39 @@ insertText = function (text, position) {
             currentPosition.column,
             currentPosition.lineNumber,
             currentPosition.column),
-            forceMoveMarkers: true
+        forceMoveMarkers: true
     }
 
     // executeEdits can take an id to track edits
     editor.executeEdits(
         "what", [op]
     );
-
-    // editor.focus();
-
 }
 
 // move cursor horizontally with the value specified
 moveCursorHorizontally = function (value) {
-    position = editor.getPosition();
-    position.column += value;
-    editor.setPosition(position);
+    if (editor && editor.getModel()) {
+        position = editor.getPosition();
+        position.column += value;
+        editor.setPosition(position);
+    }
 }
 
 // returns the line at the current cursor position
 // in the current opened model
 getCurrentLine = function () {
-    return editor.getModel().getLineContent(editor.getPosition().lineNumber);
+    if (editor && editor.getModel()) {
+        return editor.getModel().getLineContent(editor.getPosition().lineNumber);
+    }
 }
 
 // sets the editor model and rerieves the 
 // model's cursor position
 focusModel = function (filePath) {
-    module.exports.setModelWithId(filePath);
-    module.exports.retrieveViewState(filePath);
+    if (editor) {
+        module.exports.setModelWithId(filePath);
+        module.exports.retrieveViewState(filePath);
+    }
 }
 
 // returns file type according to its extention
@@ -303,12 +312,16 @@ function getFileType(filePath) {
 
 // returns current cursor position
 getCursorPosition = function () {
-    return editor.getPosition();
+    if (editor && editor.getModel()) {
+        return editor.getPosition();
+    }
 }
 
 // sets the cursor to the position specified
 setCursorPosition = function (position) {
-    editor.setPosition(position);
+    if (editor && editor.getModel()) {
+        editor.setPosition(position);
+    }
 }
 
 // saves the current focused model
@@ -535,23 +548,23 @@ deleteLine = function () {
     editor.trigger('source', 'editor.action.deleteLines');
 }
 
-deleteLeft = function() {
-    if(!editor || !editor.getModel()) {
+deleteLeft = function () {
+    if (!editor || !editor.getModel()) {
         return;
     }
     editor.trigger('soruce', 'deleteAllLeft');
 }
 
-deleteRight = function() {
-    if(!editor || !editor.getModel()) {
+deleteRight = function () {
+    if (!editor || !editor.getModel()) {
         return;
     }
 
     editor.trigger('soruce', 'deleteAllRight');
 }
 
-deleteSelection = function() {
-    if(!editor || !editor.getModel()) {
+deleteSelection = function () {
+    if (!editor || !editor.getModel()) {
         return;
     }
 
@@ -592,36 +605,36 @@ paste = function () {
     editor.trigger('source', 'editor.action.clipboardPasteAction');
 }
 
-selectRange = function(startLine, startColumn, endLine, endColumn) {
+selectRange = function (startLine, startColumn, endLine, endColumn) {
     try {
         let range = new monaco.Range(startLine, startColumn, endLine, endColumn);
         editor.setSelection(range);
-    } catch(e) {
+    } catch (e) {
         console.log(e);
     }
 }
 
-selectLine = function() {
+selectLine = function () {
     let currentLineLength = module.exports.getCurrentLine().length;
-    let position = editor.getPosition(); 
+    let position = editor.getPosition();
     let range = new monaco.Range(position.lineNumber, 1, position.lineNumber, currentLineLength + 1);
     editor.setSelection(range);
 }
 
 // selects the current column till + the passed number
-selectLeft = function(numColumns) {
+selectLeft = function (numColumns) {
     try {
         numColumns = parseInt(numColumns);
         let position = editor.getPosition();
         let endColumn = Math.max(1, position.column - numColumns);
         let range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, endColumn);
         editor.setSelection(range);
-    } catch(e) {
+    } catch (e) {
         console.log(e);
     }
 }
 
-selectRight = function(numColumns) {
+selectRight = function (numColumns) {
     try {
         numColumns = parseFloat(numColumns);
         let position = editor.getPosition();
@@ -629,12 +642,12 @@ selectRight = function(numColumns) {
         let endColumn = Math.min(position.column + numColumns, currentLineLength + 1);
         let range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, endColumn);
         editor.setSelection(range);
-    } catch(e) {
+    } catch (e) {
         console.log(e);
     }
 }
 
-selectUp = function(numRows) {
+selectUp = function (numRows) {
     try {
         numRows = parseInt(numRows);
         let position = editor.getPosition();
@@ -642,12 +655,12 @@ selectUp = function(numRows) {
         let endRow = Math.max(position.lineNumber - (numRows - 1), 1);
         let range = new monaco.Range(position.lineNumber, currentLineLength + 1, endRow, 1);
         editor.setSelection(range);
-    } catch(e) {
+    } catch (e) {
         console.log(e);
     }
 }
 
-selectDown = function(numRows) {
+selectDown = function (numRows) {
     try {
         numRows = parseInt(numRows);
         let position = editor.getPosition();
@@ -656,7 +669,7 @@ selectDown = function(numRows) {
         let targetLineLength = editor.getModel().getLineContent(endRow).length + 1;
         let range = new monaco.Range(position.lineNumber, 1, endRow, targetLineLength);
         editor.setSelection(range);
-    } catch(e) {
+    } catch (e) {
         console.log(e);
     }
 }
