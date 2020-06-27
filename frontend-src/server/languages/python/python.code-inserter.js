@@ -12,7 +12,7 @@ module.exports = class PythonCodeInserter {
     }
 
     newScope(lines) {
-        currentLine = lines[lines.length - 1];
+        let currentLine = lines[lines.length - 1];
         
         let code = ":\n";
     
@@ -24,7 +24,7 @@ module.exports = class PythonCodeInserter {
     }
 
     exitScope(lines) {
-        currentLine = lines[lines.length - 1];
+        let currentLine = lines[lines.length - 1];
 
         let code = "\n";
     
@@ -36,7 +36,7 @@ module.exports = class PythonCodeInserter {
     }  
     
     enter(lines) {
-        currentLine = lines[lines.length - 1];
+        let currentLine = lines[lines.length - 1];
 
         let code = "\n";
     
