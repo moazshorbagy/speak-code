@@ -189,8 +189,10 @@ function closeNormalTab(filePath, forceClose, type) {
         if (tab) {
             tab.parentNode.removeChild(tab);
             var nextTab = editor.removeModelWithId(filePath);
-            editor.focusModel(nextTab);
-            module.exports.displayCurrentlyOpenedFileName(nextTab);
+            if(editor.getCurrentModel() == filePath) {
+                editor.focusModel(nextTab);
+                module.exports.displayCurrentlyOpenedFileName(nextTab);
+            }
         }
     }
 }
@@ -214,13 +216,16 @@ function closeUnregisteredTab(filePath, forceClose) {
         if (tab) {
             tab.parentNode.removeChild(tab);
             var nextTab = editor.removeModelWithId(filePath);
-            editor.focusModel(nextTab);
-            module.exports.displayCurrentlyOpenedFileName(nextTab);
+            if(editor.getCurrentModel() == filePath) {
+                editor.focusModel(nextTab);
+                module.exports.displayCurrentlyOpenedFileName(nextTab);
+            }
         }        
     }
 }
 
 const path = require('path');
+const editor = require('../editor/editor');
 
 registerModel = function(oldPath, newPath) {
     editor.registerModel(oldPath, newPath);
