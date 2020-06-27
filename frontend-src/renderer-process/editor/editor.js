@@ -169,10 +169,6 @@ openDoc = function (doc, filePath) {
     modelsEventEmitters.addModelEventEmitter(filePath);
 }
 
-select = function () {
-
-}
-
 // sets the current model to models[filePath] if available
 setModelWithId = function (filePath) {
     if (!editor) {
@@ -539,6 +535,42 @@ deleteLine = function () {
     editor.trigger('source', 'editor.action.deleteLines');
 }
 
+deleteLeft = function() {
+    if(!editor || !editor.getModel()) {
+        return;
+    }
+    editor.trigger('soruce', 'deleteAllLeft');
+}
+
+deleteRight = function() {
+    if(!editor || !editor.getModel()) {
+        return;
+    }
+
+    editor.trigger('soruce', 'deleteAllRight');
+}
+
+deleteSelection = function() {
+    if(!editor || !editor.getModel()) {
+        return;
+    }
+
+    let selection = editor.getSelection();
+
+    op = {
+        identifier: 'id',
+        text: '',
+        range: new monaco.Range(selection.startLineNumber,
+            selection.startColumn,
+            selection.endLineNumber,
+            selection.endColumn)
+    }
+    // executeEdits can take an id to track edits
+    editor.executeEdits(
+        "what", [op]
+    );
+}
+
 copy = function () {
     if (!editor || !editor.getModel()) {
         return;
@@ -582,7 +614,7 @@ selectLeft = function(numColumns) {
         numColumns = parseInt(numColumns);
         let position = editor.getPosition();
         let endColumn = Math.max(1, position.column - numColumns);
-        let range = new monaco.Range(position.lineNumber, position.columnNumber, position.lineNumber, endColumn);
+        let range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, endColumn);
         editor.setSelection(range);
     } catch(e) {
         console.log(e);
@@ -689,5 +721,8 @@ module.exports = {
     selectRight,
     selectUp,
     selectDown,
-    revealCursor
+    revealCursor,
+    deleteLeft,
+    deleteRight,
+    deleteSelection
 }
