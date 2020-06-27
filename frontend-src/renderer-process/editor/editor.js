@@ -223,10 +223,10 @@ retrieveViewState = function (filePath) {
 getContentInRange = function (filePath, startLine, startColumn, endLine, endColumn) {
     try {
         let range = new monaco.Range(startLine, startColumn, endLine, endColumn);
-        if (Object.keys(savedModelsValues).includes(filePath)) {
-            return savedModelsValues[filePath].getValueInRange(range);
-        } else if (Object.keys(unregisteredSavedModelsValues).includes(filePath)) {
-            return unregisteredSavedModelsValues[filePath].getValueInRange(range);
+        if (Object.keys(models).includes(filePath)) {
+            return models[filePath].getValueInRange(range);
+        } else if (Object.keys(unregisteredModels).includes(filePath)) {
+            return unregisteredModels[filePath].getValueInRange(range);
         }
     } catch (e) {
         console.log(e);
@@ -236,8 +236,8 @@ getContentInRange = function (filePath, startLine, startColumn, endLine, endColu
 getPreviousLines = function() {
     let currentPosition = editor.getPosition();
     let line = currentPosition.lineNumber;
-    currentLineLength = module.exports.getCurrentLine().length;
-    return module.exports.getContentInRange(editor.getModel(), 1, 1, line, currentLineLength);
+    currentLineLength = module.exports.getCurrentLine().length + 1;
+    return module.exports.getContentInRange(currentFilePath, 1, 1, line, currentLineLength).split('\n');
 }
 
 // inserts text at the current position of the cursor
@@ -263,7 +263,8 @@ insertText = function (text, position) {
         range: new monaco.Range(currentPosition.lineNumber,
             currentPosition.column,
             currentPosition.lineNumber,
-            currentPosition.column)
+            currentPosition.column),
+            forceMoveMarkers: true
     }
 
     // executeEdits can take an id to track edits
@@ -271,7 +272,7 @@ insertText = function (text, position) {
         "what", [op]
     );
 
-    editor.focus();
+    // editor.focus();
 
 }
 
