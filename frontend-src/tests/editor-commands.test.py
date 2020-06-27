@@ -157,16 +157,16 @@ class TestScenarios(unittest.TestCase):
             2. open file.
             3. open another file.
             3. go to next tab (first opened file).
-            4. open new file.
-            5. go to tab 1 (second opened file).
-            6. select first line.
-            7. copy line.
+            4. select line 1.
+            5. copy.
+            6. backspace.
+            7. save.
             8. backspace.
-            8. save current file.
-            9. undo.
-            10. save.
-            11. redo.
-            12. save.
+            8. go to tab 1.
+            9. insert enter and indent then paste then save.
+            10. undo twice then save then close tab 1 then save.
+            11. (tab 0 is now the focused tab) redo then save.
+            12. undo then save then close.
 
         This scenario tests correct operation for editor commands:
             next-tab
@@ -226,6 +226,9 @@ class TestScenarios(unittest.TestCase):
             5. save current file.
             6. open other file.
             7. paste content.
+
+        This scenario tests correct operation for editor commands:
+            cut
         """
         # PRE-PROCESS: preparing test case
         scenario_dir = os.path.join(test_dir, 'scenario4')
@@ -259,6 +262,54 @@ class TestScenarios(unittest.TestCase):
         os.remove(actual_file_path)
 
 
+
+    def test_scenario5(self):
+        """
+        This scenario simulates the following user flow:
+            1. open directory.
+            2. open file.
+            3. perform a series of copy and paste operations using the following commands:
+                move-left, move-right, select-up, select-down, select-left, select-right 
+
+        This scenario tests correct operation for editor commands:
+            move-right
+            move-left
+            select-up
+            select-down
+            select-left
+            select-right
+            delete-left/delete-right (both are the same but in opposite directions)
+            delete-selection
+        """   
+
+        scenario_dir = setWorkingDirectory('scenario5')
+        expected_file_path = os.path.join(scenario_dir, 'expected.py')
+        actual_file_path = os.path.join(scenario_dir, 'actual.py')
+
+        expected_file_content = getFileContentAsLines(expected_file_path)
+        num_lines = len(expected_file_content)
+        line1_length = len(expected_file_content[0])
+        testVector = ['open file expected.py', 'open file actual.py',
+        'next tab', f'go line 1 go column {line1_length - 1}', 'move right', 'select left five zero', 'copy', 
+        'next tab', 'paste', 'enter', 
+        'next tab', 'go line 2 go column 2', 'move left', 'select right two zero', 'copy',
+        'next tab', 'paste', 'enter', 'delete left',
+        'next tab', 'go line 3', 'select down two', 'copy',
+        'next tab', 'paste', 'enter', 'select left one zero', 'delete selection',
+        'next tab', 'go line 6', 'select up 2', 'copy',
+        'next tab', 'paste', 'save',
+        'close', 'close']
+    
+        sendTestVector(testVector)
+
+        actual_file_content = getFileContentAsLines(actual_file_path)
+
+        self.assertEqual(len(actual_file_content), len(expected_file_content))
+
+        for i in range(len(actual_file_content)):
+            self.assertEqual(actual_file_content[i], expected_file_content[i])
+
+        deleteFileContent(actual_file_path)
 
 
 if __name__ == '__main__':
