@@ -77,8 +77,14 @@
 	});
 
 	ipcRenderer.on('request-save-as', function (event, filePath) {
-		var isRegistered = editor.modelIsRegistered(filePath);
+		let isRegistered = editor.modelIsRegistered(filePath);
 		ipcRenderer.send('open-save-dialog', {filePath, isRegistered});
+	});
+
+	ipcRenderer.on('request-save-current-file-as', function(event, args) {
+		let filePath = editor.getCurrentModel();
+		let isRegistered = editor.modelIsRegistered(filePath);
+		event.sender.send('open-save-dialog', {filePath, isRegistered});
 	});
 
 	ipcRenderer.on('insert-plain-code', function (event, arg) {

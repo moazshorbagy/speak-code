@@ -6,6 +6,7 @@ const Path = require('path');
 directCommands = [
     'change-directory',
     'save-file',
+    'save-as',
     'reveal-cursor',
     'new-file',
     'zoom-in',
@@ -307,6 +308,10 @@ executeCommand = function (mainWindow, command) {
         }
         case 'unfocus-folder': {
             unfocusFolder(mainWindow);
+            break;
+        }
+        case 'save-as': {
+            mainWindow.webContents.send('request-save-current-file-as');
             break;
         }
         case 'browse-file': {

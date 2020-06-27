@@ -2,6 +2,7 @@
     "direct": {
         "change-folder": "change-directory",
         "save": "save-file",
+        "save-as": "save-as",
         "reveal-cursor": "reveal-cursor",
         "zoom-in": "zoom-in",
         "zoom-out": "zoom-out",
