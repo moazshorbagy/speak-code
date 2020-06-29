@@ -113,12 +113,6 @@ describe('Function: Process Sentence', function () {
 
         assert.throws(() => parser.processSentence(input, pythonLang), TypeError, 'It did not throw TypeError as expected.');
     });
-
-    it('Should throw error if parameters are missing', function () {
-        input = ['some', 'random', 'text'];
-
-        assert.throws(() => parser.processSentence(input), Error, 'It did not throw Error as expected.');
-    });
 });
 
 
