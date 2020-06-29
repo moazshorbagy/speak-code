@@ -1,24 +1,8 @@
 const closeApp = require('./close-app');
+const { shell } = require('electron')
 
 
 const template = [
-    {
-        label: 'VoiceProgramming',
-        submenu: [
-            {
-                label: 'Preferences',
-            },
-            {
-                label: 'Check for updates'
-            },
-            {
-                type: 'separator'
-            },
-            {
-                label: 'Services'
-            }
-        ]
-    },
     {
         label: 'File',
         submenu: [
@@ -84,6 +68,29 @@ const template = [
                 },
                 accelerator: process.platform === 'darwin' ? 'Cmd+Shift+W' : 'Ctrl+Shift+W',
             },
+        ]
+    },
+    {
+        label: 'Help',
+        submenu: [
+            {
+                label: 'Preferences',
+            },
+            {
+                type: 'separator'
+            },
+            {
+                label: 'User Guide',
+                click: function () {
+                    shell.openExternal('https://github.com/moazshorbagy/VoiceProgramming');
+                }
+            },
+            {
+                label: 'About Speak Code',
+                click: function () {
+                    shell.openExternal('https://github.com/moazshorbagy/VoiceProgramming');
+                }
+            }
         ]
     }
 ]
