@@ -238,3 +238,10 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
+
+# macOS
+.DS_Store
+
+# General
+*.wav
+*.png

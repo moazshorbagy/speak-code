@@ -8,3 +8,24 @@
     display: block;
     overflow: hidden;
 }
+
+
+
+
+
+#savedState {
+    font-style: italic;
+    color: gray;
+    text-align: left;
+    font-size: 8pt;
+    font-weight: bolder;
+    margin-top: 2px;
+    margin-left: 5px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+#fileName {
+    color: white;
+    text-align: right;
+    vertical-align: middle;
+}
