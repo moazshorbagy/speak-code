@@ -3,15 +3,14 @@
   "dependencies": {
     "css-element-queries": "^1.2.3",
     "jquery": "^3.4.1",
+    "mocha": "^8.0.1",
     "monaco-themes": "^0.3.3",
     "split-grid": "^1.0.9",
-    "xterm": "^4.4.0",
-    "xterm-addon-fit": "^0.3.0",
-    "zeromq": "^6.0.0-beta.6",
     "zerorpc": "^0.9.8"
   },
   "scripts": {
-    "execute": "electron ."
+    "execute": "electron .",
+    "test": "mocha"
   },
   "main": "./main",
   "devDependencies": {

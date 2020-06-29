@@ -1,126 +1,332 @@
 const codeParser = require('./code-parser');
 const commandParser = require('./commands-parser');
 
-var language = require('./language.json');
+var javascriptLang = require('./languages/javascript/javascript-lang.json');
+var pythonLang = require('./languages/python/python-lang.json');
+var editorCommandsLang = require('./languages/editor-commands-lang.json');
+const { ipcMain } = require('electron');
 
-let lastCommand;
+let PythonCodeInserter = require('./languages/python/python.code-inserter');
+const JavascriptCodeInserter = require('./languages/javascript/javascript.code-inserter');
 
-let currentCursorPosition;
+let langInserters = {};
 
 // a boolean to detect whether the last word was a command or not.
-let constructingCommand;
+let constructingEditorCommand;
 
-// a boolean to track if a current command or code bloc
-// is being formed
-let commandIsBeingConstructed;
-
-// is a number: number of tabs
-// 0 means global scope 
-let currentScope;
-
-let currentFileBeingEdited;
-
-let undoStack = [];
-
-let redoStack = [];
-
-
-function cancelCommandOrCodeBlockCreation(word) {
-    if (word in language['cancel-executing-indirects']) {
-        codeParser.cancelConstructingCodeblock();
-        commandParser.cancelCostructingCommand();
+function isWordNotInGrammar(word, lang) {
+    if (!lang || !word) {
+        throw new Error('Missing parameters.')
     }
-}
+    if (typeof (word) != "string") {
+        throw TypeError(`Expected word to be string but instead got ${typeof (words)}`);
+    }
 
-function isWordNotInGrammar(word) {
-    if (word in language['cancel-executing-indirects'] || word in language['commands']['direct'] || word in language['commands']['indirect'] || word in language['code-insertion']['direct'] || word in language['code-insertion']['indirect']) {
+    if (word in editorCommandsLang['direct'] || word in editorCommandsLang['indirect'] || word in lang['direct']) {
         return false;
     }
+
     return true;
 }
 
-function isDirectWordInsertion(word) {
-    if (word in language['code-insertion']['direct']) {
-        return language['code-insertion']['direct'][word];
+function isDirectWordInsertion(word, lang) {
+    if (lang) {
+        if (word in lang['direct']) {
+            return lang['direct'][word];
+        }
     }
-}
 
-function isIndirectCodeInsertion(word) {
-    if (word in language['code-insertion']['indirect']) {
-        commandIsBeingConstructed = true;
-        constructingCommand = false;
-        return language['code-insertion']['indirect'][word];
-    }
+    return undefined;
 }
 
 function isDirectCommand(word) {
-    if (word in language['commands']['direct']) {
-        return language['commands']['direct'][word];
+    if (word in editorCommandsLang['direct']) {
+        return editorCommandsLang['direct'][word];
     }
 
+    return undefined;
 }
 
 function isIndirectCommand(word) {
-    if (word in language['commands']) {
-        if (word in language['commands']['indirect']) {
-            commandIsBeingConstructed = true;
-            constructingCommand = true;
-            return language['commands']['indirect'][word];
-        }
+    if (word in editorCommandsLang['indirect']) {
+        return editorCommandsLang['indirect'][word];
     }
+
+    return undefined;
 }
 
-module.exports = {
-    parseCommand: function (mainWindow, cmd) {
-        // if the user says cancel, the buffer of creating commands
-        // or code blocks is flushed.
-        if (cancelCommandOrCodeBlockCreation(cmd)) {
-            return;
-        }
+function processSentence(words, lang) {
+    if (!words || !words.length) {
+        throw new Error('Missing parameters.')
+    }
+    if (!Array.isArray(words)) {
+        throw TypeError(`Expected words to be array but instead got ${typeof (words)}`);
+    }
 
-        wordNotInGrammar = isWordNotInGrammar(cmd);
-        directCode = isDirectWordInsertion(cmd);
-        indicrectCode = isIndirectCodeInsertion(cmd);
+    processedWords = [];
 
-        if (commandIsBeingConstructed) {
-            if (constructingCommand) {
-                if (wordNotInGrammar) {
-                    commandParser.constructIndicrectCommand(mainWindow, cmd);
-                }
+    if (lang) {
+        directCodeInsertionDict = lang['direct'];
+    }
+
+    directEditorCommandsDict = editorCommandsLang['direct'];
+    indirectEditorCommandsDict = editorCommandsLang['indirect'];
+
+    if (words.length == 1) {
+        processedWords.push(words[0]);
+    } else {
+        for (i = 0; i < words.length - 1; i++) {
+
+            var concatenatedWords = words[i] + '-' + words[i + 1];
+
+            if (Object.keys(directEditorCommandsDict).includes(concatenatedWords) ||
+                Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
+                processedWords.push(concatenatedWords);
+                i++;
             } else {
-                if (wordNotInGrammar) {
-                    codeParser.constructIndicrectCodeBlock(mainWindow, cmd);
-                } else {
-                    if (directCode) {
-                        codeParser.constructIndicrectCodeBlock(mainWindow, directCode);
-                    } else if (indicrectCode) {
-                        codeParser.constructIndicrectCodeBlock(mainWindow, indicrectCode);
+                if (lang) {
+                    if (Object.keys(directCodeInsertionDict).includes(concatenatedWords)) {
+                        processedWords.push(concatenatedWords);
+                        i++;
+                    } else {
+                        processedWords.push(words[i]);
                     }
                 }
             }
-            return;
-        } else {
-            directCommand = isDirectCommand(cmd);
-            indirectCommand = isIndirectCommand(cmd);
 
-            if (wordNotInGrammar) {
-                codeParser.insertPlainCode(cmd);
-            } else if (directCode) {
-                codeParser.insertPlainCode(directCode);
-            } else if (indicrectCode) {
-                if (codeParser.constructIndicrectCodeBlock(mainWindow, indicrectCode)) {
-                    commandIsBeingConstructed = false;
+            if (i == words.length - 2) {
+                processedWords.push(words[i + 1]);
+            }
+        }
+    }
+
+    return processedWords;
+}
+
+numbersDict = {
+    "zero": "0",
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9"
+};
+
+function formNumbers(words) {
+    if (!words || !words.length) {
+        throw new Error('Missing parameters.')
+    }
+    if (!Array.isArray(words)) {
+        throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
+    }
+
+    var numbers = Object.keys(numbersDict);
+
+    var processedWords = [];
+
+    for (let i = 0; i < words.length; i++) {
+        number = '';
+        if (numbers.includes(words[i])) {
+            do {
+                number += numbersDict[words[i]];
+                i++;
+            } while (numbers.includes(words[i]));
+            processedWords.push(number);
+            if (i < words.length) {
+                processedWords.push(words[i]);
+            }
+        }
+        else {
+            processedWords.push(words[i]);
+        }
+    }
+
+    return processedWords;
+}
+
+
+function buildVariableName(words) {
+    if (!words || !words.length) {
+        throw new Error('Missing parameters.')
+    }
+    if (!Array.isArray(words)) {
+        throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
+    }
+
+    wordsAfterCombiningVarName = [];
+
+    for (i = 0; i < words.length; i++) {
+        if (words[i] === 'variable') {
+
+            // to get the convention desired
+            i++;
+
+            j = i;
+
+            while (words[i] !== 'case' && i < words.length) {
+                i++;
+            }
+
+            // either 'camel', 'snake' or 'pascal'
+            convention = words[i - 1];
+
+            switch (convention) {
+
+                case 'camel': {
+
+                    varName = words[j];
+
+                    for (k = j + 1; k < i - 1; k++) {
+                        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+                    }
+                    break;
                 }
-            } else if (directCommand) {
-                commandParser.executeCommand(mainWindow, directCommand);
-            } else if (indirectCommand) {
-                if (commandParser.constructIndicrectCommand(mainWindow, directCommand)) {
-                    commandIsBeingConstructed = false;
+                case 'snake': {
+
+                    varName = words[j];
+
+                    for (k = j + 1; k < i - 1; k++) {
+                        varName += "_" + words[k];
+                    }
+                    break;
+                }
+                case 'pascal': {
+
+                    varName = "";
+
+                    for (k = j; k < i - 1; k++) {
+                        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+                    }
+                    break;
+                }
+                default: {
+                    varName = words[j];
+                    for (k = i + 1; k < i - 1; k++) {
+                        varName += words[k];
+                    }
+                    break;
+                }
+            }
+
+            wordsAfterCombiningVarName.push(varName);
+
+        } else {
+            wordsAfterCombiningVarName.push(words[i]);
+        }
+    }
+
+    return wordsAfterCombiningVarName;
+}
+
+
+// sets the lang and codeInserter variables to the appropriate
+// values
+function configureLang(filePath) {
+    let lang, codeInserter;
+
+    // assume file type based on its extension.
+    fileType = filePath.split('.').pop();
+
+    switch (fileType) {
+        case 'py': {
+            lang = pythonLang;
+            if (!Object.keys(langInserters).includes(fileType)) {
+                langInserters[fileType] = new PythonCodeInserter();
+            }
+            break;
+        }
+        case 'js': {
+            lang = javascriptLang;
+            if (!Object.keys(langInserters).includes(fileType)) {
+                langInserters[fileType] = new JavascriptCodeInserter();
+            }
+            break;
+        }
+    }
+
+    codeInserter = langInserters[fileType];
+
+    return { lang, codeInserter };
+}
+
+// performs the necessary preprocessing
+function preprocessing(words, lang) {
+
+    //preprocessing the sentence
+    if (typeof words === 'string') {
+        words = words.split(' ');
+        // building variable name
+        if (words.includes('variable')) {
+            words = buildVariableName(words);
+        }
+        words = processSentence(words, lang);
+
+        words = formNumbers(words);
+    }
+
+    return words;
+}
+
+function parseCommand(mainWindow, words) {
+
+    mainWindow.webContents.send('request-file-path');
+
+    ipcMain.once('file-path', function (event, filePath) {
+
+        let lang, codeInserter;
+
+        if (filePath) {
+            config = configureLang(filePath);
+            lang = config['lang'];
+            codeInserter = config['codeInserter'];
+        }
+
+        words = preprocessing(words, lang);
+
+        let wordNotInGrammar, directCode;
+
+        for (i = 0; i < words.length; i++) {
+
+            cmd = words[i];
+
+            if (lang) {
+                wordNotInGrammar = isWordNotInGrammar(cmd, lang);
+                directCode = isDirectWordInsertion(cmd, lang);
+            }
+
+            if (constructingEditorCommand) {
+                commandParser.constructIndicrectCommand(mainWindow, cmd, true);
+                constructingEditorCommand = false;
+            }
+            else {
+                directCommand = isDirectCommand(cmd);
+                indirectCommand = isIndirectCommand(cmd);
+
+                if (wordNotInGrammar) {
+                    codeParser.directCodeInsertion(mainWindow, cmd);
+                } else if (directCode !== undefined) {
+                    codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
+                } else if (directCommand !== undefined) {
+                    commandParser.executeCommand(mainWindow, directCommand);
+                } else if (indirectCommand !== undefined) {
+                    constructingEditorCommand = true;
+                    commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
                 }
             }
         }
-
-
-    }
+    });
 }
 
+module.exports = {
+    isWordNotInGrammar,
+    processSentence,
+    formNumbers,
+    buildVariableName,
+    preprocessing,
+    configureLang,
+    parseCommand
+}

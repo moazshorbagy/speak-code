@@ -1,12 +1,15 @@
 const electron = require('electron');
 const app = electron.app;
-const globalShortcut = electron.globalShortcut;
 const BrowserWindow = electron.BrowserWindow;
 const { spawn } = require('child_process');
 
 const ipcMain = electron.ipcMain;
 
 const dialog = electron.dialog;
+
+const msgBox = require('./files-handling/message-box')
+
+const saveFileDialog = require('./files-handling/save-file-dialog')
 
 let mainWindow;
 
@@ -19,7 +22,7 @@ function createWindow() {
 			nodeIntegration: true
 		},
 	});
-	mainWindow.loadURL(`file://${__dirname}/electron-index.html`)
+	mainWindow.loadURL(`file://${__dirname}/renderer-process/electron-index.html`)
 	mainWindow.webContents.openDevTools()
 	mainWindow.on('closed', function () {
 		mainWindow = null
@@ -39,6 +42,10 @@ app.on('ready', function () {
 	// 	spawnPythonChild();
 	// }, 15000);
 
+});
+
+app.on('renderer-process-crashed', function() {
+	createWindow();
 });
 
 app.on('window-all-closed', function () {
@@ -69,12 +76,23 @@ ipcMain.on('open-file', (event, args) => {
 	fileOptions.openFile(mainWindow, dialog, event);
 });
 
-app.whenReady().then(() => {
-	globalShortcut.register('CommandOrControl+S', () => {
-		mainWindow.webContents.send('save-file')
-	})
-}).catch((e) => {
-	console.log(e);
+ipcMain.on('open-file-save-check-message-box', (event, filePath) => {
+	msgBox.checkSaveStateBeforeClosingFile(mainWindow, dialog, filePath);
+});
+
+ipcMain.on('open-save-dialog', (event, args) => {
+	saveFileDialog.showSaveDialog(mainWindow, dialog, args);
+});
+
+ipcMain.on('close-app', function(event, args) {
+	mainWindow.close();
+	if (process.platform !== 'darwin') {
+		app.quit()
+	}
+});
+
+ipcMain.on('show-close-app-save-check', function(event, fileNames) {
+	msgBox.closeAppSaveCheck(mainWindow, dialog, fileNames);
 });
 
 app.on('activate', function () {

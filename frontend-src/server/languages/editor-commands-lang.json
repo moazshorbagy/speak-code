@@ -1,0 +1,43 @@
+{
+    "direct": {
+        "change-folder": "change-directory",
+        "save": "save-file",
+        "save-as": "save-as",
+        "reveal-cursor": "reveal-cursor",
+        "zoom-in": "zoom-in",
+        "zoom-out": "zoom-out",
+        "undo": "undo",
+        "redo": "redo",
+        "close": "close-tab",
+        "next-tab": "next-tab",
+        "move-right": "increment-cursor",
+        "move-left": "decrement-cursor",
+        "select-all": "select-all-text",
+        "cut": "cut",
+        "copy": "copy",
+        "paste": "paste",
+        "backspace": "backspace",
+        "comment-line": "comment-line",
+        "delete-line": "delete-line",
+        "unfocus-folder": "unfocus-folder",
+        "browse-file": "browse-file",
+        "new-file": "new-file",
+        "exit-application": "exit-app",
+        "select-line": "select-line",
+        "delete-left": "delete-left",
+        "delete-right": "delete-right"
+    },
+    "indirect": {
+        "open-file": "open-file-from-directory",
+        "expand-folder": "expand-folder",
+        "collapse-folder": "collapse-folder",
+        "go-tab": "navgiate-to-tab",
+        "go-line": "set-cursor-to-line",
+        "go-column": "set-cursor-to-column",
+        "focus-folder": "focus-folder",
+        "select-up": "select-up",
+        "select-down": "select-down",
+        "select-left": "select-left",
+        "select-right": "select-right"
+    }
+}

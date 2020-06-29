@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Voic Programming</title>
+	<link href="styles/styles.css" rel="stylesheet" type="text/css">
+	<link href="styles/collapsible.css" rel="stylesheet" type="text/css">
+	<link href="styles/files.css" rel="stylesheet" type="text/css">
+	<link href="styles/open-editors.css" rel="stylesheet" type="text/css">
+	<link href="styles/editor-container.css" rel="stylesheet" type="text/css">
+	<link href="styles/main-container.css" rel="stylesheet" type="text/css">
+	<link href="styles/root-container.css" rel="stylesheet" type="text/css">
+	<link href="styles/leftpanel.css" rel="stylesheet" type="text/css">
+	<!-- the below commented scripts are for xterm-->
+	<!-- <link rel="stylesheet" href="node_modules/xterm/css/xterm.css" />
+	<script src="node_modules/xterm/lib/xterm.js"></script> -->
+	<script>window.$ = window.jQuery = require('jquery');</script>
+	<script src="ResizeSensor.js"></script>
+</head>
+
+<body>
+	<div id="root-container">
+		<div id="editor-top-panel" class="preventSelect"></div>
+		<div id="main-container" class="main-container">
+			<div class="leftpanel-container">
+				<div id="open-editors-container" class="open-editors-container"></div>
+				<div id="folders-panel" class="leftpanel preventSelect"></div>
+			</div>
+			<div id="editor-container" class="editor-container">
+				<div id="editor"></div>
+			</div>
+			<div class="horizontal-gutter"></div>
+		</div>
+	</div>
+</body>
+<script src="import.js"></script>
+<script>
+	ipcRenderer.on('request-open-folder', () => {
+		ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
+	});
+	ipcRenderer.on('request-open-file', () => {
+		ipcRenderer.send('open-file');
+	});
+</script>
+<script>
+	var workingDirectory = wd.getCurrentWorkingDirectory();
+
+	if (workingDirectory == null) {
+		let folderspanel = $("#folders-panel")
+		folderspanel.append("<p class='leftpanel-text'>Tap to open a folder</p>")
+		folderspanel.append("<button id='open-folder-button'>Open Folder</button>")
+	}
+</script>
+<script>
+	var button = document.getElementById('open-folder-button');
+	button.addEventListener("click", () => {
+		ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
+	});
+
+	ipcRenderer.on('chosen-directory', (event, path) => {
+		if (path) {
+			wd.setWorkingDirectory(path)
+			wd.displayWorkingDirectory()
+		}
+	});
+
+	ipcRenderer.on('chosen-file', (event, args) => {
+		editor.openDoc(args.doc, args.filePath);
+		openedFiles.addOpenEditors();
+		openedFiles.addOpenedFile(args.filePath);
+	});
+</script>
+<script>
+	ipcRenderer.on('request-save-file', function (event, arg) {
+		editor.saveFile();
+	});
+
+	ipcRenderer.on('request-save-as', function (event, filePath) {
+		let isRegistered = editor.modelIsRegistered(filePath);
+		ipcRenderer.send('open-save-dialog', {filePath, isRegistered});
+	});
+
+	ipcRenderer.on('request-save-current-file-as', function(event, args) {
+		let filePath = editor.getCurrentModel();
+		let isRegistered = editor.modelIsRegistered(filePath);
+		event.sender.send('open-save-dialog', {filePath, isRegistered});
+	});
+
+	ipcRenderer.on('insert-plain-code', function (event, arg) {
+		editor.insertText(arg);
+	});
+
+	ipcRenderer.on('get-current-line', function(event, arg) {
+		event.sender.send('current-line', editor.getCurrentLine());
+	});
+
+	ipcRenderer.on('get-previous-lines', function(event, args) {
+		event.sender.send('previous-lines', editor.getPreviousLines())
+	});
+
+	ipcRenderer.on('request-horizontal-move-cursor', function(event, args) {
+		editor.moveCursorHorizontally(args);
+	});
+
+	ipcRenderer.on('request-file-path', function(event, args) {
+		event.sender.send('file-path', editor.getCurrentModel());
+	});
+
+	ipcRenderer.on('request-next-tab', function(event, args) {
+		editor.openNextTab();
+		openedFiles.displayCurrentlyOpenedFileName(editor.getCurrentModel());
+	});
+
+	ipcRenderer.on('request-close-tab', function(event, args) {
+		if(args == 'force-close') {
+			openedFiles.closeTab(editor.getCurrentModel(), true);
+		} else {
+			openedFiles.closeTab(editor.getCurrentModel(), false);
+		}
+	});
+
+	ipcRenderer.on('request-zoom-in', function(event, args) {
+		editor.zoomInEditor();
+	});
+
+	ipcRenderer.on('request-zoom-out', function(event, args) {
+		editor.zoomOutEditor();
+	});
+
+	ipcRenderer.on('request-select-all-text', function(event, args) {
+		editor.selectAllText();
+	});
+
+	ipcRenderer.on('request-backspace', function(event, args) {
+		editor.backSpace();
+	});
+
+	ipcRenderer.on('request-undo', function(event, args) {
+		editor.undo();
+	});
+
+	ipcRenderer.on('request-redo', function(event, args) {
+		editor.redo();
+	});
+
+	ipcRenderer.on('request-comment-line', function(event, args) {
+		editor.commentLine();
+	});
+
+	ipcRenderer.on('request-copy', function(event, args) {
+		editor.copy();
+	});
+
+	ipcRenderer.on('request-cut', function(event, args) {
+		editor.cut();
+	});
+
+	ipcRenderer.on('request-paste', function(event, args) {
+		editor.paste();
+	});
+
+	ipcRenderer.on('request-delete-line', function(event, args) {
+		editor.deleteLine();
+	});
+
+	ipcRenderer.on('request-browse-file', function(event, args) {
+		event.sender.send('open-file')
+	});
+
+	ipcRenderer.on('request-new-file', function(event, args) {
+		openedFiles.openNewFile();
+	});
+
+	ipcRenderer.on('request-exit-app', function(event, args) {
+		closeApp.closeApp();
+	});
+
+	ipcRenderer.on('request-reveal-cursor', function(event, args) {
+		editor.revealCursor();
+	});
+
+	ipcRenderer.on('request-select-line', function(event, args) {
+		editor.selectLine();
+	});
+</script>
+<script>
+	ipcRenderer.on('request-open-filename', function(event, filePath) {
+		collapsible.openFile(filePath);
+	});
+
+	ipcRenderer.on('request-focus-folder', function(event, folderPath) {
+		collapsible.focusFolder(folderPath);
+	});
+
+	ipcRenderer.on('request-unfocus-folder', function(event, folderPath) {
+		collapsible.unfocusFolder(folderPath);
+	});
+
+	ipcRenderer.on('request-expand-foldername', function(event, folderPath) {
+		collapsible.expandFolder(folderPath);
+	});
+
+	ipcRenderer.on('request-collapse-foldername', function(event, folderPath) {
+		collapsible.collapseFolder(folderPath);
+	});
+
+	ipcRenderer.on('request-tab-number', function(event, tabNumber) {
+		openedFiles.gotoTab(tabNumber);
+	});
+
+	ipcRenderer.on('request-line-number', function(event, lineNumber) {
+		editor.gotoLine(lineNumber);
+	});
+
+	ipcRenderer.on('request-column-number', function(event, columnNumber) {
+		editor.gotoColumn(columnNumber);
+	});
+
+	ipcRenderer.on('request-select-left', function(event, numColumns) {
+		editor.selectLeft(numColumns);
+	});
+
+	ipcRenderer.on('request-delete-left', function(event, numColumns) {
+		editor.deleteLeft();
+	});
+
+	ipcRenderer.on('request-delete-right', function(event, numColumns) {
+		editor.deleteRight();
+	});
+
+	ipcRenderer.on('request-select-right', function(event, numColumns) {
+		editor.selectRight(numColumns);
+	});
+
+	ipcRenderer.on('request-select-up', function(event, numRows) {
+		editor.selectUp(numRows);
+	});
+
+	ipcRenderer.on('request-select-down', function(event, numRows) {
+		editor.selectDown(numRows);
+	});
+</script>
+<script>
+	ipcRenderer.on('request-file-content', function(event, filePath) {
+		event.sender.send('file-content', editor.getModelContent(filePath));
+	});
+
+	ipcRenderer.on('request-register-file', function(event, args) {
+		oldName = args['oldName'];
+		if(unregisteredModelExists(oldName)) {
+			openedFiles.registerModel(oldName, args['newPath']);
+		}
+	});
+</script>
+<script>
+	var Split = require('split-grid')
+	Split({
+		columnGutters: [{
+			track: 1,
+			element: document.querySelector('.horizontal-gutter'),
+		}]
+	})
+</script>
+<script type="text/javascript" src="app-menu/populate-menu.js"></script>
+
+</html>
