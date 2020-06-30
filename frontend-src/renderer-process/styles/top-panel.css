@@ -6,25 +6,24 @@
   border-bottom: 1px solid black;
   justify-content: center;
   display: flex;
+  line-height: 20px;
 }
 
 #file-name {
     font-size: 11pt;
     color: white;
-    float: left;
-    margin-top: 2px;
-    margin-bottom: 2px;
+    line-height: 20px;
+    margin-top: 0;
 }
 
 #saved-state {
+  margin-top: 0;
   font-style: italic;
   color: gray;
-  float: left;
   font-size: 8pt;
   font-weight: bolder;
-  vertical-align: text-bottom;
   margin-left: 5px;
-  margin-top: 4px;
+  line-height: 20px;
   font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
     "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
