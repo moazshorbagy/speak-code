@@ -194,7 +194,6 @@ function formNonEnglishWords(words) {
             processedWords.push(words[i]);
         }
     }
-
     return processedWords;
 }
 
@@ -303,15 +302,21 @@ function configureLang(filePath) {
     return { lang, codeInserter };
 }
 
-function startStopListening(words, isListening) {
+function startStopListening(words) {
     let processedWords = [];
     for (i = 0; i < words.length; i++) {
-        if (words[i] === 'start-listening' && isListening === false) {
+        if (words[i] === 'start-listening' && !isListening) {
             isListening = true;
             continue;
         }
-        if (words[i] === 'stop-listening' && isListening === true) {
+        if (words[i] === 'stop-listening' && isListening) {
             isListening = false;
+            continue;
+        }
+        if(words[i] === 'start-listening' && isListening) {
+            continue;
+        }
+        if(words[i] === 'stop-listening' && !isListening) {
             continue;
         }
         if (isListening === true) {
@@ -321,7 +326,8 @@ function startStopListening(words, isListening) {
     return processedWords;
 }
 
-function preprocessing1(words, isListening) {
+function preprocessing1(words) {
+
     //preprocessing the sentence
     if (typeof words === 'string') {
         words = words.split(' ');
@@ -330,15 +336,17 @@ function preprocessing1(words, isListening) {
         if (words.includes('variable')) {
             words = buildVariableName(words);
         }
-        words = formEditorCommands(words);
+        try {
+            words = formEditorCommands(words);
 
+            words = startStopListening(words);
 
-        words = startStopListening(words, isListening);
-
-        words = formNonEnglishWords(words);
-
-        words = formNumbers(words);
-
+            words = formNonEnglishWords(words);
+    
+            words = formNumbers(words);
+        } catch(e) {
+            console.log(words);
+        }
     }
 
     return words;
@@ -347,7 +355,11 @@ function preprocessing1(words, isListening) {
 // performs preprocessing to form the language specific commands
 function preprocessing2(words, lang) {
 
-    words = formLangCommands(words, lang);
+    try {
+        words = formLangCommands(words, lang);
+    } catch(e) {
+        console.log(words);
+    }
 
     return words;
 }
@@ -357,6 +369,7 @@ function parseCommand(mainWindow, words) {
     words = preprocessing1(words);
 
     mainWindow.webContents.send('request-file-path');
+
     ipcMain.once('file-path', function (event, filePath) {
 
         let lang, codeInserter;
@@ -366,11 +379,8 @@ function parseCommand(mainWindow, words) {
             lang = config['lang'];
             codeInserter = config['codeInserter'];
         }
-
-        words = preprocessing2(words, lang);
-
-        if (!isListening) {
-            return;
+        if(lang) {
+            words = preprocessing2(words, lang);
         }
 
         let wordNotInGrammar, directCode;
