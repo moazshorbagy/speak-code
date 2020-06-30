@@ -42,7 +42,7 @@ describe('Function: Form Numbers', function () {
 
 describe('Function: Build Variable Name', function () {
     it('Should convert string array to camel-case variable name', function () {
-        input = ['variable', 'my', 'new', 'variable', 'camel', 'case'];
+        input = ['variable', 'my', 'new', 'variable', 'camel'];
         expectedOutput = 'myNewVariable';
 
         actualOutput = parser.buildVariableName(input);
@@ -51,7 +51,7 @@ describe('Function: Build Variable Name', function () {
     });
 
     it('Should convert string array to snake-case variable name', function () {
-        input = ['variable', 'my', 'new', 'variable', 'snake', 'case'];
+        input = ['variable', 'my', 'new', 'variable', 'snake'];
         expectedOutput = 'my_new_variable';
 
         actualOutput = parser.buildVariableName(input);
@@ -60,7 +60,7 @@ describe('Function: Build Variable Name', function () {
     });
 
     it('Should convert string array to pascal-case variable name', function () {
-        input = ['variable', 'my', 'new', 'variable', 'pascal', 'case'];
+        input = ['variable', 'my', 'new', 'variable', 'pascal'];
         expectedOutput = 'MyNewVariable';
 
         actualOutput = parser.buildVariableName(input);
@@ -69,7 +69,7 @@ describe('Function: Build Variable Name', function () {
     });
 
     it('Should convert two variable names', function () {
-        input = ['if', 'variable', 'my', 'new', 'variable', 'pascal', 'case', 'equals', 'variable', 'my', 'new', 'variable', 'camel', 'case', 'plus'];
+        input = ['if', 'variable', 'my', 'new', 'variable', 'pascal', 'equals', 'variable', 'my', 'new', 'variable', 'camel', 'plus'];
         expectedOutput = ['if', 'MyNewVariable', 'equals', 'myNewVariable', 'plus'];
 
         actualOutput = parser.buildVariableName(input);
@@ -180,7 +180,7 @@ describe('Preprocessing 1 and 2', function () {
         input = 'start listening else if one three equals three one';
         expectedOutput = ['else-if', '13', 'equals', '31'];
 
-        actualOutput = parser.preprocessing2(parser.preprocessing1(input, false), pythonLang);
+        actualOutput = parser.preprocessing2(parser.preprocessing1(input), pythonLang);
 
         assert.equal(actualOutput.length, expectedOutput.length, `Array lengths are not equal: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
         for (let i = 0; i < expectedOutput.length; i++) {
@@ -189,10 +189,12 @@ describe('Preprocessing 1 and 2', function () {
     });
 
     it('should discard all said words before saying "start listening"', function () {
-        input = 'if strange xenon strange start listening strange xenon strange';
+        input = 'stop listening if strange xenon strange start listening strange xenon strange';
         expectedOutput = ['x'];
 
-        actualOutput = parser.preprocessing2(parser.preprocessing1(input, false), pythonLang);
+        actualOutput = parser.preprocessing2(parser.preprocessing1(input), pythonLang);
+        console.log(actualOutput);
+
 
         assert.equal(actualOutput.length, expectedOutput.length, `Array lengths are not equal: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
         for (let i = 0; i < expectedOutput.length; i++) {
@@ -204,7 +206,7 @@ describe('Preprocessing 1 and 2', function () {
         input = 'start listening if strange xenon strange stop listening strange xenon strange';
         expectedOutput = ['if', 'x'];
 
-        actualOutput = parser.preprocessing2(parser.preprocessing1(input, false), pythonLang);
+        actualOutput = parser.preprocessing2(parser.preprocessing1(input), pythonLang);
 
         assert.equal(actualOutput.length, expectedOutput.length, `Array lengths are not equal: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
         for (let i = 0; i < expectedOutput.length; i++) {
@@ -236,9 +238,9 @@ describe('Function: Configure Lang', function () {
 
 
 describe('Function: Form Non English Words', function () {
-    it('Should form an array of words', function () {
+    it('Should form an array of non English words', function () {
         input = ['strange', 'make', 'donuts', 'strange', 'five'];
-        expectedOutput = ['md', '5'];
+        expectedOutput = ['md', 'five'];
 
         actualOutput = parser.formNonEnglishWords(input);
 
@@ -246,12 +248,12 @@ describe('Function: Form Non English Words', function () {
             `Array lengths are not equal: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
 
         for (let i = 0; i < expectedOutput.length; i++) {
-            assert.equal(actualOutput[0], expectedOutput[0],
-                `elements are not equal: expected ${expectedOutput[0]} but got ${actualOutput[0]}.`)
+            assert.equal(actualOutput[i], expectedOutput[i],
+                `elements are not equal: expected ${expectedOutput[i]} but got ${actualOutput[i]}.`)
         }
     });
 
-    it('Should form an array of words', function () {
+    it('Should form an array of non English words', function () {
         input = ['strange', 'make', 'donuts'];
         expectedOutput = ['md'];
 
@@ -261,12 +263,12 @@ describe('Function: Form Non English Words', function () {
             `Array lengths are not equal: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
 
         for (let i = 0; i < expectedOutput.length; i++) {
-            assert.equal(actualOutput[0], expectedOutput[0],
-                `elements are not equal: expected ${expectedOutput[0]} but got ${actualOutput[0]}.`)
+            assert.equal(actualOutput[i], expectedOutput[i],
+                `elements are not equal: expected ${expectedOutput[i]} but got ${actualOutput[i]}.`)
         }
     });
 
-    it('Should form an array of words', function () {
+    it('Should form an array of non English words', function () {
         input = ['strange', 'central', 'intelligence', 'agency', 'strange', 'six', 'strange', 'national', 'security', 'agency', 'strange'];
         expectedOutput = ['cia', 'six', 'nsa'];
 
@@ -278,6 +280,54 @@ describe('Function: Form Non English Words', function () {
         for (let i = 0; i < expectedOutput.length; i++) {
             assert.equal(actualOutput[0], expectedOutput[0],
                 `elements are not equal: expected ${expectedOutput[0]} but got ${actualOutput[0]}.`)
+        }
+    });
+});
+
+
+describe('Function: Build Filename', function () {
+    it('Should build filename according to new-file command', function () {
+        input = ['new-file', 'habeeby', 'ya', 'pascal', 'python'];
+        expectedOutput = ['new-file', 'HabeebyYa.py'];
+
+        actualOutput = parser.buildFileName(input);
+
+        assert.equal(actualOutput.length, expectedOutput.length,
+            `Array lengths are not equal: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
+
+        for (let i = 0; i < expectedOutput.length; i++) {
+            assert.equal(actualOutput[i], expectedOutput[i],
+                `elements are not equal: expected ${expectedOutput[i]} but got ${actualOutput[i]}.`)
+        }
+    });
+
+    it('Should build filename according to new-file command', function () {
+        input = ['new-file', 'habeeby', 'ya', 'snake', 'javascript'];
+        expectedOutput = ['new-file', 'habeeby_ya.js'];
+
+        actualOutput = parser.buildFileName(input);
+
+        assert.equal(actualOutput.length, expectedOutput.length,
+            `Array lengths are not equal: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
+
+        for (let i = 0; i < expectedOutput.length; i++) {
+            assert.equal(actualOutput[i], expectedOutput[i],
+                `elements are not equal: expected ${expectedOutput[i]} but got ${actualOutput[i]}.`)
+        }
+    });
+
+    it('Should build filename according to new-file command', function () {
+        input = ['new-file', 'habeeby', 'ya', 'nothing', 'javascript'];
+        expectedOutput = ['new-file', 'habeebyya.js'];
+
+        actualOutput = parser.buildFileName(input);
+
+        assert.equal(actualOutput.length, expectedOutput.length,
+            `Array lengths are not equal: expected ${expectedOutput.length} but got ${actualOutput.length}.`);
+
+        for (let i = 0; i < expectedOutput.length; i++) {
+            assert.equal(actualOutput[i], expectedOutput[i],
+                `elements are not equal: expected ${expectedOutput[i]} but got ${actualOutput[i]}.`)
         }
     });
 });
