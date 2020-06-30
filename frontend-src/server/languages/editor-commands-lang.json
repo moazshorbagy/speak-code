@@ -1,5 +1,7 @@
 {
     "direct": {
+        "start-listening": "start-listetning",
+        "stop-listening": "stop-listetning",
         "change-folder": "change-directory",
         "save": "save-file",
         "save-as": "save-as",
@@ -25,7 +27,9 @@
         "exit-application": "exit-app",
         "select-line": "select-line",
         "delete-left": "delete-left",
-        "delete-right": "delete-right"
+        "delete-right": "delete-right",
+        "variable": "variable",
+        "strange": "strange"
     },
     "indirect": {
         "open-file": "open-file-from-directory",
