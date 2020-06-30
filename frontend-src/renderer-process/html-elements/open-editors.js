@@ -122,8 +122,14 @@ displayCurrentlyOpenedFileName = function (filePath) {
     if (!filePath) {
         return;
     }
+    let savedState = 'saved';
+    let unsavedModels = modelsEventEmitters.getUnsavedModels();
+    let unsavedUnregisteredModels = modelsEventEmitters.getUnsavedUnregisteredModels();
+    if(unsavedModels.includes(filePath) || unsavedUnregisteredModels.includes(filePath)) {
+        savedState = 'unsaved';
+    }
     let filenameElement = `<p id='file-name'>${filePath.split(Path.sep).pop()}</p>`;
-    let fileSavedStateElement = `<p id='saved-state'> saved </p>`;
+    let fileSavedStateElement = `<p id='saved-state'> ${savedState} </p>`;
     let fileInfo = filenameElement + fileSavedStateElement;
     currentlyOpenedFile.append(fileInfo);
 }
@@ -137,9 +143,15 @@ gotoTab = function (tabNumber) {
     }
 }
 
-openNewFile = function () {
+openNewFile = function (filename) {
     try {
-        modelName = 'Untitled_' + getLeastAvailableId(unregisteredTabNumberOptimizer);
+        let modelName;
+        if(!filename) {
+            modelName = 'Untitled_' + getLeastAvailableId(unregisteredTabNumberOptimizer);
+        } else {
+            modelName = filename;
+        }
+        console.log()
         unregisteredTabs.push(modelName);
         editor.openNewModel(modelName);
         module.exports.addOpenedFile(modelName, true);
@@ -189,6 +201,8 @@ closeTab = function (filePath, forceClose) {
 function closeNormalTab(filePath, forceClose, type) {
     var unsavedModels = modelsEventEmitters.getUnsavedModels();
     if (unsavedModels.includes(filePath) && forceClose === false) {
+        editor.focusModel(filePath);
+        module.exports.displayCurrentlyOpenedFileName(filePath);
         ipcRenderer.send('open-file-save-check-message-box', { filePath, type });
     } else {
         var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;
@@ -214,6 +228,8 @@ function closeUnregisteredTab(filePath, forceClose) {
     var unsavedUnregisteredModels = modelsEventEmitters.getUnsavedUnregisteredModels();
     if (unsavedUnregisteredModels.includes(filePath) && forceClose === false) {
         var isRegistered = false;
+        editor.focusModel(filePath);
+        module.exports.displayCurrentlyOpenedFileName(filePath);
         ipcRenderer.send('open-file-save-check-message-box', { filePath, isRegistered });
     } else {
         var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;

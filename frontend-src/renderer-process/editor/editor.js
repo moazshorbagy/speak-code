@@ -126,10 +126,11 @@ initEditor = function (doc, filePath, type, isUnregistered) {
 }
 
 openNewModel = function (modelName) {
+    let extention = getFileType(modelName.split(path.sep).pop());
     if (!editor) {
-        initEditor('', modelName, null, true);
+        initEditor('', modelName, extention, true);
     } else {
-        var model = monaco.editor.createModel('');
+        var model = monaco.editor.createModel('', extention);
         unregisteredModels[modelName] = model;
         unregisteredSavedModelsValues[modelName] = '';
         editor.setModel(model);

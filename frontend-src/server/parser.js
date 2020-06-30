@@ -197,6 +197,68 @@ function formNonEnglishWords(words) {
     return processedWords;
 }
 
+function camelCase(words, startIndex, endIndex) {
+
+    varName = words[startIndex];
+
+    for (k = startIndex + 1; k < endIndex; k++) {
+        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+    }
+
+    return varName;
+}
+
+function pascalCase(words, startIndex, endIndex) {
+    varName = "";
+
+    for (k = startIndex; k < endIndex; k++) {
+        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+    }
+
+    return varName;
+}
+
+function snakeCase(words, startIndex, endIndex) {
+    varName = words[startIndex];
+
+    for (k = startIndex + 1; k < endIndex; k++) {
+        varName += "_" + words[k];
+    }
+
+    return varName;
+}
+
+let conventions = [
+    'camel',
+    'snake',
+    'pascal'
+]
+
+function nameAccordingToConvention(words, startIndex, endIndex, convention) {
+    let varName;
+    switch (convention) {
+        case 'camel': {
+            varName = camelCase(words, startIndex, endIndex);
+            break;
+        }
+        case 'snake': {
+            varName = snakeCase(words, startIndex, endIndex);
+            break;
+        }
+        case 'pascal': {
+            varName = pascalCase(words, startIndex, endIndex);
+            break;
+        }
+        default: {
+            varName = words[startIndex];
+            for (k = startIndex + 1; k < endIndex; k++) {
+                varName += words[k];
+            }
+            break;
+        }
+    }
+    return varName;
+}
 
 function buildVariableName(words) {
     if (!words || !words.length) {
@@ -216,50 +278,14 @@ function buildVariableName(words) {
 
             j = i;
 
-            while (words[i] !== 'case' && i < words.length) {
+            while (!conventions.includes(words[i]) && i < words.length) {
                 i++;
             }
 
             // either 'camel', 'snake' or 'pascal'
-            convention = words[i - 1];
+            convention = words[i];
 
-            switch (convention) {
-
-                case 'camel': {
-
-                    varName = words[j];
-
-                    for (k = j + 1; k < i - 1; k++) {
-                        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
-                    }
-                    break;
-                }
-                case 'snake': {
-
-                    varName = words[j];
-
-                    for (k = j + 1; k < i - 1; k++) {
-                        varName += "_" + words[k];
-                    }
-                    break;
-                }
-                case 'pascal': {
-
-                    varName = "";
-
-                    for (k = j; k < i - 1; k++) {
-                        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
-                    }
-                    break;
-                }
-                default: {
-                    varName = words[j];
-                    for (k = i + 1; k < i - 1; k++) {
-                        varName += words[k];
-                    }
-                    break;
-                }
-            }
+            let varName = nameAccordingToConvention(words, j, i, convention);
 
             wordsAfterCombiningVarName.push(varName);
 
@@ -269,6 +295,45 @@ function buildVariableName(words) {
     }
 
     return wordsAfterCombiningVarName;
+}
+
+extensions = {
+    "javascript": "js",
+    "python": "py",
+    "html": "html",
+    "css": "css",
+    "cpp": "cpp",
+    "typescript": "ts",
+    "json": "json"
+}
+
+function mapExtension(extension) {
+    if(Object.keys(extensions).includes(extension)) {
+        return extensions[extension];
+    } else {
+        return null;
+    }
+}
+
+function buildFileName(words) {
+    let i = words.indexOf('new-file');
+    let processedWords = [];
+    if(i !== - 1 && i < words.length - 2) {
+        for(let k = 0; k <= i; k++) {
+            processedWords.push(words[k]);
+        }
+        let fileName;
+        let extension = mapExtension(words[words.length - 1]);
+        let convention = words[words.length - 2];
+        fileName = nameAccordingToConvention(words, i + 1, words.length - 2, convention);
+        if(extension != null) {
+            fileName += "." + extension;
+        }
+        processedWords.push(fileName);
+    } else {
+        return words;
+    }
+    return processedWords;
 }
 
 
@@ -344,8 +409,10 @@ function preprocessing1(words) {
             words = formNonEnglishWords(words);
     
             words = formNumbers(words);
+
+            words = buildFileName(words);
         } catch(e) {
-            console.log(words);
+            // console.log(words);
         }
     }
 
@@ -358,7 +425,7 @@ function preprocessing2(words, lang) {
     try {
         words = formLangCommands(words, lang);
     } catch(e) {
-        console.log(words);
+        // console.log(words);
     }
 
     return words;
@@ -379,6 +446,7 @@ function parseCommand(mainWindow, words) {
             lang = config['lang'];
             codeInserter = config['codeInserter'];
         }
+
         if(lang) {
             words = preprocessing2(words, lang);
         }
@@ -413,6 +481,10 @@ function parseCommand(mainWindow, words) {
                     constructingEditorCommand = true;
                     commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
                 }
+
+                if(!lang && !indirectCommand && !directCommand) {
+                    codeParser.directCodeInsertion(mainWindow, cmd);
+                }
             }
         }
     });
@@ -428,5 +500,6 @@ module.exports = {
     configureLang,
     parseCommand,
     formEditorCommands,
-    formNonEnglishWords
+    formNonEnglishWords,
+    buildFileName
 }
