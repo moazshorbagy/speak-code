@@ -66,11 +66,13 @@ class TestScenarios(unittest.TestCase):
 
         # test vectors are divided into parts to do necessary check after each part
         testVectorPart1 = [
-            'open file expected.py', 'go line three go column one', 'variable my variable camel case to be one', 'save',
+            'open file expected.py', 'go line three go column one', 'variable my variable camel to be one', 'save',
         ]
         testVectorPart2 = [
             'undo', 'save', 'select all', 'copy', 'open file file.py', 'paste', 'save', 'close close'
         ]
+
+        client.sendData('start listening')
 
         time.sleep(0.5)
 
@@ -130,6 +132,8 @@ class TestScenarios(unittest.TestCase):
 
         part1 = ['expand folder subdir1', 'focus folder subdir1', 'expand folder subdir2', 'open file use-me.py',
         'comment line', 'save']
+
+        client.sendData('start listening')
 
 
         initial_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
@@ -194,6 +198,8 @@ class TestScenarios(unittest.TestCase):
         part3 = ['redo', 'save']
         cleanUp = ['undo', 'save', 'close']
 
+        client.sendData('start listening')
+
         sendTestVector(part1)
         time.sleep(1)
         file1_part1_content = getFileContentAsLines(test_file1_path)
@@ -241,11 +247,13 @@ class TestScenarios(unittest.TestCase):
             for line in input_lines:
                 f.write(line)
 
+        client.sendData('start listening')
+
         setWorkingDirectory('scenario4')
 
         # SETUP PART: prepare input vector
         # TODO: open file should set cursor at line 1 column 1 or at the end of file when the file is opened 
-        inputVector = ['open file actual.py', 'go line one go column one', 'variable my variable camel case to be one', 'save close']
+        inputVector = ['open file actual.py', 'go line one go column one', 'variable my variable camel to be one', 'save close']
         time.sleep(0.5)
 
         # CALL PART: applies the input vector to the actual output file
@@ -286,6 +294,8 @@ class TestScenarios(unittest.TestCase):
         expected_file_path = os.path.join(scenario_dir, 'expected.py')
         actual_file_path = os.path.join(scenario_dir, 'actual.py')
 
+        client.sendData('start listening')
+
         expected_file_content = getFileContentAsLines(expected_file_path)
         num_lines = len(expected_file_content)
         line1_length = len(expected_file_content[0])
@@ -300,6 +310,42 @@ class TestScenarios(unittest.TestCase):
         'next tab', 'paste', 'save',
         'close', 'close']
     
+        sendTestVector(testVector)
+
+        actual_file_content = getFileContentAsLines(actual_file_path)
+
+        self.assertEqual(len(actual_file_content), len(expected_file_content))
+
+        for i in range(len(actual_file_content)):
+            self.assertEqual(actual_file_content[i], expected_file_content[i])
+
+        deleteFileContent(actual_file_path)
+
+    
+    def test_scenario6(self):
+        """
+        This scenario simulates the following user flow:
+            1. open directory.
+            2. open file.
+            3. perform a series of copy and paste operations using the following commands:
+                move-left, move-right, select-up, select-down, select-left, select-right 
+
+        This scenario tests correct operation for editor commands:
+            start-listening
+            stop-listening
+            strange
+        """  
+
+        scenario_dir = setWorkingDirectory('scenario6')        
+        expected_file_path = os.path.join(scenario_dir, 'expected.py')
+        actual_file_path = os.path.join(scenario_dir, 'actual.py')
+
+        expected_file_content = getFileContentAsLines(expected_file_path)
+        num_lines = len(expected_file_content)
+
+        testVector = ['start listening open file expected.py', 'open file actual.py next tab', 'stop listening', 'delete line',
+        'save', 'close', 'start listening', 'select all', 'copy', 'next tab', 'paste save close close']
+
         sendTestVector(testVector)
 
         actual_file_content = getFileContentAsLines(actual_file_path)
