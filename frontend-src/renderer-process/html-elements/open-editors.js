@@ -101,7 +101,7 @@ addOpenedFile = function (filePath, isUnregistered) {
     var tabNumberIdDiv = `<div class='float-left' style='padding: 0 5px;'> ${tabNumber} </div>`;
 
     openEditorsContentContainer.append("<div id='OFContainer_" + filePath +
-        "' class='fileNameSpan'> <div id='OFDescriptor_" + filePath + "' class='folder-descriptor'>" + tabNumberIdDiv +
+        "' class='fileNameSpan'> <div id='OFDescriptor_" + filePath + "' class='descriptor'>" + tabNumberIdDiv +
         closeTabIcon + "<p id='" + filePath + "' class='float-left'>" + fileName + " </p> </div> </div>");
 
     addOpenAndCloseEventListeners(filePath);
