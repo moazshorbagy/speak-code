@@ -42,7 +42,7 @@
         "exclamation": "!",
         "decorate": "@",
         "mod": " % ",
-        "dollar-sign": "$",
+        "dollar": "$",
         "escape": "\\",
         "if": "if ",
         "while": "while ",
