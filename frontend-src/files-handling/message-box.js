@@ -1,3 +1,5 @@
+const { ipcMain } = require('electron');
+
 Path = require('path')
 
 checkSaveStateBeforeClosingFile = function (mainWindow, dialog, args) {
@@ -17,11 +19,17 @@ checkSaveStateBeforeClosingFile = function (mainWindow, dialog, args) {
                         case 'Save': {
                                 if (type === 'unregistered') {
                                         var isRegistered = false;
-                                        mainWindow.webContents.send('request-save-as', {filePath, isRegistered});
-                                        mainWindow.webContents.send('request-close-tab', 'force-close');
+                                        mainWindow.webContents.send('request-save-as-and-close', {filePath, isRegistered});
+                                        
+                                        ipcMain.once('confirm-close', function(event, args) {
+                                                mainWindow.webContents.send('request-close-tab', 'force-close');
+                                        });
                                 } else {
-                                        mainWindow.webContents.send('request-save-file');
-                                        mainWindow.webContents.send('request-close-tab', 'force-close');
+                                        mainWindow.webContents.send('request-save-and-close', filePath);
+
+                                        ipcMain.on('confirm-close', function(event, args) {
+                                                mainWindow.webContents.send('request-close-tab', 'force-close');
+                                        })
                                 }
                                 break;
                         }

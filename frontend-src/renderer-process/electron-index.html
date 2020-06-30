@@ -73,6 +73,24 @@
 	});
 </script>
 <script>
+
+	// the filePath becomes the focused one now in the editor
+	ipcRenderer.on('request-save-as-and-close', function(event, filePath) {
+		let isRegistered = editor.modelIsRegistered(filePath);
+		let closeAfterSave = true;
+		ipcRenderer.send('open-save-dialog', {filePath, isRegistered, closeAfterSave});
+	});
+
+	ipcRenderer.on('request-save-and-close', function(event, filePath) {
+		let isRegistered = editor.modelIsRegistered(filePath);
+		let closeAfterSave = true;
+		ipcRenderer.send('open-save-dialog', {filePath, isRegistered, closeAfterSave});
+	});
+
+	ipcRenderer.on('request-confirm-close', function(event, args) {
+		event.sender.send('confirm-close');
+	});
+
 	ipcRenderer.on('request-save-file', function (event, arg) {
 		editor.saveFile();
 	});
@@ -169,8 +187,12 @@
 		event.sender.send('open-file')
 	});
 
-	ipcRenderer.on('request-new-file', function(event, args) {
-		openedFiles.openNewFile();
+	ipcRenderer.on('request-new-file', function(event, filename) {
+		if(!filename) {
+			openedFiles.openNewFile();
+		} else {
+			openedFiles.openNewFile(filename);
+		}
 	});
 
 	ipcRenderer.on('request-exit-app', function(event, args) {
