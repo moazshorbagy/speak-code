@@ -1,0 +1,30 @@
+#top-panel {
+  background-color: #23232A;
+  height: 20px;
+  width: 100%;
+  margin: 0;
+  border-bottom: 1px solid black;
+  justify-content: center;
+  display: flex;
+}
+
+#file-name {
+    font-size: 11pt;
+    color: white;
+    float: left;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+#saved-state {
+  font-style: italic;
+  color: gray;
+  float: left;
+  font-size: 8pt;
+  font-weight: bolder;
+  vertical-align: text-bottom;
+  margin-left: 5px;
+  margin-top: 4px;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}

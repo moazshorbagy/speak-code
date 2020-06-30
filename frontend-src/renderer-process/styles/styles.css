@@ -15,11 +15,11 @@ body {
   grid-area: 1 / 2 / 1 / 2;
   cursor: ew-resize;
   background-color: #1c1b18;
-  border-left: 1px solid black;
+  border-left: 1.5px solid black;
 }
 
 #open-folder-button {
-  background-color: #333333;
+  background-color: #50505A;
   border: 0px;
   display: block;
   color: white;

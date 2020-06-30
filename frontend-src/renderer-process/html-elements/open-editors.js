@@ -1,7 +1,7 @@
 
 var openEditorsId = 'open-editors';
 
-var openEditorsClass = 'leftpanel preventSelect fileNameSpan';
+var openEditorsClass = 'leftpanel preventSelect';
 
 var openEditorsContentContainerId = 'open-editors-content-container';
 
@@ -22,6 +22,9 @@ let tabIdMap = {};
 
 let unregisteredTabs = [];
 
+let collapsedIconSrc = `icons/arrow_down-24px.svg`;
+let expandedIconSrc = `icons/arrow_up-24px.svg`;
+
 addOpenEditors = function () {
 
     var doesExist = $("#" + openEditorsId).length;
@@ -31,22 +34,27 @@ addOpenEditors = function () {
 
     var openEditorsContainer = $('#open-editors-container');
 
-    openEditorsContainer.css("margin-top", "30px");
+    openEditorsContainer.css("margin-top", "10px");
 
-    openEditorsContainer.css("border-bottom", "black 1px solid");
+    let openedEditorsIcon = `<img class='open-editors-icon' id='opened-editors-icon' src='${collapsedIconSrc}'> </img>`;
 
-    openEditorsContainer.append("<div id='" + openEditorsId + "' class='" + openEditorsClass + "'> > Opened files </div>");
+    let openedEditorsHeader = `<div id='${openEditorsId}' class='${openEditorsClass}'> ${openedEditorsIcon}
+    <p id='open-editors-title'> OPENED FILES </p> </div>`;
 
-    openEditorsContainer.append("<div id='" + openEditorsContentContainerId + "' class='" + openEditorsContentContainerClass + "'> </div>");
+    openEditorsContainer.append(openedEditorsHeader);
+
+    openEditorsContainer.append(`<div id='${openEditorsContentContainerId}' class='${openEditorsContentContainerClass}'> </div>`);
 
     $("#" + openEditorsContentContainerId).css("display", "none");
 
     document.getElementById(openEditorsId).addEventListener('click', function () {
         var content = this.nextElementSibling;
         if (content.style.display === "block") {
+            document.getElementById('opened-editors-icon').src = collapsedIconSrc;
             content.style.display = "none";
         } else {
             content.style.display = "block";
+            document.getElementById('opened-editors-icon').src = expandedIconSrc;
         }
     });
 }
@@ -101,18 +109,23 @@ addOpenedFile = function (filePath, isUnregistered) {
 
 notifyIsSaved = function (filePath) {
     document.getElementById(filePath + '_t').src = 'icons/close-24px.svg';
+    document.getElementById('saved-state').innerHTML = 'saved';
 }
 
 notifyNeedsSave = function (filePath) {
     document.getElementById(filePath + '_t').src = 'icons/modified.svg';
+    document.getElementById('saved-state').innerHTML = 'unsaved';
 }
 
 displayCurrentlyOpenedFileName = function (filePath) {
-    var currentlyOpenedFile = $("#editor-top-panel").empty();
+    var currentlyOpenedFile = $("#top-panel").empty();
     if (!filePath) {
         return;
     }
-    currentlyOpenedFile.append(`${filePath.split(Path.sep).pop()}`);
+    let filenameElement = `<p id='file-name'>${filePath.split(Path.sep).pop()}</p>`;
+    let fileSavedStateElement = `<p id='saved-state'> saved </p>`;
+    let fileInfo = filenameElement + fileSavedStateElement;
+    currentlyOpenedFile.append(fileInfo);
 }
 
 gotoTab = function (tabNumber) {
@@ -225,7 +238,6 @@ function closeUnregisteredTab(filePath, forceClose) {
 }
 
 const path = require('path');
-const editor = require('../editor/editor');
 
 registerModel = function(oldPath, newPath) {
     editor.registerModel(oldPath, newPath);

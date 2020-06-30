@@ -4,8 +4,11 @@ let _class = ' fileNameSpan';
 const fs = require('fs');
 const Path = require('path');
 
-const closedFolderIcon = "<img src='icons/folder-24px.svg' class='float-left'> </img>";
+const openedFolderIconSrc = 'icons/folder_open-24px.svg';
+const closedFolderIconSrc = 'icons/folder-24px.svg';
 
+const fileIcon = "<img style='pointer-events: none;' src='icons/code-file24px.svg' class='float-left'> </img>";
+const otherTypesIcon = "<img style='pointer-events: none;' src='icons/regular-file24.svg' class='float-left'> </img>" 
 
 addCollapsible = function (container, path, name, content, isRootDir) {
 
@@ -15,8 +18,10 @@ addCollapsible = function (container, path, name, content, isRootDir) {
     // the div to append collapsible div and content div to.
     var div = $('#' + $.escapeSelector(path));
 
+    const folderIcon = `<img id='${'ico_' + path}' src='${closedFolderIconSrc}' class='float-left'> </img>`;
+
     // The folder div only contains the folder name and an event listener is attached to it.
-    div.append("<div class='" + _class + "' id='b" + path + "'> <div class='folder-descriptor'>" + closedFolderIcon + "<p class='float-left'>" + name + " </p> </div> </div>");
+    div.append("<div class='" + _class + "' id='b" + path + "'> <div class='descriptor'>" + folderIcon + "<p class='float-left' style='font-weight: bolder;'>" + name + " </p> </div> </div>");
 
     // The content container which holds the files and the folders all whith class='content'.
     div.append("<div id='c" + path + "' class='content " + _class + "'></div>");
@@ -37,8 +42,9 @@ addCollapsible = function (container, path, name, content, isRootDir) {
     // add a border to the root directory
     // expand by default the root dir only.
     if (isRootDir) {
-        div.css("border-bottom", "1px solid black");
+        div.css("border-top", "1px solid black");
         contentContainer.css("display", "block");
+        document.getElementById('ico_' + path).src = openedFolderIconSrc;
     }
 
     folderDescriptor.on('click', function () {
@@ -48,10 +54,14 @@ addCollapsible = function (container, path, name, content, isRootDir) {
 }
 
 populateFiles = function (files, path, contentContainer) {
+    let fileDescriptor;
     for (let i = 0; i < files.length; i++) {
         contentId = Path.join(path, files[i].name);
-        contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
-        c = $('#' + $.escapeSelector(contentId));
+        fileDescriptor = `<div id='${'FDescriptor_' + contentId}' class='descriptor'>`;
+        fileDescriptor += fileIcon + `<p style='pointer-events: none' 
+        id='${'name_' + files[i].name}' style='font-weight: bolder;' class='float-left'> ${files[i].name} </p> </div>`;
+        contentContainer.append(`<div id='${contentId}' class='${_class}'> ${fileDescriptor} </div>`);
+        c = $('#FDescriptor_' + $.escapeSelector(contentId));
         c.on('click', fileEventHandlers);
     }
 }
@@ -61,6 +71,7 @@ expandFolder = function (folderPath) {
         folderDescriptor = document.getElementById('b' + folderPath);
         var content = folderDescriptor.nextElementSibling;
         if (content.style.display !== "block") {
+            document.getElementById('ico_' + folderPath).src = openedFolderIconSrc;
             content.style.display = "block";
         }
     } catch (e) {
@@ -73,8 +84,10 @@ function toggleContentVisible(folderPath) {
         folderDescriptor = document.getElementById('b' + folderPath);
         var content = folderDescriptor.nextElementSibling;
         if (content.style.display === "block") {
+            document.getElementById('ico_' + folderPath).src = closedFolderIconSrc;
             content.style.display = "none";
         } else {
+            document.getElementById('ico_' + folderPath).src = openedFolderIconSrc;
             content.style.display = "block";
         }
     } catch (e) {
@@ -88,6 +101,7 @@ collapseFolder = function (folderPath) {
         var content = folderDescriptor.nextElementSibling;
         if (content.style.display != "none") {
             content.style.display = "none";
+            document.getElementById('ico_' + folderPath).src = closedFolderIconSrc;
         }
     } catch (e) {
         console.log(e);
@@ -117,7 +131,9 @@ function fileEventHandlers(event) {
     if (e.srcElement === document.activeElement) {
         return;
     }
-    elementId = e.srcElement.id;
+    elementId = e.srcElement.id.split('_');
+    elementId.shift();
+    elementId = elementId.join('_');
     if (e.detail == 2) {
         clearTimeout(pendingClick);
         e.srcElement.contentEditable = true;
@@ -172,7 +188,10 @@ openFile = function (filePath) {
 populateOtherTypes = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
         var contentId = Path.join(path, files[i].name);
-        contentContainer.append("<div id='" + contentId + "' class='" + _class + "'>" + files[i].name + "</div> ");
+        fileDescriptor = `<div id='${'FDescriptor_' + contentId}' class='descriptor'>`;
+        fileDescriptor += otherTypesIcon + `<p style='pointer-events: none' 
+        id='${'name_' + files[i].name}' style='font-weight: bolder;' class='float-left'> ${files[i].name} </p> </div>`;
+        contentContainer.append(`<div id='${contentId}' class='${_class}'> ${fileDescriptor} </div> `);
     }
 }
 

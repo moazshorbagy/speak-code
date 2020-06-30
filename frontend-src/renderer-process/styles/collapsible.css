@@ -8,16 +8,21 @@
 .content {
   display: none;
   overflow: hidden;
+  border-left: 1px solid #90909A;
 }
 
 .float-left {
   display: inline-block;
   vertical-align: middle;
   margin: 0;
-  filter: invert(13%) sepia(2%) saturate(30%) hue-rotate(14deg) brightness(99%) contrast(81%);
+  filter: invert(66%) sepia(16%) saturate(4%) hue-rotate(314deg) brightness(95%) contrast(94%);
 }
 
-.folder-descriptor:hover {
+.descriptor {
+  margin-left: 1px;
+}
+
+.descriptor:hover {
   color: black;
   filter: brightness(1000%);
 }
