@@ -9,11 +9,50 @@
   line-height: 20px;
 }
 
-#file-name {
+#opened-file-name {
     font-size: 11pt;
     color: white;
     line-height: 20px;
     margin-top: 0;
+}
+
+
+#cursor-notifier {
+  text-align: right;
+  color: gray;
+  float: left;
+  margin-top: 0;
+  font-size: 8pt;
+  font-weight: bold;
+  position: absolute;
+  top: 0;
+  right: 10%;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+  "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+#listening-notifier-container {
+  position: absolute;
+  top: 0;
+  left: 8%;
+}
+
+#listening-notifier-icon {
+  margin-top: 5px;
+  left: 8%;
+  float: left;
+  filter: invert(18%) sepia(76%) saturate(3501%) hue-rotate(350deg) brightness(94%) contrast(94%);
+}
+
+#listening-notifier-text {
+  color: gray;
+  float: left;
+  margin-top: 0;
+  margin-left: 5px;
+  font-size: 8pt;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+  "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  top: 0;
 }
 
 #saved-state {

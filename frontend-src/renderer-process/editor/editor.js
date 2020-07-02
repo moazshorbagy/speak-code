@@ -42,42 +42,20 @@ const fileType = {
     'json': 'json'
 };
 
-
-// initializes a monaco editor instance (which is the only one).
-// and binds 
-initEditor = function (doc, filePath, type, isUnregistered) {
-
+async function initializeEditor() {
     // workaround monaco-css not understanding the environment
     self.module = undefined;
 
     amdRequire(['vs/editor/editor.main'], function () {
 
-        const remote = require('electron').remote;
         editor = monaco.editor.create(document.getElementById('editor'), {
             value: '',
-            language: type,
             theme: "vs-dark",
         });
-
-        var model = monaco.editor.createModel(doc, type);
-        editor.setModel(model);
-
-        if (isUnregistered === true) {
-            unregisteredModels[filePath] = model;
-            unregisteredSavedModelsValues[filePath] = '';
-        } else {
-            models[filePath] = model;
-            savedModelsValues[filePath] = model.getValue();
-        }
-
 
         const monokai = require('monaco-themes/themes/Monokai.json');
         monaco.editor.defineTheme('monokai', monokai);
         monaco.editor.setTheme('monokai');
-
-        editor.getModel().updateOptions({ insertSpaces: true });
-
-        currentFilePath = filePath;
 
         var myBinding = editor.addCommand(monaco.KeyMod.CtrlCmd + monaco.KeyCode.US_DOT, function () {
             module.exports.zoomInEditor();
@@ -88,9 +66,10 @@ initEditor = function (doc, filePath, type, isUnregistered) {
         });
 
         //track position of cursor
-        editor.onDidChangeCursorPosition(function (position) {
+        editor.onDidChangeCursorPosition(function (event) {
             viewStates[currentFilePath] = editor.saveViewState();
             editor.revealPosition(editor.getPosition());
+            $("#cursor-notifier").text(`Line ${event.position.lineNumber} Column ${event.position.column}`);
         });
 
         editor.onDidScrollChange(function (scroll) {
@@ -122,22 +101,29 @@ initEditor = function (doc, filePath, type, isUnregistered) {
                 height: height
             })
         });
+
+        document.getElementById('editor').style.visibility = 'hidden';
     });
 }
 
-openNewModel = function (modelName) {
-    let extention = getFileType(modelName.split(path.sep).pop());
-    if (!editor) {
-        initEditor('', modelName, extention, true);
-    } else {
-        var model = monaco.editor.createModel('', extention);
-        unregisteredModels[modelName] = model;
-        unregisteredSavedModelsValues[modelName] = '';
-        editor.setModel(model);
-        editor.getModel().updateOptions({ insertSpaces: true });
-        currentFilePath = modelName;
+function showEditor() {
+    let visibility = document.getElementById('editor').style.visibility;
+    if (visibility === 'hidden') {
+        document.getElementById('editor').style.visibility = 'visible';
     }
+}
+
+function openNewModel(modelName) {
+    showEditor();
+    let extention = getFileType(modelName.split(path.sep).pop());
+    let model = monaco.editor.createModel('', extention);
+    unregisteredModels[modelName] = model;
+    unregisteredSavedModelsValues[modelName] = '';
+    editor.setModel(model);
+    editor.getModel().updateOptions({ insertSpaces: true });
+    currentFilePath = modelName;
     modelsEventEmitters.addModelEventEmitter(modelName, true);
+
 }
 
 // increases text size of editor
@@ -160,17 +146,15 @@ zoomOutEditor = function () {
 
 // opens a document with file path = filePath
 openDoc = function (doc, filePath) {
-    type = getFileType(filePath);
-    if (!editor) {
-        initEditor(doc, filePath, type);
-    } else {
-        var model = monaco.editor.createModel(doc, type);
-        models[filePath] = model;
-        savedModelsValues[filePath] = model.getValue();
-        editor.setModel(model);
-        editor.getModel().updateOptions({ insertSpaces: true });
-        currentFilePath = filePath;
-    }
+    showEditor();
+    let type = getFileType(filePath);
+    let model = monaco.editor.createModel(doc, type);
+    models[filePath] = model;
+    savedModelsValues[filePath] = model.getValue();
+    editor.setModel(model);
+    editor.getModel().updateOptions({ insertSpaces: true });
+    currentFilePath = filePath;
+
     modelsEventEmitters.addModelEventEmitter(filePath);
 }
 
@@ -235,11 +219,13 @@ getContentInRange = function (filePath, startLine, startColumn, endLine, endColu
 }
 
 getPreviousLines = function () {
-    if (editor && editor.getModel()) {
+    try {
         let currentPosition = editor.getPosition();
         let line = currentPosition.lineNumber;
         currentLineLength = module.exports.getCurrentLine().length + 1;
         return module.exports.getContentInRange(currentFilePath, 1, 1, line, currentLineLength).split('\n');
+    } catch(e) {
+        return null;
     }
 }
 
@@ -468,7 +454,7 @@ backSpace = function () {
 
 
     let selection = editor.getSelection();
-    if(selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
+    if (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) {
         op = {
             identifier: 'id',
             text: '',
@@ -486,7 +472,7 @@ backSpace = function () {
         if (currentCursorPosition.lineNumber == 1 && currentCursorPosition.column == 1) {
             return;
         }
-    
+
         if (currentCursorPosition.column == 1) {
             prevLineLength = editor.getModel().getLineContent(editor.getPosition().lineNumber - 1).length;
             editor.executeEdits(
@@ -734,5 +720,6 @@ module.exports = {
     selectDown,
     revealCursor,
     deleteLeft,
-    deleteRight
+    deleteRight,
+    initializeEditor
 }
