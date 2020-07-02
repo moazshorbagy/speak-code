@@ -99,6 +99,10 @@
 		event.sender.send('confirm-close');
 	});
 
+	ipcRenderer.on('request-close-app', function(event, args) {
+		event.sender.send('close-app');
+	});
+
 	ipcRenderer.on('request-save-file', function (event, arg) {
 		editor.saveFile();
 	});
