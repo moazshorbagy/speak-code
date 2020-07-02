@@ -21,6 +21,8 @@
         "by": " * ",
         "bye": " * ",
         "power": " ** ",
+        "increment": "++",
+        "decrement": "--",
         "shift-left": " << ",
         "shift-right": " >> ",
         "left-equal": " <<= ",
