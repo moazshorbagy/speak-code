@@ -1,5 +1,7 @@
 {
     "direct": {
+        "start-listening": "start-listetning",
+        "stop-listening": "stop-listetning",
         "change-folder": "change-directory",
         "save": "save-file",
         "save-as": "save-as",
@@ -21,11 +23,16 @@
         "delete-line": "delete-line",
         "unfocus-folder": "unfocus-folder",
         "browse-file": "browse-file",
-        "new-file": "new-file",
+        "new-untitled": "new-untitled",
         "exit-application": "exit-app",
         "select-line": "select-line",
         "delete-left": "delete-left",
-        "delete-right": "delete-right"
+        "delete-right": "delete-right",
+        "variable": "variable",
+        "strange": "strange",
+        "camel": "camel-case-varibale",
+        "snake": "snake-case-variable",
+        "pascal": "pascal-variable"
     },
     "indirect": {
         "open-file": "open-file-from-directory",
@@ -38,6 +45,7 @@
         "select-up": "select-up",
         "select-down": "select-down",
         "select-left": "select-left",
-        "select-right": "select-right"
+        "select-right": "select-right",
+        "new-file": "new-file"
     }
 }

@@ -100,9 +100,9 @@ addOpenedFile = function (filePath, isUnregistered) {
 
     var tabNumberIdDiv = `<div class='float-left' style='padding: 0 5px;'> ${tabNumber} </div>`;
 
-    openEditorsContentContainer.append("<div id='OFContainer_" + filePath +
-        "' class='fileNameSpan'> <div id='OFDescriptor_" + filePath + "' class='descriptor'>" + tabNumberIdDiv +
-        closeTabIcon + "<p id='" + filePath + "' class='float-left'>" + fileName + " </p> </div> </div>");
+    openEditorsContentContainer.append(`<div id='OFContainer_${filePath}' 
+    class='fileNameSpan'> <div id='OFDescriptor_${filePath}' class='descriptor preventSelect'>${tabNumberIdDiv}
+        ${closeTabIcon} <p id='${filePath}' class='float-left'>${fileName} </p> </div> </div>`);
 
     addOpenAndCloseEventListeners(filePath);
 }
@@ -113,19 +113,27 @@ notifyIsSaved = function (filePath) {
 }
 
 notifyNeedsSave = function (filePath) {
-    document.getElementById(filePath + '_t').src = 'icons/modified.svg';
+    document.getElementById(filePath + '_t').src = 'icons/circle.svg';
     document.getElementById('saved-state').innerHTML = 'unsaved';
 }
 
 displayCurrentlyOpenedFileName = function (filePath) {
-    var currentlyOpenedFile = $("#top-panel").empty();
     if (!filePath) {
         return;
     }
+    let savedState = 'saved';
+    let unsavedModels = modelsEventEmitters.getUnsavedModels();
+    let unsavedUnregisteredModels = modelsEventEmitters.getUnsavedUnregisteredModels();
+    if(unsavedModels.includes(filePath) || unsavedUnregisteredModels.includes(filePath)) {
+        savedState = 'unsaved';
+    }
     let filenameElement = `<p id='file-name'>${filePath.split(Path.sep).pop()}</p>`;
-    let fileSavedStateElement = `<p id='saved-state'> saved </p>`;
-    let fileInfo = filenameElement + fileSavedStateElement;
-    currentlyOpenedFile.append(fileInfo);
+    let fileSavedStateElement = `<p id='saved-state'> ${savedState} </p>`;
+    let cursorPosition = `<p id='cursor-notifier'> </p>`;
+    $("#opened-file-name").text(filePath.split(Path.sep).pop());
+    $("#saved-state").text(savedState);
+    let fileInfo = filenameElement + fileSavedStateElement + cursorPosition;
+    // currentlyOpenedFile.append(fileInfo);
 }
 
 gotoTab = function (tabNumber) {
@@ -137,9 +145,15 @@ gotoTab = function (tabNumber) {
     }
 }
 
-openNewFile = function () {
+openNewFile = function (filename) {
     try {
-        modelName = 'Untitled_' + getLeastAvailableId(unregisteredTabNumberOptimizer);
+        let modelName;
+        if(!filename) {
+            modelName = 'Untitled_' + getLeastAvailableId(unregisteredTabNumberOptimizer);
+        } else {
+            modelName = filename;
+        }
+        console.log()
         unregisteredTabs.push(modelName);
         editor.openNewModel(modelName);
         module.exports.addOpenedFile(modelName, true);
@@ -176,7 +190,7 @@ function handleModelDidChangeEvent(filePath, isUnregistered, tabNumber) {
 
 // closes the tab with ID: filePath
 closeTab = function (filePath, forceClose) {
-    var type;
+    let type;
     if (unregisteredTabs.includes(filePath)) {
         type = 'unregistered';
         closeUnregisteredTab(filePath, forceClose, type);
@@ -189,6 +203,8 @@ closeTab = function (filePath, forceClose) {
 function closeNormalTab(filePath, forceClose, type) {
     var unsavedModels = modelsEventEmitters.getUnsavedModels();
     if (unsavedModels.includes(filePath) && forceClose === false) {
+        editor.focusModel(filePath);
+        module.exports.displayCurrentlyOpenedFileName(filePath);
         ipcRenderer.send('open-file-save-check-message-box', { filePath, type });
     } else {
         var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;
@@ -204,8 +220,11 @@ function closeNormalTab(filePath, forceClose, type) {
             var nextTab = editor.removeModelWithId(filePath);
             if(editor.getCurrentModel() == filePath) {
                 editor.focusModel(nextTab);
+                module.exports.displayCurrentlyOpenedFileName(nextTab);  
             }
-            module.exports.displayCurrentlyOpenedFileName(nextTab);
+            if(!nextTab) {
+                emptyCurrentFileInfo(); 
+            }
         }
     }
 }
@@ -214,6 +233,8 @@ function closeUnregisteredTab(filePath, forceClose) {
     var unsavedUnregisteredModels = modelsEventEmitters.getUnsavedUnregisteredModels();
     if (unsavedUnregisteredModels.includes(filePath) && forceClose === false) {
         var isRegistered = false;
+        editor.focusModel(filePath);
+        module.exports.displayCurrentlyOpenedFileName(filePath);
         ipcRenderer.send('open-file-save-check-message-box', { filePath, isRegistered });
     } else {
         var tabNumber = document.getElementById('OFDescriptor_' + filePath).children[0].innerHTML;
@@ -231,13 +252,20 @@ function closeUnregisteredTab(filePath, forceClose) {
             var nextTab = editor.removeModelWithId(filePath);
             if(editor.getCurrentModel() == filePath) {
                 editor.focusModel(nextTab);
+                module.exports.displayCurrentlyOpenedFileName(nextTab);
             }
-            module.exports.displayCurrentlyOpenedFileName(nextTab);
+            if(!nextTab) {
+                emptyCurrentFileInfo(); 
+            }
         }        
     }
 }
 
-const path = require('path');
+function emptyCurrentFileInfo() {
+    $("#opened-file-name").text(null);
+    $("#saved-state").text(null);
+    $("#cursor-notifier").text(null);
+}
 
 registerModel = function(oldPath, newPath) {
     editor.registerModel(oldPath, newPath);

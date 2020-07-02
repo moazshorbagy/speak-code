@@ -9,7 +9,9 @@ const dialog = electron.dialog;
 
 const msgBox = require('./files-handling/message-box')
 
-const saveFileDialog = require('./files-handling/save-file-dialog')
+const saveFileDialog = require('./files-handling/save-file-dialog');
+
+const parser = require('./server/parser')
 
 let mainWindow;
 
@@ -44,7 +46,7 @@ app.on('ready', function () {
 
 });
 
-app.on('renderer-process-crashed', function() {
+app.on('renderer-process-crashed', function () {
 	createWindow();
 });
 
@@ -84,16 +86,20 @@ ipcMain.on('open-save-dialog', (event, args) => {
 	saveFileDialog.showSaveDialog(mainWindow, dialog, args);
 });
 
-ipcMain.on('close-app', function(event, args) {
+ipcMain.on('close-app', function (event, args) {
 	mainWindow.close();
 	if (process.platform !== 'darwin') {
 		app.quit()
 	}
 });
 
-ipcMain.on('show-close-app-save-check', function(event, fileNames) {
+ipcMain.on('show-close-app-save-check', function (event, fileNames) {
 	msgBox.closeAppSaveCheck(mainWindow, dialog, fileNames);
 });
+
+ipcMain.on('toggle-is-listening', (event, arg) => {
+	event.returnValue = parser.toggleIsListening();
+  });
 
 app.on('activate', function () {
 	if (mainWindow === null) {

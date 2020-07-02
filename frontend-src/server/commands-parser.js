@@ -8,7 +8,7 @@ directCommands = [
     'save-file',
     'save-as',
     'reveal-cursor',
-    'new-file',
+    'new-untitled',
     'zoom-in',
     'zoom-out',
     'undo',
@@ -43,7 +43,8 @@ indirectCommands = [
     "select-up",
     "select-down",
     "select-right",
-    "select-left"
+    "select-left",
+    "new-file"
 ];
 
 let cmd;
@@ -278,6 +279,10 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
             }
             case 'select-down': {
                 selectDown(mainWindow, keyword);
+                break;
+            }
+            case 'new-file': {
+                mainWindow.webContents.send('request-new-file', keyword);
                 break;
             }
         }

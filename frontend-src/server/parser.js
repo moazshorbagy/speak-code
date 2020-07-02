@@ -11,6 +11,9 @@ const JavascriptCodeInserter = require('./languages/javascript/javascript.code-i
 
 let langInserters = {};
 
+// a boolean that determines whether to listen or discard commands
+let isListening = false;
+
 // a boolean to detect whether the last word was a command or not.
 let constructingEditorCommand;
 
@@ -55,19 +58,17 @@ function isIndirectCommand(word) {
     return undefined;
 }
 
-function processSentence(words, lang) {
+function formEditorCommands(words) {
+
     if (!words || !words.length) {
         throw new Error('Missing parameters.')
     }
+
     if (!Array.isArray(words)) {
-        throw TypeError(`Expected words to be array but instead got ${typeof (words)}`);
+        throw TypeError(`Expected words to array but instead got ${typeof (words)}`);
     }
 
     processedWords = [];
-
-    if (lang) {
-        directCodeInsertionDict = lang['direct'];
-    }
 
     directEditorCommandsDict = editorCommandsLang['direct'];
     indirectEditorCommandsDict = editorCommandsLang['indirect'];
@@ -77,21 +78,50 @@ function processSentence(words, lang) {
     } else {
         for (i = 0; i < words.length - 1; i++) {
 
-            var concatenatedWords = words[i] + '-' + words[i + 1];
+            let concatenatedWords = words[i] + '-' + words[i + 1];
 
             if (Object.keys(directEditorCommandsDict).includes(concatenatedWords) ||
                 Object.keys(indirectEditorCommandsDict).includes(concatenatedWords)) {
                 processedWords.push(concatenatedWords);
                 i++;
             } else {
-                if (lang) {
-                    if (Object.keys(directCodeInsertionDict).includes(concatenatedWords)) {
-                        processedWords.push(concatenatedWords);
-                        i++;
-                    } else {
-                        processedWords.push(words[i]);
-                    }
-                }
+                processedWords.push(words[i]);
+            }
+
+            if (i == words.length - 2) {
+                processedWords.push(words[i + 1]);
+            }
+        }
+    }
+
+    return processedWords;
+}
+
+function formLangCommands(words, lang) {
+
+    if (!lang || !words || !words.length) {
+        throw new Error('Missing parameters.')
+    }
+    if (!Array.isArray(words)) {
+        throw TypeError(`Expected words to be array but instead got ${typeof (words)}`);
+    }
+
+    processedWords = [];
+
+    let directCodeInsertionDict = lang['direct'];
+
+    if (words.length == 1) {
+        processedWords.push(words[0]);
+    } else {
+        for (i = 0; i < words.length - 1; i++) {
+
+            let concatenatedWords = words[i] + '-' + words[i + 1];
+
+            if (Object.keys(directCodeInsertionDict).includes(concatenatedWords)) {
+                processedWords.push(concatenatedWords);
+                i++;
+            } else {
+                processedWords.push(words[i]);
             }
 
             if (i == words.length - 2) {
@@ -148,6 +178,90 @@ function formNumbers(words) {
     return processedWords;
 }
 
+function formNonEnglishWords(words) {
+    processedWords = [];
+
+    for (let i = 0; i < words.length; i++) {
+        if (words[i] === 'strange') {
+            let word = '';
+            i++;
+            while (words[i] !== 'strange' && i < words.length) {
+                word += words[i].charAt(0);
+                i++;
+            }
+            processedWords.push(word);
+        } else {
+            processedWords.push(words[i]);
+        }
+    }
+    return processedWords;
+}
+
+function camelCase(words, startIndex, endIndex) {
+
+    varName = words[startIndex];
+
+    for (k = startIndex + 1; k < endIndex; k++) {
+        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+    }
+
+    return varName;
+}
+
+function pascalCase(words, startIndex, endIndex) {
+    varName = "";
+
+    for (k = startIndex; k < endIndex; k++) {
+        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
+    }
+
+    return varName;
+}
+
+function snakeCase(words, startIndex, endIndex) {
+    varName = words[startIndex];
+
+    for (k = startIndex + 1; k < endIndex; k++) {
+        varName += "_" + words[k];
+    }
+
+    return varName;
+}
+
+let conventions = [
+    'camel',
+    'snake',
+    'pascal'
+]
+
+function nameAccordingToConvention(words, startIndex, endIndex, convention) {
+    let varName;
+    switch (convention) {
+        case 'camel': {
+            varName = camelCase(words, startIndex, endIndex);
+            break;
+        }
+        case 'snake': {
+            varName = snakeCase(words, startIndex, endIndex);
+            break;
+        }
+        case 'pascal': {
+            varName = pascalCase(words, startIndex, endIndex);
+            break;
+        }
+        default: {
+            varName = words[startIndex];
+            for (k = startIndex + 1; k < endIndex; k++) {
+                varName += words[k];
+            }
+            if (convention) {
+                varName += convention
+            }
+            break;
+        }
+    }
+    return varName;
+}
 
 function buildVariableName(words) {
     if (!words || !words.length) {
@@ -167,50 +281,14 @@ function buildVariableName(words) {
 
             j = i;
 
-            while (words[i] !== 'case' && i < words.length) {
+            while (!conventions.includes(words[i]) && i < words.length) {
                 i++;
             }
 
             // either 'camel', 'snake' or 'pascal'
-            convention = words[i - 1];
+            convention = words[i];
 
-            switch (convention) {
-
-                case 'camel': {
-
-                    varName = words[j];
-
-                    for (k = j + 1; k < i - 1; k++) {
-                        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
-                    }
-                    break;
-                }
-                case 'snake': {
-
-                    varName = words[j];
-
-                    for (k = j + 1; k < i - 1; k++) {
-                        varName += "_" + words[k];
-                    }
-                    break;
-                }
-                case 'pascal': {
-
-                    varName = "";
-
-                    for (k = j; k < i - 1; k++) {
-                        varName += words[k].charAt(0).toUpperCase() + words[k].slice(1);
-                    }
-                    break;
-                }
-                default: {
-                    varName = words[j];
-                    for (k = i + 1; k < i - 1; k++) {
-                        varName += words[k];
-                    }
-                    break;
-                }
-            }
+            let varName = nameAccordingToConvention(words, j, i, convention);
 
             wordsAfterCombiningVarName.push(varName);
 
@@ -220,6 +298,45 @@ function buildVariableName(words) {
     }
 
     return wordsAfterCombiningVarName;
+}
+
+extensions = {
+    "javascript": "js",
+    "python": "py",
+    "html": "html",
+    "css": "css",
+    "cpp": "cpp",
+    "typescript": "ts",
+    "json": "json"
+}
+
+function mapExtension(extension) {
+    if (Object.keys(extensions).includes(extension)) {
+        return extensions[extension];
+    } else {
+        return null;
+    }
+}
+
+function buildFileName(words) {
+    let i = words.indexOf('new-file');
+    let processedWords = [];
+    if (i !== -1 && i < words.length - 2) {
+        for (let k = 0; k <= i; k++) {
+            processedWords.push(words[k]);
+        }
+        let fileName;
+        let extension = mapExtension(words[words.length - 1]);
+        let convention = words[words.length - 2];
+        fileName = nameAccordingToConvention(words, i + 1, words.length - 2, convention);
+        if (extension != null) {
+            fileName += "." + extension;
+        }
+        processedWords.push(fileName);
+    } else {
+        return words;
+    }
+    return processedWords;
 }
 
 
@@ -253,31 +370,95 @@ function configureLang(filePath) {
     return { lang, codeInserter };
 }
 
-// performs the necessary preprocessing
-function preprocessing(words, lang) {
+let didChangeListeningState = false;
+
+function startStopListening(words) {
+    let processedWords = [];
+    for (i = 0; i < words.length; i++) {
+        if (words[i] === 'start-listening' && !isListening) {
+            didChangeListeningState = true;
+            isListening = true;
+            continue;
+        }
+        if (words[i] === 'stop-listening' && isListening) {
+            didChangeListeningState = true;
+            isListening = false;
+            continue;
+        }
+        if (words[i] === 'start-listening' && isListening) {
+            continue;
+        }
+        if (words[i] === 'stop-listening' && !isListening) {
+            continue;
+        }
+        if (isListening === true) {
+            processedWords.push(words[i]);
+        }
+    }
+    return processedWords;
+}
+
+function preprocessing1(words) {
 
     //preprocessing the sentence
     if (typeof words === 'string') {
         words = words.split(' ');
+
         // building variable name
         if (words.includes('variable')) {
             words = buildVariableName(words);
         }
-        words = processSentence(words, lang);
+        try {
+            words = formEditorCommands(words);
 
-        words = formNumbers(words);
+            words = startStopListening(words);
+
+            words = formNonEnglishWords(words);
+
+            words = formNumbers(words);
+
+            words = buildFileName(words);
+        } catch (e) {
+            // console.log(words);
+        }
     }
 
     return words;
 }
 
+// performs preprocessing to form the language specific commands
+function preprocessing2(words, lang) {
+
+    try {
+        words = formLangCommands(words, lang);
+    } catch (e) {
+        // console.log(words);
+    }
+
+    return words;
+}
+
+function toggleIsListening() {
+    isListening = !isListening;
+    return isListening;
+}
+
 function parseCommand(mainWindow, words) {
 
-    mainWindow.webContents.send('request-file-path');
+    words = preprocessing1(words);
 
-    ipcMain.once('file-path', function (event, filePath) {
+    if(didChangeListeningState) {
+        mainWindow.webContents.send('set-listening-state', isListening);
+    }
+
+    mainWindow.webContents.send('request-file-info');
+
+    ipcMain.once('file-info', function (event, args) {
 
         let lang, codeInserter;
+
+        let filePath = args['filePath'];
+        let previousLines = args['previousLines'];
 
         if (filePath) {
             config = configureLang(filePath);
@@ -285,7 +466,9 @@ function parseCommand(mainWindow, words) {
             codeInserter = config['codeInserter'];
         }
 
-        words = preprocessing(words, lang);
+        if (lang) {
+            words = preprocessing2(words, lang);
+        }
 
         let wordNotInGrammar, directCode;
 
@@ -303,18 +486,23 @@ function parseCommand(mainWindow, words) {
                 constructingEditorCommand = false;
             }
             else {
-                directCommand = isDirectCommand(cmd);
-                indirectCommand = isIndirectCommand(cmd);
+
+                let directCommand = isDirectCommand(cmd);
+                let indirectCommand = isIndirectCommand(cmd);
 
                 if (wordNotInGrammar) {
                     codeParser.directCodeInsertion(mainWindow, cmd);
                 } else if (directCode !== undefined) {
-                    codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
+                    codeParser.directCodeInsertion(mainWindow, directCode, codeInserter, previousLines);
                 } else if (directCommand !== undefined) {
                     commandParser.executeCommand(mainWindow, directCommand);
                 } else if (indirectCommand !== undefined) {
                     constructingEditorCommand = true;
                     commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
+                }
+
+                if (!lang && !indirectCommand && !directCommand) {
+                    codeParser.directCodeInsertion(mainWindow, cmd);
                 }
             }
         }
@@ -323,10 +511,15 @@ function parseCommand(mainWindow, words) {
 
 module.exports = {
     isWordNotInGrammar,
-    processSentence,
+    formLangCommands,
     formNumbers,
     buildVariableName,
-    preprocessing,
+    preprocessing1,
+    preprocessing2,
     configureLang,
-    parseCommand
+    parseCommand,
+    formEditorCommands,
+    formNonEnglishWords,
+    buildFileName,
+    toggleIsListening
 }
