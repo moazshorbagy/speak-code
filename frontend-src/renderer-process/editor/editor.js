@@ -33,8 +33,6 @@ let editor;
 
 let currentFilePath;
 
-let editorIsShown = false;
-
 const fileType = {
     'js': 'javascript',
     'py': 'python',
@@ -68,9 +66,10 @@ async function initializeEditor() {
         });
 
         //track position of cursor
-        editor.onDidChangeCursorPosition(function (position) {
+        editor.onDidChangeCursorPosition(function (event) {
             viewStates[currentFilePath] = editor.saveViewState();
             editor.revealPosition(editor.getPosition());
+            $("#cursor-notifier").text(`Line ${event.position.lineNumber} Column ${event.position.column}`);
         });
 
         editor.onDidScrollChange(function (scroll) {
