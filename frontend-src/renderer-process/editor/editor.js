@@ -51,6 +51,7 @@ async function initializeEditor() {
         editor = monaco.editor.create(document.getElementById('editor'), {
             value: '',
             theme: "vs-dark",
+            model: null
         });
 
         const monokai = require('monaco-themes/themes/Monokai.json');
@@ -101,20 +102,10 @@ async function initializeEditor() {
                 height: height
             })
         });
-
-        document.getElementById('editor').style.visibility = 'hidden';
     });
 }
 
-function showEditor() {
-    let visibility = document.getElementById('editor').style.visibility;
-    if (visibility === 'hidden') {
-        document.getElementById('editor').style.visibility = 'visible';
-    }
-}
-
 function openNewModel(modelName) {
-    showEditor();
     let extention = getFileType(modelName.split(path.sep).pop());
     let model = monaco.editor.createModel('', extention);
     unregisteredModels[modelName] = model;
@@ -146,7 +137,6 @@ zoomOutEditor = function () {
 
 // opens a document with file path = filePath
 openDoc = function (doc, filePath) {
-    showEditor();
     let type = getFileType(filePath);
     let model = monaco.editor.createModel(doc, type);
     models[filePath] = model;
