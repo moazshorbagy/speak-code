@@ -113,12 +113,11 @@ notifyIsSaved = function (filePath) {
 }
 
 notifyNeedsSave = function (filePath) {
-    document.getElementById(filePath + '_t').src = 'icons/modified.svg';
+    document.getElementById(filePath + '_t').src = 'icons/circle.svg';
     document.getElementById('saved-state').innerHTML = 'unsaved';
 }
 
 displayCurrentlyOpenedFileName = function (filePath) {
-    var currentlyOpenedFile = $("#top-panel").empty();
     if (!filePath) {
         return;
     }
@@ -130,8 +129,11 @@ displayCurrentlyOpenedFileName = function (filePath) {
     }
     let filenameElement = `<p id='file-name'>${filePath.split(Path.sep).pop()}</p>`;
     let fileSavedStateElement = `<p id='saved-state'> ${savedState} </p>`;
-    let fileInfo = filenameElement + fileSavedStateElement;
-    currentlyOpenedFile.append(fileInfo);
+    let cursorPosition = `<p id='cursor-notifier'> </p>`;
+    $("#opened-file-name").text(filePath.split(Path.sep).pop());
+    $("#saved-state").text(savedState);
+    let fileInfo = filenameElement + fileSavedStateElement + cursorPosition;
+    // currentlyOpenedFile.append(fileInfo);
 }
 
 gotoTab = function (tabNumber) {
@@ -221,7 +223,7 @@ function closeNormalTab(filePath, forceClose, type) {
                 module.exports.displayCurrentlyOpenedFileName(nextTab);  
             }
             if(!nextTab) {
-                module.exports.displayCurrentlyOpenedFileName(null);  
+                emptyCurrentFileInfo(); 
             }
         }
     }
@@ -253,10 +255,16 @@ function closeUnregisteredTab(filePath, forceClose) {
                 module.exports.displayCurrentlyOpenedFileName(nextTab);
             }
             if(!nextTab) {
-                module.exports.displayCurrentlyOpenedFileName(null);  
+                emptyCurrentFileInfo(); 
             }
         }        
     }
+}
+
+function emptyCurrentFileInfo() {
+    $("#opened-file-name").text(null);
+    $("#saved-state").text(null);
+    $("#cursor-notifier").text(null);
 }
 
 registerModel = function(oldPath, newPath) {

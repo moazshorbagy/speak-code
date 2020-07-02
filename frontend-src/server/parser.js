@@ -367,14 +367,18 @@ function configureLang(filePath) {
     return { lang, codeInserter };
 }
 
+let didChangeListeningState = false;
+
 function startStopListening(words) {
     let processedWords = [];
     for (i = 0; i < words.length; i++) {
         if (words[i] === 'start-listening' && !isListening) {
+            didChangeListeningState = true;
             isListening = true;
             continue;
         }
         if (words[i] === 'stop-listening' && isListening) {
+            didChangeListeningState = true;
             isListening = false;
             continue;
         }
@@ -431,9 +435,18 @@ function preprocessing2(words, lang) {
     return words;
 }
 
+function toggleIsListening() {
+    isListening = !isListening;
+    return isListening;
+}
+
 function parseCommand(mainWindow, words) {
 
     words = preprocessing1(words);
+
+    if(didChangeListeningState) {
+        mainWindow.webContents.send('set-listening-state', isListening);
+    }
 
     mainWindow.webContents.send('request-file-info');
 
@@ -504,5 +517,6 @@ module.exports = {
     parseCommand,
     formEditorCommands,
     formNonEnglishWords,
-    buildFileName
+    buildFileName,
+    toggleIsListening
 }
