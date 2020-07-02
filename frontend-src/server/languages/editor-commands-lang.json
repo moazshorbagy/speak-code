@@ -18,7 +18,7 @@
         "cut": "cut",
         "copy": "copy",
         "paste": "paste",
-        "backspace": "backspace",
+        "back-space": "backspace",
         "comment-line": "comment-line",
         "delete-line": "delete-line",
         "unfocus-folder": "unfocus-folder",
