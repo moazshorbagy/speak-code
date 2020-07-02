@@ -37,6 +37,7 @@
 </body>
 <script src="import.js"></script>
 <script>
+	editor.initializeEditor();
 	ipcRenderer.on('request-open-folder', () => {
 		ipcRenderer.send('open-folder', wd.getCurrentWorkingDirectory());
 	});

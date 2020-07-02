@@ -100,9 +100,9 @@ addOpenedFile = function (filePath, isUnregistered) {
 
     var tabNumberIdDiv = `<div class='float-left' style='padding: 0 5px;'> ${tabNumber} </div>`;
 
-    openEditorsContentContainer.append("<div id='OFContainer_" + filePath +
-        "' class='fileNameSpan'> <div id='OFDescriptor_" + filePath + "' class='descriptor'>" + tabNumberIdDiv +
-        closeTabIcon + "<p id='" + filePath + "' class='float-left'>" + fileName + " </p> </div> </div>");
+    openEditorsContentContainer.append(`<div id='OFContainer_${filePath}' 
+    class='fileNameSpan'> <div id='OFDescriptor_${filePath}' class='descriptor preventSelect'>${tabNumberIdDiv}
+        ${closeTabIcon} <p id='${filePath}' class='float-left'>${fileName} </p> </div> </div>`);
 
     addOpenAndCloseEventListeners(filePath);
 }
@@ -188,7 +188,7 @@ function handleModelDidChangeEvent(filePath, isUnregistered, tabNumber) {
 
 // closes the tab with ID: filePath
 closeTab = function (filePath, forceClose) {
-    var type;
+    let type;
     if (unregisteredTabs.includes(filePath)) {
         type = 'unregistered';
         closeUnregisteredTab(filePath, forceClose, type);
@@ -218,8 +218,11 @@ function closeNormalTab(filePath, forceClose, type) {
             var nextTab = editor.removeModelWithId(filePath);
             if(editor.getCurrentModel() == filePath) {
                 editor.focusModel(nextTab);
+                module.exports.displayCurrentlyOpenedFileName(nextTab);  
             }
-            module.exports.displayCurrentlyOpenedFileName(nextTab);
+            if(!nextTab) {
+                module.exports.displayCurrentlyOpenedFileName(null);  
+            }
         }
     }
 }
@@ -247,13 +250,14 @@ function closeUnregisteredTab(filePath, forceClose) {
             var nextTab = editor.removeModelWithId(filePath);
             if(editor.getCurrentModel() == filePath) {
                 editor.focusModel(nextTab);
+                module.exports.displayCurrentlyOpenedFileName(nextTab);
             }
-            module.exports.displayCurrentlyOpenedFileName(nextTab);
+            if(!nextTab) {
+                module.exports.displayCurrentlyOpenedFileName(null);  
+            }
         }        
     }
 }
-
-const path = require('path');
 
 registerModel = function(oldPath, newPath) {
     editor.registerModel(oldPath, newPath);
