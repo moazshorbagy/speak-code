@@ -435,11 +435,14 @@ function parseCommand(mainWindow, words) {
 
     words = preprocessing1(words);
 
-    mainWindow.webContents.send('request-file-path');
+    mainWindow.webContents.send('request-file-info');
 
-    ipcMain.once('file-path', function (event, filePath) {
+    ipcMain.once('file-info', function (event, args) {
 
         let lang, codeInserter;
+
+        let filePath = args['filePath'];
+        let previousLines = args['previousLines'];
 
         if (filePath) {
             config = configureLang(filePath);
@@ -474,7 +477,7 @@ function parseCommand(mainWindow, words) {
                 if (wordNotInGrammar) {
                     codeParser.directCodeInsertion(mainWindow, cmd);
                 } else if (directCode !== undefined) {
-                    codeParser.directCodeInsertion(mainWindow, directCode, codeInserter);
+                    codeParser.directCodeInsertion(mainWindow, directCode, codeInserter, previousLines);
                 } else if (directCommand !== undefined) {
                     commandParser.executeCommand(mainWindow, directCommand);
                 } else if (indirectCommand !== undefined) {

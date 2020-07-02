@@ -220,11 +220,13 @@ getContentInRange = function (filePath, startLine, startColumn, endLine, endColu
 }
 
 getPreviousLines = function () {
-    if (editor && editor.getModel()) {
+    try {
         let currentPosition = editor.getPosition();
         let line = currentPosition.lineNumber;
         currentLineLength = module.exports.getCurrentLine().length + 1;
         return module.exports.getContentInRange(currentFilePath, 1, 1, line, currentLineLength).split('\n');
+    } catch(e) {
+        return null;
     }
 }
 

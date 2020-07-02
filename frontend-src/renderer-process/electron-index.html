@@ -123,8 +123,10 @@
 		editor.moveCursorHorizontally(args);
 	});
 
-	ipcRenderer.on('request-file-path', function(event, args) {
-		event.sender.send('file-path', editor.getCurrentModel());
+	ipcRenderer.on('request-file-info', function(event, args) {
+		let filePath = editor.getCurrentModel();
+		let previousLines = editor.getPreviousLines();
+		event.sender.send('file-info', {filePath, previousLines});
 	});
 
 	ipcRenderer.on('request-next-tab', function(event, args) {
