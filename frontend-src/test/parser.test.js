@@ -84,7 +84,7 @@ describe('Function: Build Variable Name', function () {
     });
 
     it('Should throw error if input is not an array', function () {
-        input = 'variable my new variable snake case';
+        input = 'variable my new variable snake';
 
         assert.throws(() => parser.buildVariableName(input), TypeError, 'It did not throw TypeError as expected.');
     });
@@ -316,8 +316,8 @@ describe('Function: Build Filename', function () {
         }
     });
 
-    it('Should build filename according to new-file command', function () {
-        input = ['new-file', 'habeeby', 'ya', 'nothing', 'javascript'];
+    it('Should build filename without sending a convention', function () {
+        input = ['new-file', 'habeeby', 'ya', 'javascript'];
         expectedOutput = ['new-file', 'habeebyya.js'];
 
         actualOutput = parser.buildFileName(input);

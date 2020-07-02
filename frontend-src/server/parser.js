@@ -254,6 +254,9 @@ function nameAccordingToConvention(words, startIndex, endIndex, convention) {
             for (k = startIndex + 1; k < endIndex; k++) {
                 varName += words[k];
             }
+            if (convention) {
+                varName += convention
+            }
             break;
         }
     }
@@ -308,7 +311,7 @@ extensions = {
 }
 
 function mapExtension(extension) {
-    if(Object.keys(extensions).includes(extension)) {
+    if (Object.keys(extensions).includes(extension)) {
         return extensions[extension];
     } else {
         return null;
@@ -318,15 +321,15 @@ function mapExtension(extension) {
 function buildFileName(words) {
     let i = words.indexOf('new-file');
     let processedWords = [];
-    if(i !== - 1 && i < words.length - 2) {
-        for(let k = 0; k <= i; k++) {
+    if (i !== -1 && i < words.length - 2) {
+        for (let k = 0; k <= i; k++) {
             processedWords.push(words[k]);
         }
         let fileName;
         let extension = mapExtension(words[words.length - 1]);
         let convention = words[words.length - 2];
         fileName = nameAccordingToConvention(words, i + 1, words.length - 2, convention);
-        if(extension != null) {
+        if (extension != null) {
             fileName += "." + extension;
         }
         processedWords.push(fileName);
@@ -378,10 +381,10 @@ function startStopListening(words) {
             isListening = false;
             continue;
         }
-        if(words[i] === 'start-listening' && isListening) {
+        if (words[i] === 'start-listening' && isListening) {
             continue;
         }
-        if(words[i] === 'stop-listening' && !isListening) {
+        if (words[i] === 'stop-listening' && !isListening) {
             continue;
         }
         if (isListening === true) {
@@ -407,11 +410,11 @@ function preprocessing1(words) {
             words = startStopListening(words);
 
             words = formNonEnglishWords(words);
-    
+
             words = formNumbers(words);
 
             words = buildFileName(words);
-        } catch(e) {
+        } catch (e) {
             // console.log(words);
         }
     }
@@ -424,7 +427,7 @@ function preprocessing2(words, lang) {
 
     try {
         words = formLangCommands(words, lang);
-    } catch(e) {
+    } catch (e) {
         // console.log(words);
     }
 
@@ -447,7 +450,7 @@ function parseCommand(mainWindow, words) {
             codeInserter = config['codeInserter'];
         }
 
-        if(lang) {
+        if (lang) {
             words = preprocessing2(words, lang);
         }
 
@@ -482,7 +485,7 @@ function parseCommand(mainWindow, words) {
                     commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
                 }
 
-                if(!lang && !indirectCommand && !directCommand) {
+                if (!lang && !indirectCommand && !directCommand) {
                     codeParser.directCodeInsertion(mainWindow, cmd);
                 }
             }
