@@ -26,7 +26,7 @@
   font-weight: bold;
   position: absolute;
   top: 0;
-  right: 10%;
+  right: 9%;
   font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
   "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
 }
@@ -34,12 +34,11 @@
 #listening-notifier-container {
   position: absolute;
   top: 0;
-  left: 8%;
+  left: 9%;
 }
 
 #listening-notifier-icon {
   margin-top: 5px;
-  left: 8%;
   float: left;
   filter: invert(18%) sepia(76%) saturate(3501%) hue-rotate(350deg) brightness(94%) contrast(94%);
 }
