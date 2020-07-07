@@ -67,7 +67,7 @@
         "integer": "int",
         "double": "double",
         "float": "float",
-        "string": "str",
+        "string": "String",
         "true": "true",
         "false": "false",
         "list": "Array",
