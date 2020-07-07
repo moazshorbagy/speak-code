@@ -217,6 +217,19 @@ function unfocusFolder(mainWindow) {
     }
 }
 
+function addFileToCurrentFiles(filePath) {
+    let fileDirPath = filePath.split(Path.sep);
+    fileDirPath.pop();
+    fileDirPath = fileDirPath.join(Path.sep);
+
+    if(fileDirPath == currentlyFocusedFolderPath) {
+        let fileName = filePath.split(Path.sep).pop();
+        if(!currentFiles.includes(fileName)) {
+            currentFiles.push(fileName);
+        }
+    }
+}
+
 
 function selectLeft(mainWindow, numCols) {
     if (!isNaN(numCols)) {
@@ -290,7 +303,12 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
                 break;
             }
             case 'new-file': {
-                mainWindow.webContents.send('request-new-file', keyword);
+                if(!currentFiles.includes(keyword)) {
+                    let path = Path.join(currentlyFocusedFolderPath, keyword);
+                    currentFiles.push(keyword);
+                    fs.writeFileSync(path, '');
+                    openFile(mainWindow, keyword);
+                };
                 break;
             }
         }
@@ -343,5 +361,6 @@ executeCommand = function (mainWindow, command) {
 module.exports = {
     executeCommand,
     constructIndicrectCommand,
-    setRootDirectory
+    setRootDirectory,
+    addFileToCurrentFiles
 };

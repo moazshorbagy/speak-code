@@ -173,6 +173,10 @@
 		editor.undo();
 	});
 
+	ipcRenderer.on('request-add-file', function(event, filePath) {
+		collapsible.addFile(filePath);
+	});
+
 	ipcRenderer.on('request-redo', function(event, args) {
 		editor.redo();
 	});

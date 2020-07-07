@@ -127,13 +127,8 @@ displayCurrentlyOpenedFileName = function (filePath) {
     if(unsavedModels.includes(filePath) || unsavedUnregisteredModels.includes(filePath)) {
         savedState = 'unsaved';
     }
-    let filenameElement = `<p id='file-name'>${filePath.split(Path.sep).pop()}</p>`;
-    let fileSavedStateElement = `<p id='saved-state'> ${savedState} </p>`;
-    let cursorPosition = `<p id='cursor-notifier'> </p>`;
     $("#opened-file-name").text(filePath.split(Path.sep).pop());
     $("#saved-state").text(savedState);
-    let fileInfo = filenameElement + fileSavedStateElement + cursorPosition;
-    // currentlyOpenedFile.append(fileInfo);
 }
 
 gotoTab = function (tabNumber) {
