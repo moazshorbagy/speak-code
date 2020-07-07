@@ -191,8 +191,7 @@ function addFile(filePath) {
 
 function removeFile(filePath) {
     try {
-        let id = 'FDescriptor_' + filePath;
-        let element = document.getElementById(id);
+        let element = document.getElementById(filePath);
         element.parentNode.removeChild(element);
     } catch(e) {
         console.log(e);
