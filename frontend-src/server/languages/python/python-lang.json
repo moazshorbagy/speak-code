@@ -126,6 +126,8 @@
         "new-scope": "new-scope",
         "exit-scope": "exit-scope",
         "delete": "del ",
-        "right-arrow": " -> "
+        "right-arrow": " -> ",
+        "for-loop": "for-loop",
+        "print": "print"
     }
 }
