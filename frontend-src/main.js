@@ -1,7 +1,7 @@
 const electron = require('electron');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 const ipcMain = electron.ipcMain;
 
@@ -54,20 +54,24 @@ app.on('window-all-closed', function () {
 
 function spawnPythonChild() {
 
-	let python;
-
 	if (process.platform == 'win32') {
-		python = 'python';
+		let activateConda = spawnSync('conda', ['activate'], options={
+			encoding: 'utf8'
+		});
+		if(activateConda.error) {
+			console.log('failed to activate conda environment: ' + activateConda.error);
+		}
+		spawnedChild = spawn('python', ['recognizer.py'], options = {
+			encoding: 'utf8'
+		});
 	} else if (process.platform == 'linux' || process.platform == 'darwin') {
-		python = 'python3';
-	}
-
-	if (python) {
-		spawnedChild = spawn(python, ['recognizer.py'], {
+		spawnedChild = spawn('python3', ['recognizer.py'], {
 			stdio: 'inherit',
 			shell: true
 		});
+	}
 
+	if (spawnedChild) {
 		spawnedChild.on('close', (code, signal) => {
 			console.log(`child closed: ${code}, ${signal}`);
 		});
