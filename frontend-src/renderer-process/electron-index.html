@@ -293,6 +293,10 @@
 			openedFiles.registerModel(oldName, args['newPath']);
 		}
 	});
+	
+	ipcRenderer.on('request-update-cursor', function(event, values) {
+		editor.updateCursorPosition(values[0], values[1]);
+	});
 </script>
 <script>
 	var Split = require('split-grid')

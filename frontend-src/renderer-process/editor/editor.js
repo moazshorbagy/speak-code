@@ -301,6 +301,19 @@ setCursorPosition = function (position) {
     }
 }
 
+// updates cursor position by adding values to rows and columns respectively
+function updateCursorPosition(rows, columns) {
+    if(editor && editor.getModel()) {
+        position = editor.getPosition();
+        if(rows == 0 && columns == 0) {
+            return;
+        }
+        position.lineNumber += rows;
+        position.column += columns;
+        editor.setPosition(position);
+    }
+}
+
 // saves the current focused model
 saveFile = function () {
     if (!editor || !currentFilePath) {
@@ -711,5 +724,6 @@ module.exports = {
     revealCursor,
     deleteLeft,
     deleteRight,
-    initializeEditor
+    initializeEditor,
+    updateCursorPosition
 }
