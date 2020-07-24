@@ -1,4 +1,5 @@
 import speech_recognition as sr
+
 import zerorpc
 import time
 
@@ -22,6 +23,5 @@ with sr.Microphone() as source:
         words = words.lower()
         print(words)
         client.sendData(words)
-        time.sleep(1)
 
         

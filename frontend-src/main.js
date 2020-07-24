@@ -38,12 +38,7 @@ let spawnedChild;
 app.on('ready', function () {
 	createWindow();
 	zeroRPCServer.initializeServer();
-
-	// // start the python client after 100 ms to ensure all renderer process scripts are run.
-	// setTimeout(function() {
-	// 	spawnPythonChild();
-	// }, 15000);
-
+	spawnPythonChild();
 });
 
 app.on('renderer-process-crashed', function () {
@@ -51,18 +46,34 @@ app.on('renderer-process-crashed', function () {
 });
 
 app.on('window-all-closed', function () {
+	spawnedChild.kill('SIGINT');
 	if (process.platform !== 'darwin') {
 		app.quit()
 	}
 });
 
 function spawnPythonChild() {
-	spawnedChild = spawn('python', ['python-client.py']);
 
-	spawnedChild.on('close', (code, signal) => {
-		console.log(`child closed: ${code}, ${signal}`);
-	});
-	spawnedChild.on('error', (err) => console.error(err));
+	let python;
+
+	if (process.platform == 'win32') {
+		python = 'python';
+	} else if (process.platform == 'linux' || process.platform == 'darwin') {
+		python = 'python3';
+	}
+
+	if (python) {
+		spawnedChild = spawn(python, ['recognizer.py'], {
+			stdio: 'inherit',
+			shell: true
+		});
+
+		spawnedChild.on('close', (code, signal) => {
+			console.log(`child closed: ${code}, ${signal}`);
+		});
+
+		spawnedChild.on('error', (err) => console.error(err));
+	}
 
 }
 
@@ -88,6 +99,7 @@ ipcMain.on('open-save-dialog', (event, args) => {
 
 ipcMain.on('close-app', function (event, args) {
 	mainWindow.close();
+	spawnedChild.kill('SIGINT');
 	if (process.platform !== 'darwin') {
 		app.quit()
 	}
@@ -99,10 +111,11 @@ ipcMain.on('show-close-app-save-check', function (event, fileNames) {
 
 ipcMain.on('toggle-is-listening', (event, arg) => {
 	event.returnValue = parser.toggleIsListening();
-  });
+});
 
 app.on('activate', function () {
 	if (mainWindow === null) {
 		createWindow()
 	}
+	spawnPythonChild();
 })
