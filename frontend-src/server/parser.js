@@ -228,10 +228,21 @@ function snakeCase(words, startIndex, endIndex) {
     return varName;
 }
 
+function dashedName(words, startIndex, endIndex) {
+    varName = words[startIndex];
+
+    for (k = startIndex + 1; k < endIndex; k++) {
+        varName += "-" + words[k];
+    }
+
+    return varName; 
+}
+
 let conventions = [
     'camel',
     'snake',
-    'pascal'
+    'pascal',
+    'dashed'
 ]
 
 function nameAccordingToConvention(words, startIndex, endIndex, convention) {
@@ -249,13 +260,19 @@ function nameAccordingToConvention(words, startIndex, endIndex, convention) {
             varName = pascalCase(words, startIndex, endIndex);
             break;
         }
+        case 'dashed': {
+            varName = dashedName(words, startIndex, endIndex);
+            break;
+        }
         default: {
             varName = words[startIndex];
             for (k = startIndex + 1; k < endIndex; k++) {
                 varName += words[k];
             }
             if (convention) {
-                varName += convention
+                if(convention != varName) {
+                    varName += convention
+                }
             }
             break;
         }
@@ -318,10 +335,34 @@ function mapExtension(extension) {
     }
 }
 
+let fileNameCmds = [
+    'new-file',
+    'open-file',
+    'focus-folder',
+    'expand-folder',
+    'collapse-folder'
+];
+
+
 function buildFileName(words) {
-    let i = words.indexOf('new-file');
+    let k = 0;
+    let i = - 1;
+    let currentCmd;
+    for (k = 0; k < fileNameCmds.length; k++) {
+        i = words.indexOf(fileNameCmds[k]);
+        currentCmd = fileNameCmds[k];
+        if (i != - 1) {
+            break;
+        }
+    }
+
+    if (k == fileNameCmds.length) {
+        return words;
+    }
+
     let processedWords = [];
-    if (i !== -1 && i < words.length - 2) {
+
+    if ((currentCmd == 'new-file' || currentCmd == 'open-file') && i < words.length - 2) {
         for (let k = 0; k <= i; k++) {
             processedWords.push(words[k]);
         }
@@ -333,7 +374,17 @@ function buildFileName(words) {
             fileName += "." + extension;
         }
         processedWords.push(fileName);
-    } else {
+    } else if ((currentCmd == 'focus-folder' || currentCmd == 'expand-folder' ||
+        currentCmd == 'collapse-folder') && i < words.length - 1) {
+        for (let k = 0; k <= i; k++) {
+            processedWords.push(words[k]);
+        }
+        let folderName;
+        let convention = words[words.length - 1];
+        folderName = nameAccordingToConvention(words, i + 1, words.length - 1, convention);
+        processedWords.push(folderName);
+    }
+    else {
         return words;
     }
     return processedWords;
@@ -398,6 +449,32 @@ function startStopListening(words) {
     return processedWords;
 }
 
+
+function formForLoops(words) {
+    let processedWords = [];
+
+    if (words.length == 1) {
+        processedWords.push(words[0]);
+    } else {
+        for (i = 0; i < words.length - 1; i++) {
+            if (words[i] == 'for-loop') {
+                if (!isNaN(words[i + 1])) {
+                    processedWords.push('for-loop\\' + words[i + 1]);
+                }
+                i++;
+            } else {
+                processedWords.push(words[i]);
+            }
+
+            if (i == words.length - 2) {
+                processedWords.push(words[i + 1]);
+            }
+        }
+    }
+
+    return processedWords;
+}
+
 function preprocessing1(words) {
 
     //preprocessing the sentence
@@ -419,7 +496,7 @@ function preprocessing1(words) {
 
             words = buildFileName(words);
         } catch (e) {
-            // console.log(words);
+            console.log(e);
         }
     }
 
@@ -431,8 +508,11 @@ function preprocessing2(words, lang) {
 
     try {
         words = formLangCommands(words, lang);
+
+        words = formForLoops(words);
+
     } catch (e) {
-        // console.log(words);
+        console.log(e);
     }
 
     return words;
@@ -447,7 +527,7 @@ function parseCommand(mainWindow, words) {
 
     words = preprocessing1(words);
 
-    if(didChangeListeningState) {
+    if (didChangeListeningState) {
         mainWindow.webContents.send('set-listening-state', isListening);
     }
 
@@ -491,7 +571,7 @@ function parseCommand(mainWindow, words) {
                 let indirectCommand = isIndirectCommand(cmd);
 
                 if (wordNotInGrammar) {
-                    codeParser.directCodeInsertion(mainWindow, cmd);
+                    codeParser.directCodeInsertion(mainWindow, cmd, codeInserter, previousLines);
                 } else if (directCode !== undefined) {
                     codeParser.directCodeInsertion(mainWindow, directCode, codeInserter, previousLines);
                 } else if (directCommand !== undefined) {
