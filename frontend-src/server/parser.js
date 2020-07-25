@@ -306,6 +306,7 @@ function buildVariableName(words) {
             convention = words[i];
 
             let varName = nameAccordingToConvention(words, j, i, convention);
+            varName = "variable\\" + varName;
 
             wordsAfterCombiningVarName.push(varName);
 
@@ -342,7 +343,6 @@ let fileNameCmds = [
     'expand-folder',
     'collapse-folder'
 ];
-
 
 function buildFileName(words) {
     let k = 0;
@@ -496,7 +496,7 @@ function preprocessing1(words) {
 
             words = buildFileName(words);
         } catch (e) {
-            console.log(e);
+            // console.log(e);
         }
     }
 
@@ -512,7 +512,7 @@ function preprocessing2(words, lang) {
         words = formForLoops(words);
 
     } catch (e) {
-        console.log(e);
+        // console.log(e);
     }
 
     return words;

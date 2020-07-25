@@ -24,21 +24,26 @@ let directCodeInsertionCmds = [
     'else-if',
     'while',
     'for',
-    'for-loop'
+    'for-loop',
+    'variable'
 ];
 
 // insert code directly
 directCodeInsertion = function (mainWindow, keyword, codeInserter, previousLines) {
-    let words = keyword.split('\\');
-    let args = [];
+    let words = keyword.split("\\");
+    let arg = [];
     if(words.length != 1) {
         keyword = words[0];
-        for(i = 1; i < words.length; i++) {
-            args.push(words[i]);
+        for(let i = 1; i < words.length; i++) {
+            arg.push(words[i]);
         }
     }
     if (directCodeInsertionCmds.includes(keyword)) {
         switch (keyword) {
+            case 'variable': {
+                insertPlainCode(mainWindow, arg[0]);
+                break;
+            }
             case 'brackets': {
                 insertPlainCode(mainWindow, '()');
                 mainWindow.webContents.send('request-horizontal-move-cursor', -1);
