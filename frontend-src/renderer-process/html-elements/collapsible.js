@@ -8,7 +8,7 @@ const openedFolderIconSrc = 'icons/folder_open-24px.svg';
 const closedFolderIconSrc = 'icons/folder-24px.svg';
 
 const fileIcon = "<img style='pointer-events: none;' src='icons/code-file24px.svg' class='float-left'> </img>";
-const otherTypesIcon = "<img style='pointer-events: none;' src='icons/regular-file24.svg' class='float-left'> </img>" 
+const otherTypesIcon = "<img style='pointer-events: none;' src='icons/regular-file24.svg' class='float-left'> </img>"
 
 addCollapsible = function (container, path, name, content, isRootDir) {
 
@@ -54,16 +54,21 @@ addCollapsible = function (container, path, name, content, isRootDir) {
 }
 
 populateFiles = function (files, path, contentContainer) {
-    let fileDescriptor;
     for (let i = 0; i < files.length; i++) {
         contentId = Path.join(path, files[i].name);
-        fileDescriptor = `<div id='${'FDescriptor_' + contentId}' class='descriptor'>`;
-        fileDescriptor += fileIcon + `<p style='pointer-events: none' 
-        id='${'name_' + files[i].name}' style='font-weight: bolder;' class='float-left'> ${files[i].name} </p> </div>`;
-        contentContainer.append(`<div id='${contentId}' class='${_class}'> ${fileDescriptor} </div>`);
+        let file = createFile(contentId, files[i].name, contentContainer);
+        contentContainer.append(file);
         c = $('#FDescriptor_' + $.escapeSelector(contentId));
         c.on('click', fileEventHandlers);
     }
+}
+
+function createFile(contentId, name) {
+    let fileDescriptor;
+    fileDescriptor = `<div id='${'FDescriptor_' + contentId}' class='descriptor'>`;
+    fileDescriptor += fileIcon + `<p style='pointer-events: none' 
+    id='name_${name}' style='font-weight: bolder;' class='float-left'> ${name} </p> </div>`;
+    return `<div id='${contentId}' class='${_class}'> ${fileDescriptor} </div>`;
 }
 
 expandFolder = function (folderPath) {
@@ -118,45 +123,79 @@ unfocusFolder = function (folderPath) {
     element.style.background = 'unset';
 }
 
-function smallScript(e) {
-    if (e.keyCode == 13) {
-        e.srcElement.contentEditable = false;
-        e.srcElement.value = e.target.textContent;
-        renameFile(e.srcElement.id, e.srcElement.value);
-    }
-}
-
 function fileEventHandlers(event) {
-    e = event.originalEvent;
-    if (e.srcElement === document.activeElement) {
-        return;
-    }
-    elementId = e.srcElement.id.split('_');
-    elementId.shift();
-    elementId = elementId.join('_');
-    if (e.detail == 2) {
-        clearTimeout(pendingClick);
-        e.srcElement.contentEditable = true;
-        e.srcElement.focus();
-        e.srcElement.addEventListener('keydown', smallScript);
-        return;
-    }
-
-    pendingClick = setTimeout(function () {
-        module.exports.openFile(elementId);
-    }, 300);
+    let e = event.originalEvent;
+    let filePath = e.srcElement.id.split('_');
+    filePath.shift();
+    filePath = filePath.join('_');
+    module.exports.openFile(filePath);
 }
 
 // just does the function of renaming the file.
-function renameFile(filePath, newName) {
-    directoryPath = filePath.split(Path.sep);
+function systemRenameFile(oldId, newName) {
+    let filePath = oldId.split('_');
+    filePath.shift();
+    filePath = filePath.join(Path.sep);
+    let directoryPath = filePath.split(Path.sep);
     directoryPath.pop();
     directoryPath = directoryPath.join(Path.sep);
-    var newPath = directoryPath + Path.sep + newName;
+    let newPath = Path.join(directoryPath, newName);
     fs.renameSync(filePath, newPath);
+}
 
-    oldElement = document.getElementById(filePath);
-    oldElement.id = newPath;
+function updateId(oldId, newId) {
+    try {
+        document.getElementById(oldId).removeEventListener('click', fileEventHandlers);
+        document.getElementById(oldId).id = newId;
+        document.getElementById(newId).addEventListener('click', fileEventHandlers);
+    } catch(e) {
+        console.log(e);
+    }
+ }
+
+function addFile(filePath) {
+    let directoryPath = filePath.split(Path.sep);
+    directoryPath.pop();
+    directoryPath = directoryPath.join(Path.sep);
+    let contentContainer = $("#c" + $.escapeSelector(directoryPath));
+    let name = filePath.split(Path.sep).pop();
+    let file = createFile(filePath, name);
+    let neighbors = contentContainer.children();
+
+    for(let i = 0; i < neighbors.length; i++) {
+        if(neighbors[i].id === filePath) {
+            return;
+        }
+    }
+
+
+    let followingIndex;
+    for(let i = 0; i < neighbors.length; i++) {
+        if(neighbors[i].children.length < 2 && neighbors[i].id > filePath) {
+            followingIndex = i;
+        }
+    }
+    if(followingIndex === undefined) {
+        contentContainer.append(file);
+    } else if(followingIndex === neighbors.length - 1) {
+        if(neighbors[followingIndex].children.length < 2 && neighbors[followingIndex].id > filePath) {
+            $(file).insertBefore('#' + $.escapeSelector(neighbors[followingIndex].id));
+        } else {
+            $(file).insertAfter('#' + $.escapeSelector(neighbors[followingIndex].id));
+        }
+    }
+
+    c = $('#FDescriptor_' + $.escapeSelector(filePath));
+    c.on('click', fileEventHandlers);
+}
+
+function removeFile(filePath) {
+    try {
+        let element = document.getElementById(filePath);
+        element.parentNode.removeChild(element);
+    } catch(e) {
+        console.log(e);
+    }
 }
 
 populateFolders = function (folders, path, explorerContainer) {
@@ -166,6 +205,7 @@ populateFolders = function (folders, path, explorerContainer) {
         module.exports.addCollapsible(explorerContainer, folderPath, folderName, fs.readdirSync(folderPath, { withFileTypes: true }));
     }
 }
+
 openFile = function (filePath) {
     try {
         let doc = fs.readFileSync(filePath, "utf8");
@@ -188,11 +228,15 @@ openFile = function (filePath) {
 populateOtherTypes = function (files, path, contentContainer) {
     for (let i = 0; i < files.length; i++) {
         var contentId = Path.join(path, files[i].name);
-        fileDescriptor = `<div id='${'FDescriptor_' + contentId}' class='descriptor'>`;
-        fileDescriptor += otherTypesIcon + `<p style='pointer-events: none' 
-        id='${'name_' + files[i].name}' style='font-weight: bolder;' class='float-left'> ${files[i].name} </p> </div>`;
-        contentContainer.append(`<div id='${contentId}' class='${_class}'> ${fileDescriptor} </div> `);
+        populateOtherTypeFile(contentId, files[i].name, contentContainer)
     }
+}
+
+function populateOtherTypeFile(contentId, name, contentContainer) {
+    fileDescriptor = `<div id='${'FDescriptor_' + contentId}' class='descriptor'>`;
+    fileDescriptor += otherTypesIcon + `<p style='pointer-events: none' 
+    id='name_${name}' style='font-weight: bolder;' class='float-left'> ${name} </p> </div>`;
+    contentContainer.append(`<div id='${contentId}' class='${_class}'> ${fileDescriptor} </div> `);
 }
 
 module.exports = {
@@ -201,5 +245,6 @@ module.exports = {
     expandFolder,
     focusFolder,
     unfocusFolder,
-    collapseFolder
+    collapseFolder,
+    addFile
 }

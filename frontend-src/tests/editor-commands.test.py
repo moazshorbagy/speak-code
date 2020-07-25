@@ -66,10 +66,10 @@ class TestScenarios(unittest.TestCase):
 
         # test vectors are divided into parts to do necessary check after each part
         testVectorPart1 = [
-            'open file expected.py', 'go line three go column one', 'variable my variable camel to be one', 'save',
+            'open file expected python', 'go line three go column one', 'variable my variable camel to be one', 'save',
         ]
         testVectorPart2 = [
-            'undo', 'save', 'select all', 'copy', 'open file file.py', 'paste', 'save', 'close close'
+            'undo', 'save', 'select all', 'copy', 'open file file python', 'paste', 'save', 'close close'
         ]
 
         client.sendData('start listening')
@@ -130,11 +130,10 @@ class TestScenarios(unittest.TestCase):
         # step 1: set current working directory
         scenario_dir = setWorkingDirectory('scenario2')
 
-        part1 = ['expand folder subdir1', 'focus folder subdir1', 'expand folder subdir2', 'open file use-me.py',
+        part1 = ['expand folder sub dir one', 'focus folder sub dir one', 'expand folder sub dir two', 'open file use me dashed python',
         'comment line', 'save']
 
         client.sendData('start listening')
-
 
         initial_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
 
@@ -143,7 +142,7 @@ class TestScenarios(unittest.TestCase):
         current_file_content = getFileContentAsLines(os.path.join(scenario_dir, 'subdir1', 'use-me.py'))
         self.assertEqual('# ' + initial_file_content[0], current_file_content[0])
 
-        part2 = ['delete line', 'save', 'unfocus folder', 'collapse folder subdir1']
+        part2 = ['delete line', 'save', 'unfocus folder', 'collapse folder sub dir one']
 
         sendTestVector(part2)
 
@@ -192,7 +191,7 @@ class TestScenarios(unittest.TestCase):
 
         file2_line1_expected_content = ' ' * 4 + 'max_val = - 1\n'
 
-        part1 = ['open file file1.py', 'open file file2.py', 'next tab', 'select line', 'copy',
+        part1 = ['open file file one python', 'open file file two python', 'next tab', 'select line', 'copy',
          'move right', 'back space', 'save', 'go tab one', 'enter', 'indent', 'paste', 'save']
         part2 = ['undo undo', 'save', 'close', 'undo', 'save']
         part3 = ['redo', 'save']
@@ -253,7 +252,7 @@ class TestScenarios(unittest.TestCase):
 
         # SETUP PART: prepare input vector
         # TODO: open file should set cursor at line 1 column 1 or at the end of file when the file is opened 
-        inputVector = ['open file actual.py', 'go line one go column one', 'variable my variable camel to be one', 'save close']
+        inputVector = ['open file actual python', 'go line one go column one', 'variable my variable camel to be one', 'save close']
         time.sleep(0.5)
 
         # CALL PART: applies the input vector to the actual output file
@@ -299,7 +298,7 @@ class TestScenarios(unittest.TestCase):
         expected_file_content = getFileContentAsLines(expected_file_path)
         num_lines = len(expected_file_content)
         line1_length = len(expected_file_content[0])
-        testVector = ['open file expected.py', 'open file actual.py',
+        testVector = ['open file expected python', 'open file actual python',
         'next tab', f'go line 1 go column {line1_length - 1}', 'move right', 'select left five zero', 'copy', 
         'next tab', 'paste', 'enter', 
         'next tab', 'go line 2 go column 2', 'move left', 'select right two zero', 'copy',
@@ -343,7 +342,8 @@ class TestScenarios(unittest.TestCase):
         expected_file_content = getFileContentAsLines(expected_file_path)
         num_lines = len(expected_file_content)
 
-        testVector = ['start listening open file expected.py', 'open file actual.py next tab', 'stop listening', 'delete line',
+        testVector = ['start listening', 'open file expected python', 'open file actual python', 
+        'next tab stop listening', 'delete line',
         'save', 'close', 'start listening', 'select all', 'copy', 'next tab', 'paste save close close']
 
         sendTestVector(testVector)
@@ -360,3 +360,4 @@ class TestScenarios(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    # sendTestVector(['for loop one three'])

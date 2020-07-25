@@ -173,6 +173,10 @@
 		editor.undo();
 	});
 
+	ipcRenderer.on('request-add-file', function(event, filePath) {
+		collapsible.addFile(filePath);
+	});
+
 	ipcRenderer.on('request-redo', function(event, args) {
 		editor.redo();
 	});
@@ -288,6 +292,10 @@
 		if(unregisteredModelExists(oldName)) {
 			openedFiles.registerModel(oldName, args['newPath']);
 		}
+	});
+	
+	ipcRenderer.on('request-update-cursor', function(event, values) {
+		editor.updateCursorPosition(values[0], values[1]);
 	});
 </script>
 <script>

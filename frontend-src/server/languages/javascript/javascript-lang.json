@@ -48,11 +48,11 @@
         "mod": " % ",
         "dollar": "$",
         "escape": "\\",
-        "if": "if ",
-        "while": "while ",
-        "wild": "while ",
+        "if": "if",
+        "while": "while",
+        "wild": "while",
         "break": "break\n",
-        "for": "for ",
+        "for": "for",
         "else": "else",
         "else-if": "else if",
         "try": "try",
@@ -119,10 +119,11 @@
         "delete": "delete ",
         "callback": "callback",
         "arrow-callback": "arrow-callback",
-        "for-loop": "for-loop-block",
-        "for-each": "for-each-block",
+        "for-loop": "for-loop",
         "question-mark": " ? ",
         "export": "export ",
-        "module": "module"
+        "module": "module",
+        "define": "function ",
+        "print": "print"
     }
 }

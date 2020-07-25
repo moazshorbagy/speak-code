@@ -139,8 +139,12 @@ function openFile(mainWindow, filename) {
 
 function expandFolder(mainWindow, folderName) {
     folderPath = Path.join(currentlyFocusedFolderPath, folderName);
-    if(folderPath === currentlyFocusedFolderPath) {
-        mainWindow.webContents.send('request-expand-foldername', folderPath);
+    let parentPath = rootDir.split(Path.sep);
+    parentPath.pop();
+    let rootFolderPath = Path.join(parentPath.join(Path.sep), folderName);
+    if(rootFolderPath === currentlyFocusedFolderPath) {
+        mainWindow.webContents.send('request-expand-foldername', rootFolderPath);
+        return;
     } else {
         for (var i = 0; i < currentFolders.length; i++) {
             if (currentFolders[i] === folderName) {
@@ -155,12 +159,16 @@ function expandFolder(mainWindow, folderName) {
 
 function collapseFolder(mainWindow, folderName) {
     folderPath = Path.join(currentlyFocusedFolderPath, folderName);
-    if(folderPath === currentlyFocusedFolderPath) {
+    let parentPath = rootDir.split(Path.sep);
+    parentPath.pop();
+    let rootFolderPath = Path.join(parentPath.join(Path.sep), folderName);
+    if(rootFolderPath === currentlyFocusedFolderPath) {
         mainWindow.webContents.send('request-collapse-foldername', currentlyFocusedFolderPath);
+        return;
     } else {
         for (var i = 0; i < currentFolders.length; i++) {
             if (currentFolders[i] === folderName) {
-                mainWindow.webContents.send('request-expand-foldername', folderPath);
+                mainWindow.webContents.send('request-collapse-foldername', folderPath);
                 return;
             }
         }
@@ -206,6 +214,19 @@ function unfocusFolder(mainWindow) {
         setCurrentFilesAndFolders(content);
 
         mainWindow.webContents.send('request-focus-folder', currentlyFocusedFolderPath);
+    }
+}
+
+function addFileToCurrentFiles(filePath) {
+    let fileDirPath = filePath.split(Path.sep);
+    fileDirPath.pop();
+    fileDirPath = fileDirPath.join(Path.sep);
+
+    if(fileDirPath == currentlyFocusedFolderPath) {
+        let fileName = filePath.split(Path.sep).pop();
+        if(!currentFiles.includes(fileName)) {
+            currentFiles.push(fileName);
+        }
     }
 }
 
@@ -282,7 +303,12 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
                 break;
             }
             case 'new-file': {
-                mainWindow.webContents.send('request-new-file', keyword);
+                if(!currentFiles.includes(keyword)) {
+                    let path = Path.join(currentlyFocusedFolderPath, keyword);
+                    currentFiles.push(keyword);
+                    fs.writeFileSync(path, '');
+                    openFile(mainWindow, keyword);
+                };
                 break;
             }
         }
@@ -335,5 +361,6 @@ executeCommand = function (mainWindow, command) {
 module.exports = {
     executeCommand,
     constructIndicrectCommand,
-    setRootDirectory
+    setRootDirectory,
+    addFileToCurrentFiles
 };
