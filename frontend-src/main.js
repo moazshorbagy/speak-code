@@ -15,6 +15,8 @@ const parser = require('./server/parser')
 
 let mainWindow;
 
+let showExitPrompt = true;
+
 function createWindow() {
 	var screenElectron = electron.screen;
 	mainWindow = new BrowserWindow({
@@ -26,9 +28,17 @@ function createWindow() {
 	});
 	mainWindow.loadURL(`file://${__dirname}/renderer-process/electron-index.html`)
 	mainWindow.webContents.openDevTools()
+	mainWindow.on('close', function(e) {
+		if(showExitPrompt) {
+			e.preventDefault();
+			mainWindow.webContents.send('request-exit-app');
+		} else {
+			showExitPrompt = true;
+		}
+	});
 	mainWindow.on('closed', function () {
-		mainWindow = null
-	})
+		mainWindow = null;
+	});
 }
 
 const zeroRPCServer = require('./server/server');
@@ -102,6 +112,7 @@ ipcMain.on('open-save-dialog', (event, args) => {
 });
 
 ipcMain.on('close-app', function (event, args) {
+	showExitPrompt = false;
 	mainWindow.close();
 	spawnedChild.kill('SIGINT');
 	if (process.platform !== 'darwin') {
@@ -110,6 +121,7 @@ ipcMain.on('close-app', function (event, args) {
 });
 
 ipcMain.on('show-close-app-save-check', function (event, fileNames) {
+	console.log(fileNames);
 	msgBox.closeAppSaveCheck(mainWindow, dialog, fileNames);
 });
 
