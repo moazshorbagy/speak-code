@@ -35,6 +35,9 @@ directCodeInsertion = function (mainWindow, keyword, codeInserter, previousLines
     if(words.length != 1) {
         keyword = words[0];
         for(let i = 1; i < words.length; i++) {
+            if(directCodeInsertionCmds.includes(words[i])) {
+                continue;
+            }
             arg.push(words[i]);
         }
     }
@@ -122,7 +125,7 @@ directCodeInsertion = function (mainWindow, keyword, codeInserter, previousLines
                 break;
             }
             case 'for-loop': {
-                let codeBlock = codeInserter.forLoop(previousLines, args);
+                let codeBlock = codeInserter.forLoop(previousLines, arg[0]);
                 let code = codeBlock['code'];
                 let cursorMoveValue = codeBlock['cursorMoveValue'];
                 insertPlainCode(mainWindow, code);

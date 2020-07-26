@@ -48,7 +48,7 @@ let spawnedChild;
 app.on('ready', function () {
 	createWindow();
 	zeroRPCServer.initializeServer();
-	spawnPythonChild();
+	// spawnPythonChild();
 });
 
 app.on('renderer-process-crashed', function () {
