@@ -103,77 +103,93 @@ function checkDirectCommand(command) {
 }
 
 function focusFolder(mainWindow, folderName) {
-    // this means that the folder request to be focused
-    // does not exist in the currently focused folder.
-    for (var i = 0; i < currentFolders.length; i++) {
+    try {
+        // this means that the folder request to be focused
+        // does not exist in the currently focused folder.
+        for (var i = 0; i < currentFolders.length; i++) {
 
-        if (currentFolders[i] === folderName) {
+            if (currentFolders[i] === folderName) {
 
-            mainWindow.webContents.send('request-unfocus-folder', currentlyFocusedFolderPath);
+                mainWindow.webContents.send('request-unfocus-folder', currentlyFocusedFolderPath);
 
-            // set currentlyFocusedFolderPath
-            currentlyFocusedFolderPath = Path.join(currentlyFocusedFolderPath, folderName);
+                // set currentlyFocusedFolderPath
+                currentlyFocusedFolderPath = Path.join(currentlyFocusedFolderPath, folderName);
 
-            // set current files and current folders
-            content = fs.readdirSync(currentlyFocusedFolderPath, { withFileTypes: true });
+                // set current files and current folders
+                content = fs.readdirSync(currentlyFocusedFolderPath, { withFileTypes: true });
 
-            setCurrentFilesAndFolders(content);
+                setCurrentFilesAndFolders(content);
 
-            mainWindow.webContents.send('request-focus-folder', currentlyFocusedFolderPath);
+                mainWindow.webContents.send('request-focus-folder', currentlyFocusedFolderPath);
 
-            break;
+                break;
+            }
         }
+    } catch(e) {
+
     }
 }
 
 function openFile(mainWindow, filename) {
-    for (var i = 0; i < currentFiles.length; i++) {
-        if (currentFiles[i] === filename) {
-            filePath = Path.join(currentlyFocusedFolderPath, filename);
-            mainWindow.webContents.send('request-open-filename', filePath);
-            return;
+    try {
+        for (var i = 0; i < currentFiles.length; i++) {
+            if (currentFiles[i] === filename) {
+                filePath = Path.join(currentlyFocusedFolderPath, filename);
+                mainWindow.webContents.send('request-open-filename', filePath);
+                return;
+            }
         }
+    } catch (e) {
+
     }
     console.log(`File ${filename} does not exist.`);
 }
 
 function expandFolder(mainWindow, folderName) {
-    folderPath = Path.join(currentlyFocusedFolderPath, folderName);
-    let parentPath = rootDir.split(Path.sep);
-    parentPath.pop();
-    let rootFolderPath = Path.join(parentPath.join(Path.sep), folderName);
-    if(rootFolderPath === currentlyFocusedFolderPath) {
-        mainWindow.webContents.send('request-expand-foldername', rootFolderPath);
-        return;
-    } else {
-        for (var i = 0; i < currentFolders.length; i++) {
-            if (currentFolders[i] === folderName) {
-                mainWindow.webContents.send('request-expand-foldername', folderPath);
-                return;
+    try {
+        folderPath = Path.join(currentlyFocusedFolderPath, folderName);
+        let parentPath = rootDir.split(Path.sep);
+        parentPath.pop();
+        let rootFolderPath = Path.join(parentPath.join(Path.sep), folderName);
+        if (rootFolderPath === currentlyFocusedFolderPath) {
+            mainWindow.webContents.send('request-expand-foldername', rootFolderPath);
+            return;
+        } else {
+            for (var i = 0; i < currentFolders.length; i++) {
+                if (currentFolders[i] === folderName) {
+                    mainWindow.webContents.send('request-expand-foldername', folderPath);
+                    return;
+                }
             }
         }
+    } catch (e) {
+
     }
 
     console.log(`Folder ${folderName} does not exist.`);
 }
 
 function collapseFolder(mainWindow, folderName) {
-    folderPath = Path.join(currentlyFocusedFolderPath, folderName);
-    let parentPath = rootDir.split(Path.sep);
-    parentPath.pop();
-    let rootFolderPath = Path.join(parentPath.join(Path.sep), folderName);
-    if(rootFolderPath === currentlyFocusedFolderPath) {
-        mainWindow.webContents.send('request-collapse-foldername', currentlyFocusedFolderPath);
-        return;
-    } else {
-        for (var i = 0; i < currentFolders.length; i++) {
-            if (currentFolders[i] === folderName) {
-                mainWindow.webContents.send('request-collapse-foldername', folderPath);
-                return;
+    try {
+        folderPath = Path.join(currentlyFocusedFolderPath, folderName);
+        let parentPath = rootDir.split(Path.sep);
+        parentPath.pop();
+        let rootFolderPath = Path.join(parentPath.join(Path.sep), folderName);
+        if (rootFolderPath === currentlyFocusedFolderPath) {
+            mainWindow.webContents.send('request-collapse-foldername', currentlyFocusedFolderPath);
+            return;
+        } else {
+            for (var i = 0; i < currentFolders.length; i++) {
+                if (currentFolders[i] === folderName) {
+                    mainWindow.webContents.send('request-collapse-foldername', folderPath);
+                    return;
+                }
             }
         }
+    } catch(e) {
+
     }
-    
+
     console.log(`Folder ${folderName} does not exist.`);
 }
 
@@ -222,9 +238,9 @@ function addFileToCurrentFiles(filePath) {
     fileDirPath.pop();
     fileDirPath = fileDirPath.join(Path.sep);
 
-    if(fileDirPath == currentlyFocusedFolderPath) {
+    if (fileDirPath == currentlyFocusedFolderPath) {
         let fileName = filePath.split(Path.sep).pop();
-        if(!currentFiles.includes(fileName)) {
+        if (!currentFiles.includes(fileName)) {
             currentFiles.push(fileName);
         }
     }
@@ -303,12 +319,16 @@ constructIndicrectCommand = function (mainWindow, keyword, isParameter) {
                 break;
             }
             case 'new-file': {
-                if(!currentFiles.includes(keyword)) {
-                    let path = Path.join(currentlyFocusedFolderPath, keyword);
-                    currentFiles.push(keyword);
-                    fs.writeFileSync(path, '');
-                    openFile(mainWindow, keyword);
-                };
+                try {
+                    if (!currentFiles.includes(keyword)) {
+                        let path = Path.join(currentlyFocusedFolderPath, keyword);
+                        currentFiles.push(keyword);
+                        fs.writeFileSync(path, '');
+                        openFile(mainWindow, keyword);
+                    }
+                } catch(e) {
+
+                }
                 break;
             }
         }

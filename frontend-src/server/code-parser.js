@@ -25,7 +25,8 @@ let directCodeInsertionCmds = [
     'while',
     'for',
     'for-loop',
-    'variable'
+    'variable',
+    'print'
 ];
 
 // insert code directly
@@ -42,96 +43,108 @@ directCodeInsertion = function (mainWindow, keyword, codeInserter, previousLines
         }
     }
     if (directCodeInsertionCmds.includes(keyword)) {
-        switch (keyword) {
-            case 'variable': {
-                insertPlainCode(mainWindow, arg[0]);
-                break;
+        try {
+            switch (keyword) {
+                case 'variable': {
+                    insertPlainCode(mainWindow, arg[0]);
+                    break;
+                }
+                case 'brackets': {
+                    insertPlainCode(mainWindow, '()');
+                    mainWindow.webContents.send('request-horizontal-move-cursor', -1);
+                    break;
+                }
+                case 'braces': {
+                    insertPlainCode(mainWindow, '{}');
+                    mainWindow.webContents.send('request-horizontal-move-cursor', -1);
+                    break;
+                }
+                case 'square-brackets': {
+                    insertPlainCode(mainWindow, '[]');
+                    mainWindow.webContents.send('request-horizontal-move-cursor', -1);
+                    break;
+                }
+                case 'grave': {
+                    insertPlainCode(mainWindow, '``');
+                    mainWindow.webContents.send('request-horizontal-move-cursor', -1);
+                    break;
+                }
+                case 'single-quote': {
+                    insertPlainCode(mainWindow, "''");
+                    mainWindow.webContents.send('request-horizontal-move-cursor', -1);
+                    break;
+                }
+                case 'double-quotes': {
+                    insertPlainCode(mainWindow, "\"\"");
+                    mainWindow.webContents.send('request-horizontal-move-cursor', -1);
+                    break;
+                }
+                case 'new-scope': {
+                    mainWindow.webContents.send('request-horizontal-move-cursor', previousLines[previousLines.length - 1].length + 1);
+                    insertPlainCode(mainWindow, codeInserter.newScope(previousLines));
+                    break;
+                }
+                case 'exit-scope': {
+                    mainWindow.webContents.send('request-horizontal-move-cursor', previousLines[previousLines.length - 1].length + 1);
+                    insertPlainCode(mainWindow, codeInserter.exitScope(previousLines));
+                    break;
+                }
+                case 'enter': {
+                    mainWindow.webContents.send('request-horizontal-move-cursor', previousLines[previousLines.length - 1].length + 1);
+                    insertPlainCode(mainWindow, codeInserter.enter(previousLines));
+                    break;
+                }
+                case 'if': {
+                    let codeBlock = codeInserter.if(previousLines);
+                    let code = codeBlock['code'];
+                    let cursorMoveValue = codeBlock['cursorMoveValue'];
+                    insertPlainCode(mainWindow, code);
+                    mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
+                    break;
+                }
+                case 'else-if': {
+                    let codeBlock = codeInserter.elseIf(previousLines);
+                    let code = codeBlock['code'];
+                    let cursorMoveValue = codeBlock['cursorMoveValue'];
+                    insertPlainCode(mainWindow, code);
+                    mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
+                    break;
+                }
+                case 'for': {
+                    let codeBlock = codeInserter.for(previousLines);
+                    let code = codeBlock['code'];
+                    let cursorMoveValue = codeBlock['cursorMoveValue'];
+                    insertPlainCode(mainWindow, code);
+                    mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
+                    break;
+                }
+                case 'while': {
+                    let codeBlock = codeInserter.while(previousLines);
+                    let code = codeBlock['code'];
+                    let cursorMoveValue = codeBlock['cursorMoveValue'];
+                    insertPlainCode(mainWindow, code);
+                    mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
+                    break;
+                }
+                case 'for-loop': {
+                    let codeBlock = codeInserter.forLoop(previousLines, arg[0]);
+                    let code = codeBlock['code'];
+                    let cursorMoveValue = codeBlock['cursorMoveValue'];
+                    insertPlainCode(mainWindow, code);
+                    mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
+                    break;
+                }
+                case 'print': {
+                    let codeBlock = codeInserter.print(previousLines);
+                    let code = codeBlock['code'];
+                    let cursorMoveValue = codeBlock['cursorMoveValue'];
+                    insertPlainCode(mainWindow, code);
+                    mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
+                    break;
+                }
             }
-            case 'brackets': {
-                insertPlainCode(mainWindow, '()');
-                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
-                break;
-            }
-            case 'braces': {
-                insertPlainCode(mainWindow, '{}');
-                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
-                break;
-            }
-            case 'square-brackets': {
-                insertPlainCode(mainWindow, '[]');
-                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
-                break;
-            }
-            case 'grave': {
-                insertPlainCode(mainWindow, '``');
-                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
-                break;
-            }
-            case 'single-quote': {
-                insertPlainCode(mainWindow, "''");
-                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
-                break;
-            }
-            case 'double-quotes': {
-                insertPlainCode(mainWindow, "\"\"");
-                mainWindow.webContents.send('request-horizontal-move-cursor', -1);
-                break;
-            }
-            case 'new-scope': {
-                mainWindow.webContents.send('request-horizontal-move-cursor', previousLines[previousLines.length - 1].length);
-                insertPlainCode(mainWindow, codeInserter.newScope(previousLines));
-                break;
-            }
-            case 'exit-scope': {
-                mainWindow.webContents.send('request-horizontal-move-cursor', previousLines[previousLines.length - 1].length);
-                insertPlainCode(mainWindow, codeInserter.exitScope(previousLines));
-                break;
-            }
-            case 'enter': {
-                mainWindow.webContents.send('request-horizontal-move-cursor', previousLines[previousLines.length - 1].length);
-                insertPlainCode(mainWindow, codeInserter.enter(previousLines));
-                break;
-            }
-            case 'if': {
-                let codeBlock = codeInserter.if(previousLines);
-                let code = codeBlock['code'];
-                let cursorMoveValue = codeBlock['cursorMoveValue'];
-                insertPlainCode(mainWindow, code);
-                mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
-                break;
-            }
-            case 'else-if': {
-                let codeBlock = codeInserter.elseIf(previousLines);
-                let code = codeBlock['code'];
-                let cursorMoveValue = codeBlock['cursorMoveValue'];
-                insertPlainCode(mainWindow, code);
-                mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
-                break;
-            }
-            case 'for': {
-                let codeBlock = codeInserter.for(previousLines);
-                let code = codeBlock['code'];
-                let cursorMoveValue = codeBlock['cursorMoveValue'];
-                insertPlainCode(mainWindow, code);
-                mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
-                break;
-            }
-            case 'while': {
-                let codeBlock = codeInserter.while(previousLines);
-                let code = codeBlock['code'];
-                let cursorMoveValue = codeBlock['cursorMoveValue'];
-                insertPlainCode(mainWindow, code);
-                mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
-                break;
-            }
-            case 'for-loop': {
-                let codeBlock = codeInserter.forLoop(previousLines, arg[0]);
-                let code = codeBlock['code'];
-                let cursorMoveValue = codeBlock['cursorMoveValue'];
-                insertPlainCode(mainWindow, code);
-                mainWindow.webContents.send('request-update-cursor', cursorMoveValue);
-                break;
-            }
+        } catch(e) {
+
         }
     } else {
         insertPlainCode(mainWindow, keyword);

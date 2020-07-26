@@ -602,10 +602,12 @@ selectRange = function (startLine, startColumn, endLine, endColumn) {
 }
 
 selectLine = function () {
-    let currentLineLength = module.exports.getCurrentLine().length;
-    let position = editor.getPosition();
-    let range = new monaco.Range(position.lineNumber, 1, position.lineNumber, currentLineLength + 1);
-    editor.setSelection(range);
+    if(editor && editor.getModel()) {
+        let currentLineLength = module.exports.getCurrentLine().length;
+        let position = editor.getPosition();
+        let range = new monaco.Range(position.lineNumber, 1, position.lineNumber, currentLineLength + 1);
+        editor.setSelection(range);
+    }
 }
 
 // selects the current column till + the passed number

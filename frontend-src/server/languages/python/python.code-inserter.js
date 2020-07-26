@@ -76,12 +76,12 @@ module.exports = class PythonCodeInserter {
     forLoop(previousLines, loopSize) {
         let code;
         let cursorMoveValue;
-        let numberOfSpaces = 4 * (this.getScope(currentLine) + 1);
         let currentLine = previousLines[previousLines.length - 1];
+        let numberOfSpaces = 4 * (this.getScope(currentLine) + 1);
 
         if (loopSize == undefined) {
             code = `for  in range():\n`;
-            cursorMoveValue[-1, 0];
+            cursorMoveValue = [-1, 0];
         } else {
             code = `for i in range(${loopSize}):\n`;
             cursorMoveValue = [0, 0];
