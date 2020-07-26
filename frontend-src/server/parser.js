@@ -235,7 +235,7 @@ function dashedName(words, startIndex, endIndex) {
         varName += "-" + words[k];
     }
 
-    return varName; 
+    return varName;
 }
 
 let conventions = [
@@ -270,7 +270,7 @@ function nameAccordingToConvention(words, startIndex, endIndex, convention) {
                 varName += words[k];
             }
             if (convention) {
-                if(convention != varName) {
+                if (convention != varName) {
                     varName += convention
                 }
             }
@@ -458,9 +458,7 @@ function formForLoops(words) {
     } else {
         for (i = 0; i < words.length - 1; i++) {
             if (words[i] == 'for-loop') {
-                if (!isNaN(words[i + 1])) {
-                    processedWords.push('for-loop\\' + words[i + 1]);
-                }
+                processedWords.push('for-loop\\' + words[i + 1]);
                 i++;
             } else {
                 processedWords.push(words[i]);
