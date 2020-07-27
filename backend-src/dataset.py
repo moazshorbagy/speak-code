@@ -1,67 +1,40 @@
 import numpy as np
 import pandas as pd
-import librosa
-import re
 from sklearn.model_selection import train_test_split
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.utils import to_categorical
 
 import os
 
 import constants as c
-from text import encode, decode
+from text import encode
 from features import get_features
 from decorators import timeit
 
-
-def load_txt_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return f.readline()
-
 @timeit
-def create_dataset():
+def create_dataset(dataset='TIMIT'):
 
-    train = pd.read_csv(os.path.join('TIMIT', 'timit_train.csv')).to_numpy()
+    data = pd.read_csv(os.path.join(dataset, f'{dataset.lower()}_all.csv')).to_numpy()
 
-    X_train = [''] * int(train.shape[0])
-    y_train = [''] * int(train.shape[0])
+    X = [''] * int(data.shape[0])
+    _y = [''] * int(data.shape[0])
 
-    for i, (path, size, transcript) in enumerate(train):
+    for i, (path, transcript) in enumerate(data):
+        
+        X[i] = get_features(np.load(path + '.npy'))
+        _y[i] = encode(c.start_token + transcript + c.end_token)
 
-        X_train[i] = np.reshape(get_features(np.load(path + '.npy'))[0], (-1, c.n_mfcc))
-        y_train[i] = encode(transcript)
+    X = pad_sequences(X, padding='post', value=c.masking_value, dtype=np.float32)
+    _y = pad_sequences(_y, padding='post', value=encode(c.pad_token)[0], dtype=np.float32)
 
-    X_train = np.array(X_train)
-    y_train = np.array(y_train)
+    y = np.zeros((_y.shape[0], _y.shape[1], c.n_output), dtype=np.float32)
+    
+    for i in range(y.shape[0]):
+        y[i] = to_categorical(_y[i], num_classes=c.n_output)
 
-    np.save('X_train.npy', X_train)
-    np.save('y_train.npy', X_train)
+    y_lag = y.copy()
+    y_lag = np.delete(y_lag, 0, 1)
+    pad = np.reshape([to_categorical(encode(c.pad_token)[0], num_classes=c.n_output)]*y.shape[0], (y.shape[0], 1, -1))
+    y_lag = np.append(y_lag, pad, 1)
 
-    return X_train, y_train
-
-@timeit
-def create_testset():
-
-    test = pd.read_csv(os.path.join('TIMIT', 'timit_test.csv')).to_numpy()
-
-    X_test = [''] * int(test.shape[0])
-    y_test = [''] * int(test.shape[0])
-
-    for i, (path, size, transcript) in enumerate(test):
-
-        X_test[i] = np.reshape(get_features(np.load(path + '.npy'))[0], (-1, c.n_mfcc))
-        y_test[i] = encode(transcript)
-
-    X_test = np.array(X_test)
-    y_test = np.array(y_test)
-
-    np.save('X_test.npy', X_test)
-    np.save('y_test.npy', X_test)
-
-    return X_test, y_test
-
-def text_processing(text):
-    return re.sub(r'[.!,\n\'\"]'," ",text)
-
-
-
-# Check data generators
-# https://stanford.edu/~shervine/blog/keras-how-to-generate-data-on-the-fly
+    return X, y, y_lag

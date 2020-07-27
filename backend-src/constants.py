@@ -1,59 +1,61 @@
-import os
+start_token = '@'
+end_token = '!'
+pad_token = '*'
 
+alphabet = [pad_token, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ', start_token, end_token]
+masking_value = -900.
 
-alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ']
-masking_value = -10000
-number_of_char = len(alphabet)
 # Sound Processing
 
-sample_rate = 8000  # sample rate value expected by model
-n_mels = 40
-with_deltas = False
+sample_rate       = 16000       # sample rate value expected by model
+pre_emphasis      = 0.97
+frame_duration    = 0.010       #in seconds
+frame_overlap     = 0.005       #in seconds
+n_filters         = 40
+n_context         = 3           # number of context frames (overlapped frames)
+add_context       = False
+with_deltas       = True
+
 
 if(sample_rate == 8000):
-    n_mfcc = 13
+    n_mfcc = 14
 elif(sample_rate == 16000):
-    n_mfcc = 26
+    n_mfcc = 14
 else:
     raise(ValueError('sample_rate is not 8000 or 16000'))
 
 # Geometry
 
-n_input = n_mfcc*3 if with_deltas else n_mfcc       # number of features at each time step
+max_X_seq_len = 784     # Only used for Common Voice dataset
+max_y_seq_len = 77      # Only used for Common Voice dataset
 
-n_cell_dim = 512        # dimension of lstm state cell
+n_input  = n_mfcc*3 if with_deltas else n_mfcc
+n_input  = n_input+(2*n_context*n_input) if add_context else n_input
 
-n_hidden_1 = 512                # number of units in layer 1
-n_hidden_2 = n_hidden_1         # number of units in layer 2
-n_hidden_3 = n_cell_dim         # number of units in layer 3
-n_hidden_4 = n_cell_dim         # number of units in layer 4
-n_hidden_5 = n_hidden_1         # number of units in layer 5
-n_hidden_6 = number_of_char+1    # number of units in layer 6 (output layer) (+1 for CTC blank label)
+n_output = len(alphabet)
 
-n_steps = None          # sequence length
+n_cell_dim = 256       # dimension of GRU state cell
 
 # Global Constants
 
-epochs = 70             # an epoch is an iteration over the entire x and y data provided
-batch_size = 10          # number of samples per gradient update.
+epochs = 10               # an epoch is an iteration over the entire x and y data provided
+batch_size = 42          # number of samples per gradient update.
 validation_split = 0.2  # fraction of the training data to be used as validation data
+dropout=0.2
 
-dropout_1 = 0.1     # dropout rate for layer 1
-dropout_2 = 0.1     # dropout rate for layer 2
-dropout_3 = 0.1     # dropout rate for layer 3
-dropout_4 = 0.2     # dropout rate for layer 4
-dropout_5 = 0.1     # dropout rate for layer 5
-
-n_context = 9       # number of context frames (overlapped frames)
-relu_clip = 20.0    # ReLU clipping value for non-recurrent layers
+# parameter for beam search
+beam_width=1
+alpha_1=1e-2
 
 # Adam Optimizer
 
-learning_rate = 0.001
+learning_rate = 1e-4
 beta_1 = 0.9
 beta_2 = 0.999
 
-# Files
+lr_decay_epoch = 100
+minimum_lr = 1e-5
 
-train_audio_path = os.path.join('audio', 'train')
-test_audio_path = os.path.join('audio', 'test')
+# General
+
+checkpoint_filepath = 'tmp/checkpoint'

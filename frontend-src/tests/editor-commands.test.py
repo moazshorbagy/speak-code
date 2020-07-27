@@ -359,5 +359,28 @@ class TestScenarios(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
-    # sendTestVector(['for loop one three'])
+    # unittest.main()
+    time.sleep(2)
+    sendTestVector([
+    'start listening',
+    'open file file one javascript',
+    'go line five',
+    'select line copy',
+    'open file file three javascript',
+    'select line paste',
+    'new file my file pascal javascript',
+    'variable max count camel to be one zero zero enter',
+    'function add brackets',
+    'first comma second new scope',
+    'return first plus second',
+    'exit scope',
+    'add brackets one comma two enter',
+    'for loop variable max count camel',
+    'go tab zero',
+    'expand folder folder one',
+    'focus folder folder one',
+    'open file expected python',
+    'for loop one three',
+    'print quote hello space world',
+    'exit scope stop listening',
+    ])

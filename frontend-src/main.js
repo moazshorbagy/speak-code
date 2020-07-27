@@ -48,7 +48,7 @@ let spawnedChild;
 app.on('ready', function () {
 	createWindow();
 	zeroRPCServer.initializeServer();
-	// spawnPythonChild();
+	spawnPythonChild();
 });
 
 app.on('renderer-process-crashed', function () {
@@ -64,6 +64,8 @@ app.on('window-all-closed', function () {
 
 function spawnPythonChild() {
 
+	let recognizerPath = '../backend-src/seq2seq_recognizer.py';
+
 	if (process.platform == 'win32') {
 		let activateConda = spawnSync('conda', ['activate'], options={
 			encoding: 'utf8'
@@ -71,11 +73,11 @@ function spawnPythonChild() {
 		if(activateConda.error) {
 			console.log('failed to activate conda environment: ' + activateConda.error);
 		}
-		spawnedChild = spawn('python', ['recognizer.py'], options = {
+		spawnedChild = spawn('python', [recognizerPath], options = {
 			encoding: 'utf8'
 		});
 	} else if (process.platform == 'linux' || process.platform == 'darwin') {
-		spawnedChild = spawn('python3', ['recognizer.py'], {
+		spawnedChild = spawn('python3', [recognizerPath], {
 			stdio: 'inherit',
 			shell: true
 		});

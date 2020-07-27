@@ -550,9 +550,15 @@ function parseCommand(mainWindow, words) {
 
         let wordNotInGrammar, directCode;
 
+        console.log(words);
+
         for (i = 0; i < words.length; i++) {
 
             cmd = words[i];
+
+            if(cmd.length < 1 || cmd.length > 35) {
+                continue;
+            }
 
             if (lang) {
                 wordNotInGrammar = isWordNotInGrammar(cmd, lang);
