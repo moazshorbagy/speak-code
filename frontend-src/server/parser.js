@@ -522,75 +522,78 @@ function toggleIsListening() {
 }
 
 function parseCommand(mainWindow, words) {
+    try {
+        words = preprocessing1(words);
 
-    words = preprocessing1(words);
-
-    if (didChangeListeningState) {
-        mainWindow.webContents.send('set-listening-state', isListening);
-    }
-
-    mainWindow.webContents.send('request-file-info');
-
-    ipcMain.once('file-info', function (event, args) {
-
-        let lang, codeInserter;
-
-        let filePath = args['filePath'];
-        let previousLines = args['previousLines'];
-
-        if (filePath) {
-            config = configureLang(filePath);
-            lang = config['lang'];
-            codeInserter = config['codeInserter'];
+        if (didChangeListeningState) {
+            mainWindow.webContents.send('set-listening-state', isListening);
         }
-
-        if (lang) {
-            words = preprocessing2(words, lang);
-        }
-
-        let wordNotInGrammar, directCode;
-
-        console.log(words);
-
-        for (i = 0; i < words.length; i++) {
-
-            cmd = words[i];
-
-            if(cmd.length < 1 || cmd.length > 35) {
-                continue;
+    
+        mainWindow.webContents.send('request-file-info');
+    
+        ipcMain.once('file-info', function (event, args) {
+    
+            let lang, codeInserter;
+    
+            let filePath = args['filePath'];
+            let previousLines = args['previousLines'];
+    
+            if (filePath) {
+                config = configureLang(filePath);
+                lang = config['lang'];
+                codeInserter = config['codeInserter'];
             }
-
+    
             if (lang) {
-                wordNotInGrammar = isWordNotInGrammar(cmd, lang);
-                directCode = isDirectWordInsertion(cmd, lang);
+                words = preprocessing2(words, lang);
             }
-
-            if (constructingEditorCommand) {
-                commandParser.constructIndicrectCommand(mainWindow, cmd, true);
-                constructingEditorCommand = false;
-            }
-            else {
-
-                let directCommand = isDirectCommand(cmd);
-                let indirectCommand = isIndirectCommand(cmd);
-
-                if (wordNotInGrammar) {
-                    codeParser.directCodeInsertion(mainWindow, cmd, codeInserter, previousLines);
-                } else if (directCode !== undefined) {
-                    codeParser.directCodeInsertion(mainWindow, directCode, codeInserter, previousLines);
-                } else if (directCommand !== undefined) {
-                    commandParser.executeCommand(mainWindow, directCommand);
-                } else if (indirectCommand !== undefined) {
-                    constructingEditorCommand = true;
-                    commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
+    
+            let wordNotInGrammar, directCode;
+    
+            console.log(words);
+    
+            for (i = 0; i < words.length; i++) {
+    
+                cmd = words[i];
+    
+                if(cmd.length < 1 || cmd.length > 35) {
+                    continue;
                 }
-
-                if (!lang && !indirectCommand && !directCommand) {
-                    codeParser.directCodeInsertion(mainWindow, cmd);
+    
+                if (lang) {
+                    wordNotInGrammar = isWordNotInGrammar(cmd, lang);
+                    directCode = isDirectWordInsertion(cmd, lang);
+                }
+    
+                if (constructingEditorCommand) {
+                    commandParser.constructIndicrectCommand(mainWindow, cmd, true);
+                    constructingEditorCommand = false;
+                }
+                else {
+    
+                    let directCommand = isDirectCommand(cmd);
+                    let indirectCommand = isIndirectCommand(cmd);
+    
+                    if (wordNotInGrammar) {
+                        codeParser.directCodeInsertion(mainWindow, cmd, codeInserter, previousLines);
+                    } else if (directCode !== undefined) {
+                        codeParser.directCodeInsertion(mainWindow, directCode, codeInserter, previousLines);
+                    } else if (directCommand !== undefined) {
+                        commandParser.executeCommand(mainWindow, directCommand);
+                    } else if (indirectCommand !== undefined) {
+                        constructingEditorCommand = true;
+                        commandParser.constructIndicrectCommand(mainWindow, indirectCommand);
+                    }
+    
+                    if (!lang && !indirectCommand && !directCommand) {
+                        codeParser.directCodeInsertion(mainWindow, cmd);
+                    }
                 }
             }
-        }
-    });
+        });
+    } catch(e) {
+        console.log(e)
+    }
 }
 
 module.exports = {
