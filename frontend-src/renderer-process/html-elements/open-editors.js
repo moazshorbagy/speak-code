@@ -8,6 +8,7 @@ var openEditorsContentContainerId = 'open-editors-content-container';
 var openEditorsContentContainerClass = 'open-editors-content';
 
 const Path = require('path');
+
 // a boolean array, if entry = true, then index
 // is an available id to opened tab
 let tabIdOptimizer = [];
@@ -102,7 +103,7 @@ addOpenedFile = function (filePath, isUnregistered) {
 
     openEditorsContentContainer.append(`<div id='OFContainer_${filePath}' 
     class='fileNameSpan'> <div id='OFDescriptor_${filePath}' class='descriptor preventSelect'>${tabNumberIdDiv}
-        ${closeTabIcon} <p id='${filePath}' class='float-left'>${fileName} </p> </div> </div>`);
+        ${closeTabIcon} <p id='OFPath_${filePath}' class='float-left'>${fileName} </p> </div> </div>`);
 
     addOpenAndCloseEventListeners(filePath);
 }
@@ -148,7 +149,6 @@ openNewFile = function (filename) {
         } else {
             modelName = filename;
         }
-        console.log()
         unregisteredTabs.push(modelName);
         editor.openNewModel(modelName);
         module.exports.addOpenedFile(modelName, true);
