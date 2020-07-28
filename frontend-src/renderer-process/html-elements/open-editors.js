@@ -294,8 +294,13 @@ function updateId(oldId, newId) {
 }
 
 focusTabClickEventHandler = function() {
-    module.exports.displayCurrentlyOpenedFileName(this.id);
-    editor.focusModel(this.id);
+    console.log(this.id)
+    let filePath = this.id.split('_');
+    filePath.shift();
+    filePath = filePath.join('_');
+    console.log(filePath)
+    module.exports.displayCurrentlyOpenedFileName(filePath);
+    editor.focusModel(filePath);
 }
 
 closeTabClickEventHandler = function() {
@@ -306,7 +311,7 @@ closeTabClickEventHandler = function() {
 }
 
 function addOpenAndCloseEventListeners(filePath) {
-    document.getElementById(filePath).addEventListener('click', focusTabClickEventHandler);
+    document.getElementById('OFPath_' + filePath).addEventListener('click', focusTabClickEventHandler);
     document.getElementById(filePath + '_t').addEventListener('click', closeTabClickEventHandler);
 }
 
