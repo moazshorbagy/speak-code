@@ -7,7 +7,7 @@ masking_value = -900.
 
 # Sound Processing
 
-sample_rate       = 8000       # sample rate value expected by model
+sample_rate       = 16000       # sample rate value expected by model
 pre_emphasis      = 0.97
 frame_duration    = 0.025       #in seconds
 frame_overlap     = 0.015       #in seconds
@@ -18,13 +18,7 @@ n_context         = 3           # number of context frames (overlapped frames)
 
 with_deltas       = False
 
-
-if(sample_rate == 8000):
-    n_mfcc = 13
-elif(sample_rate == 16000):
-    n_mfcc = 26
-else:
-    raise(ValueError('sample_rate is not 8000 or 16000'))
+n_mfcc = 13
 
 # Geometry
 

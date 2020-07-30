@@ -1,0 +1,128 @@
+and
+or
+not
+while
+for
+for loop
+if
+else if
+else
+break
+continue
+range
+define
+function
+import
+return
+equal
+unequal
+at least
+at most
+greater
+lesser
+plus
+minus
+comment
+by
+split
+escape
+class
+pass
+true
+false
+lens
+is
+in
+to be
+enter
+indent
+space
+dot
+colon
+comma
+bracket
+brace
+of
+coat
+double coat
+i
+new scope
+exit scope
+plus equal
+new
+
+zero
+one
+two
+three
+four
+five
+six
+seven
+eight
+nine
+
+start listening
+stop listening
+change folder
+save
+save as
+reveal cursor
+zoom in
+zoom out
+undo
+redo
+close
+next tab
+move right
+move left
+select all
+cut
+copy
+paste
+backspace
+comment line
+delete line
+unfocus folder
+browse file
+new untitled
+exit application
+select line
+delete left
+delete right
+variable
+strange
+pascal
+camel
+snake
+
+open file my file pascal javascript
+expand folder my folder snake
+collapse folder my folder snake
+go tab one
+go tab two
+go line five
+go column one
+focus folder my folder snake
+select up four
+select down three
+select left ten
+select right seven
+new file my file pascal javascript
+
+function add brackets
+first comma second new scope
+return first plus second
+exit scope
+add brackets one comma two
+
+function variable get max camel brackets
+array new scope
+max to be array of zero enter
+count to be array dot lens
+for loop count
+if array of i move right at least max
+new scope
+max to be array of i
+exit scope exit scope
+return max exit scope
